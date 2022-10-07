@@ -1,0 +1,24 @@
+#Imports
+importFrom(grDevices, colorRampPalette)
+importFrom(stats, ecdf, ks.test, qnorm, quantile,
+                reformulate, setNames)
+importFrom(zoo, index, coredata)
+importFrom(xts, endpoints, period.apply)
+import (ggplot2)
+import(ismev)
+import(fitdistrplus)
+importFrom(EnvStats, gofTest)
+importFrom (reshape2, melt)
+
+export(SDEI_Events)
+export(calculate_energyindex_country)
+export(fitDis)
+export(funSDEI)
+export(get_abbrevs)
+export(get_shortcountry_names)
+export(plot_ics)
+export(plot_sdei)
+export(plot_sdei_dist)
+import(dplyr)
+import(ggplot2)
+
