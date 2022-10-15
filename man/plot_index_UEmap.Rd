@@ -2,15 +2,17 @@
 % Please edit documentation in R/plot_index_UEmap.R
 \name{plot_index_UEmap}
 \alias{plot_index_UEmap}
-\title{Function to plot SEI characteristics in a map}
+\title{Plot drought characteristics derived by the \code{funSDEI}}
 \usage{
-plot_index_UEmap(input_data, fvar)
+plot_index_UEmap(input_data, mvar, fvar)
 }
 \arguments{
 \item{input_data}{dataframe to plot}
 
+\item{mvar}{variable for plotting}
+
 \item{fvar}{variable for multiplot, it can be the season}
 }
 \description{
-Function to plot SEI characteristics in a map
+Plot drought characteristics derived by the \code{funSDEI}
 }

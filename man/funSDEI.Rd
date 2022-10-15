@@ -2,7 +2,7 @@
 % Please edit documentation in R/funSDEI.R
 \name{funSDEI}
 \alias{funSDEI}
-\title{Function to calculate the index}
+\title{Calculation of Standardised indices to monitor energy droughts}
 \usage{
 funSDEI(x, method = c("fitDis", "empirical", "none"), scale)
 }
@@ -14,5 +14,9 @@ funSDEI(x, method = c("fitDis", "empirical", "none"), scale)
 \item{scale}{indicates whether the variable is aggregate over time}
 }
 \description{
-Function to calculate the index
+Given a time series of a variable, e.g., wind and solar power generation, returns a standardised indices
+based on the method chose. The index can be calculate in any timescale that is of interest (e.g., hourly, daily.)
+}
+\references{
+Sam Allen and Noelia Otero. 2022. Standardised indices to monitor energy droughts.
 }

@@ -1,7 +1,12 @@
-#' Function to calculate the index
+#' @title Calculation of Standardised indices to monitor energy droughts
+#' 
+#' @description Given a time series of a variable, e.g., wind and solar power generation, returns a standardised indices 
+#' based on the method chose. The index can be calculate in any timescale that is of interest (e.g., hourly, daily.)
 #' @param x the variable to be standarised
 #' @param method estimation method
 #' @param scale indicates whether the variable is aggregate over time
+#' @references
+#' Sam Allen and Noelia Otero. 2022. Standardised indices to monitor energy droughts.
 #' @export
 #'
 funSDEI <- function(x, method=c("fitDis", "empirical", "none"), scale){
@@ -49,7 +54,7 @@ funSDEI <- function(x, method=c("fitDis", "empirical", "none"), scale){
 
     n   <- length(x[,2]);
     EP  <- ecdf(x[,2])  # Get the empirical probability
-    p  <- EP(x[,2])*n/(n+1)  # Use the Weibull plotting position
+    p <- (1 + EP(x[,2])*n)/(n + 2) # # Use the Weibull plotting position to ensure values not equal to 0 or 1
     SDEI <- qnorm(p,0,1)
     return(list("SDEI"= data.frame(date=x[,1], SDEI=SDEI)))
   }else if (method == "none"){
