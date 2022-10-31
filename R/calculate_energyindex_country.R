@@ -6,21 +6,19 @@
 #' @param nvars variable name, e.g., wind production.
 #' @export
 
-calculate_energyindex_country <- function(data, method="fitdis", scale, nvars){
+calculate_energyindex_country <- function(data, method="fitdis", scale, nvars, index_type="normal"){
 
   n_country <- unique(data$country)
   ener_ind <- l_sdei <- l_info <-  list()
   for ( icountry in 1:length(n_country)){
     for( ivar in 1:length(nvars)){
       X <- data%>%dplyr::filter(country==n_country[icountry])%>%dplyr::select(date,nvars[ivar])
-      # ener_ind[[ivar]] <- funSDEI(X, method, scale = scale)
-      country_index <- tryCatch({ funSDEI(X, method, scale = scale)},
+      country_index <- tryCatch({ funSDEI(X, method, scale = scale, index_type = index_type)},
                                 error=function(e) {cat("\n","error to get the index in", n_country[icountry], "for",nvars[ivar])})
       if (is.null(country_index)){
         ener_ind[[ivar]]<- NA
       }else{
         ener_ind[[ivar]] <- country_index
-        # plot_sdei(country_index$SDEI)
       }
 
     }
@@ -35,7 +33,6 @@ calculate_energyindex_country <- function(data, method="fitdis", scale, nvars){
     }
 
     df_sdei <- setNames(melt(n_sdei, id=c("date","SDEI")), c("date","SDEI","type"))
-    # pivot_wider(df_sdei, names_from=type, values_from=SDEI)
     l_sdei[[icountry]] <- df_sdei
     l_info[[icountry]] <- df_info
   }

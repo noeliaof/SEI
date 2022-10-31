@@ -20,49 +20,58 @@ knitr::opts_chunk$set(collapse = TRUE,comment = "#>", fig.width = 8, fig.height 
 
 ## Introduction
 
-`SEI` is a package in R to calculate standardized energy indices that can be used to monitor *energy droughts* in renewable power systems. The indices incorporate energy demand and renewable energy production, and constitute analogues of the standardised precipitation index and standardised precipitation evapotranspiration index, two indices that are regularly employed within operational hydro-meteorological drought monitoring systems (Begueria et al. 2014). 
+`SEI` is an R package that allows time series of *standardised energy indices* to be calculated from time series of energy variables. Standardised energy indices are defined on a common scale with an underlying probabilistic interpretation, making the indices ideal for risk management and decision-making. Indices can be calculated for any univariate and continuous energy variable of interest, such as energy demand, renewable energy production or residual load. In these specific cases, the package returns the standardised energy demand index (SEDI), the standardised renewable energy production index (SREPI), and standardised residual load index (SRLI) introduced by Allen and Otero (2022).
 
-This document introduces the methodology and how to use the `SEI` package for analysing *energy droughts* of wind and solar power generation. 
+Additionally, the `SEI` package can be used to monitor *energy droughts*, energy-based analogues of the more familiar meteorological drought. Droughts are typically defined in terms of thresholds of standardised indices, and `SEI` can return a time series of energy drought indicators as well as a time series of standardised energy indices. This document introduces the `SEI` package, and demonstrates how it can be used to monitor energy variables and energy droughts over time. 
 
   
 ```{r setup, include=FALSE}
 library(SEI)
+devtools::load_all()
 library(dplyr)
 ```
 
-## Metholody
+## Methodology
 
-The indices are straightforward to construct, can be defined on any timescale, and behave in a relative sense, meaning they can readily be compared for regions with different climates and different installed capacities.
-To construct the indices, we assume that there exists a time series of previous values of the renewable energy production, $P_{1}, \dots, P_{n}$, and the corresponding residual load, $L_{1}, \dots, L_{n}$. The observations could be on any timescale that is of interest. The general approach to define standardised indices begins by estimating the cumulative distribution function (CDF) corresponding to these previously observed values, which we label $F_{P}$ for the production and $F_{L}$ for the residual load. The estimated CDF is then used to transform the observations onto a standardised scale, exploiting the \textit{probability integral transform} to do so.  
+To construct standardised indices, we assume that there exists a time series of previous values of an energy variable of interest, $E_{1}, \dots, E_{n}$. These could be values of the energy demand, production, or residual load, for example. The observations can be on any timescale that is of interest. 
+
+The general approach to define standardised indices begins by estimating the cumulative distribution function (CDF) corresponding to these previously observed values, which we label $F_{E}$. The estimated CDF is then used to transform the observations onto a standardised scale, exploiting the *probability integral transform* (PIT) to do so. In particular, if $F_{E}$ is estimated correctly, the transformed values $F_{E}(E_{1}), \dots, F_{E}(E_{n})$ should constitute a time series of observations from a standard uniform distribution. The PIT value $F_{E}(E_{t})$ then represents the relative position of an observation $E_{t}$ among the previously observed values.
+
+These PIT values are bounded between 0 and 1. While they could themselves be used as standardised indices with an immediate probabilistic scale, it is common to further transform them. For example, one could consider the value $2F_{E}(E_{t}) - 1$, which is bounded between -1 and 1, with a positive value indicating that the observation $E_{t}$ is larger than average, while a negative value is assigned to below-average observations. However, it is more common to use the Gaussian quantile function $\Phi^{-1}$ to transform the PIT values. The resulting time series $\Phi^{-1}(F_{E}(E_{1})), \dots, \Phi^{-1}(F_{E}(E_{n}))$ should represent a sample from a standard normal distribution, which is centred at zero but unbounded. In `SEI`, standardised energy indices can be defined using any of these three approaches.
+
+To estimate the CDF $F_{E}$, it is common to assume the observations can be modelled using some parametric family of distributions: for example, McKee et al. (1993) assume that precipitation follows a Gamma distribution when they introduce the standardised precipitation index. `SEI` allows the indices to be calculated using a selection of parametric distributions, including the Gaussian, gamma and generalised extreme value (GEV) distributions, among several others. In addition, when the optimal distribution is not known, the package has the functionality to compare several distributions, and choose that which best fits the observed time series, as measured using the Akaike information criterion (AIC). 
+
+However, energy variables are typically governed by complex dynamical, physiological, and socioeconomic factors, meaning conventional parametric distributions are not flexible enough to represent the observed energy variables. Recognising this, `SEI` uses the empirical distribution function as a default when estimating the distribution of the observations, which was recently argued for by Allen and Otero (2022).
+
+Finally, it is common to define a drought as an instance where the variable of interest falls above (or below) a relevant threshold. Droughts are often further categorised by choosing a range of thresholds, each of which corresponds to an increasingly severe drought. Typically, it is common to use 1, 1.5, and 2 as thresholds to define *moderate*, *severe*, and *extreme* drought events (or -1, -1.5, and -2 for negatively oriented variables). However, in practice, this will change depending on the application, and hence `SEI` permits droughts to be defined using user-defined thresholds and categories.
+
 
 ## Use: Case study
 
-The data used for the case study correspond to time series of renewable generation solar and wind for a total of 27 countries across Europe. This data is publicity available at the [University of Reading](https://researchdata.reading.ac.uk/275/). More details about this dataset can be found in Bloomfield et al. 2020. The original data provides the capacity factors for solar and wind, which were later multiplied by the installed capacities (IC). In this case, we use the installed capacities of 2017.
+### Introduction
 
-Let's first have a look at the IC.
+In this section, we present a case study in which the `SEI` package is used to monitor renewable energy production and residual load across several European countries. The data used for this case study consists of time series of solar and wind power generation for 27 countries across Europe. This data is publicly available, hosted by the [University of Reading](https://researchdata.reading.ac.uk/275/), and more details about this data set can be found in Bloomfield et al. (2020). The original data provides the capacity factors for solar and wind, which were later multiplied by the national installed capacities (IC). In this study, we used the installed capacities of 2017.
+
+First, let's have a look at the installed capacities.
 
 ```{r}
 data("data_ic2017")
 head(data_ic2017)
 ```
 
-We can use either country abbreviations or codes to use in the plots. 
+The data is in the form of a data frame, containing the installed wind capacity and installed solar capacity corresponding to each of the 27 countries under consideration.
 
-```{r}
-abbrevs <- get_abbrevs(unique(data_ic2017$country))
-s_names <- unlist(lapply(unique(data_ic2017$country), get_shortcountry_names))
-```
+We can plot this data, using the country abbreviations obtained from the following code.
 
 ```{r fig.align = 'center', out.width = '100%'}
+abbrevs <- get_abbrevs(unique(data_ic2017$country))
+s_names <- unlist(lapply(unique(data_ic2017$country), get_shortcountry_names))
 plot_ics(data_ic2017, s_names)
 ```
 
-# Indices calculation
+### Raw values
 
-## Raw values
-
-We begin by looking at the raw renewable energy production, in this case, "PWS", which is wind and solar production.
-But it can be applied to any other energy indicator, such as, electricity demand or individual renewable energy sources.
+Here, we consider the hourly and daily production of wind and solar power (PWS). As discussed already, these methods can readily be applied to other energy variables, such as electricity demand or residual load, and also at other timescales.
 
 ```{r}
 data("data_supply")
@@ -74,18 +83,18 @@ nvars <- c("PWS")
 ```
 
 
-Here, we calculate raw data at hourly and daily. Note that it can calculate at any preferred time scale (e.g., weekly,  two-weekly etc...) and the units are GW.
-  
 ```{r}
-raw_1h <- calculate_energyindex_country(data_supply, method = "none", scale = NULL, nvars)
+raw_1h <- calculate_energyindex_country(data_supply, method = "none", scale = 1, nvars)
 raw_1d <- calculate_energyindex_country(data_supply, method = "none", scale = 24, nvars)
 ```
+
+The `calculate_energyindex_country` function returns a data frame containing the time series of standardised index values for each country. We can visualise this data frame for a specific country, say Portugal.
 
 ```{r}
 head(raw_1h$SDEI$Portugal)
 ```
 
-The output is a data frame that contains the time series of the index. We can visualize the values for one country. As an example we can plot the index for Portugal.
+We can then readily plot this time series for specified years.
 
 ```{r}
 country_str <- "Portugal"
@@ -93,66 +102,63 @@ variable_str <- "PWS"
 year_vec <- 2019
 ```
 
-Visualize the time series:
-
 ```{r fig.width = 7, fig.height = 4}
 library(ggplot2)
 sdei_raw_reduced <- raw_1h$SDEI[[country_str]] %>% dplyr::filter(type == variable_str)
-plot_sdei(sdei_raw_reduced, year_vec,ivar = "SDEI")
+plot_sdei(sdei_raw_reduced, year_vec, ivar = "SDEI")
 ```
 
 ```{r fig.width = 7, fig.height = 4}
-sdei_rawD_reduced <- raw_1d$SDEI[[country_str]] %>% dplyr::filter(type == variable_str)
-plot_sdei(sdei_rawD_reduced, year_vec,ivar = "SDEI")
+sdei_raw_reduced <- raw_1d$SDEI[[country_str]] %>% dplyr::filter(type == variable_str)
+plot_sdei(sdei_raw_reduced, year_vec, ivar = "SDEI")
 ```
 
 
-## Standarised values
+### Standardised values
 
-Next, we calculate the standardised renewable energy production index (SREPI) at hourly and daily time scales. Note that the SREPI is dimensionless. 
+For comparison, we can use `SEI` to calculate the standardised renewable energy production index (SREPI) at hourly and daily time scales. Note that the SREPI is dimensionless. 
 
 ```{r}
-sdei_1h <- calculate_energyindex_country(data_supply, method = "empirical", scale = NULL, nvars)
+sdei_1h <- calculate_energyindex_country(data_supply, method = "empirical", scale = 1, nvars)
 sdei_1d <- calculate_energyindex_country(data_supply, method = "empirical", scale = 24, nvars)
 ```
 
 
 ```{r fig.width = 7, fig.height = 4}
 sdei_reduced <- sdei_1h$SDEI[[country_str]] %>% dplyr::filter(type == variable_str)
-sdeiD_reduced <- sdei_1d$SDEI[[country_str]] %>% dplyr::filter(type == variable_str)
-plot_sdei(sdei_reduced, year_vec, ivar = "SDEI")
 plot_sdei(sdei_reduced, year_vec, ivar = "SDEI")
 ```
 
-
-## Distributions
-
-The corresponding distribution for the raw values:
-
 ```{r fig.width = 7, fig.height = 4}
-ylabb <- if(variable_str == "res_load_WS"){"RL (GW)"}else if(variable_str == "PWS"){"REP (GW)"}else{""}
-plot_sdei_dist(sdei_raw_reduced, n_bins = 50, title = ylabb)
+sdei_reduced <- sdei_1d$SDEI[[country_str]] %>% dplyr::filter(type == variable_str)
+plot_sdei(sdei_reduced, year_vec, ivar = "SDEI")
 ```
 
-and for the standarised distribution:
+
+### Distributions
+
+One motivation for converting the raw time series to standardised indices is that the indices are defined on a common scale. To illustrate this, compare the distribution of the raw renewable energy production values in Portugal to the corresponding values of the SREPI.
 
 ```{r fig.width = 7, fig.height = 4}
-ylabb <- if(variable_str == "res_load_WS"){"SRLI"}else if(variable_str == "PWS"){"SREPI"}else{""}
-plot_sdei_dist(sdei_reduced, n_bins = 50, title = ylabb)
+plot_sdei_dist(sdei_raw_reduced, n_bins = 50, title = "REP (GW)")
 ```
 
-# Define energy droughts 
+```{r fig.width = 7, fig.height = 4}
+plot_sdei_dist(sdei_reduced, n_bins = 50, title = "SREPI")
+```
 
-These indices can be used to characterize *energy droughts*, which could occur due to low values of the renewable energy production, or high values of the residual load. 
-
-Here, we show how the SEI can be used to characterize *droughts* of renewable energy production (PWS). For that, threshold values are used to categorize the type of *energy production drought*. In this case,  we say that an *energy production drought* occurs if the index falls below -1. The function `def_energy_drought` calculates the main characteristics of droughts: intensity, occurrence, duration and magnitude, in terms of the threshold values previously defined.
+While the distribution of the renewable energy production values is heavily skewed (and this will change for each location, time aggregation period, and energy variable being considered), the SREPI values represent a sample from a standard normal distribution.
 
 
+### Energy droughts 
+
+Standardised indices can be used to define *energy droughts*, which could occur, for example, due to low values of the renewable energy production. Here, we show how `SEI` can be used to characterise droughts of renewable energy production (PWS). To do so, threshold values are used to categorise the type of *energy production drought*. We say that an energy production drought occurs if the SREPI falls below -1, with a drought labelled as moderate if the index is larger than -1.5, severe if it is between -1.5 and -2, and extreme if it is smaller than -2. 
+
+Using the threshold values previously specified, the function `def_energy_drought` calculates the main characteristics of the energy droughts: their intensity, occurrence, duration and magnitude.
 
 ```{r}
-variable_str <- "PWS"
 # Define threshold values to use when defining droughts
-threshvals <- c(1, 1.5, 2)*(2*sign(variable_str!="PWS") - 1) 
+threshvals <- -c(1, 1.5, 2)
 sdei_1d_pivot <- lapply(sdei_1d$SDEI, function(x) {x%>%dplyr::rename(!!variable_str:=SDEI)})
 ```
 
@@ -160,14 +166,13 @@ sdei_1d_pivot <- lapply(sdei_1d$SDEI, function(x) {x%>%dplyr::rename(!!variable_
 sdei_1d_ev    <- lapply(sdei_1d_pivot, def_energy_drought, variable_str, threshvals, higher = variable_str!="PWS")
 ```
 
-We can now calculate the number of droughts per year in each country. As this analysis only considers 2019, n_year = 1. 
+We can now calculate the number of renewable energy production droughts that occurred during the period of interest in each country
 
 ```{r}
-n_year <- 1
-num_ev <- sapply(sdei_1d_ev, function(x) sum(x$dur != 0)/n_year) 
+num_ev <- sapply(sdei_1d_ev, function(x) sum(x$dur != 0)) 
 ```
 
-and visualize the frequency of *energy production drought*. Note that this includes all types of *energy production droughts* (i.e., mild, moderate, severe and extreme). See more details in Allen and Otero, 2022.
+and use this to visualise the frequency of energy production droughts. Note that this includes all types of energy production droughts (i.e., moderate, severe and extreme). See more details in Allen and Otero (2022).
 
 ```{r fig.width = 7, fig.height = 4}
 input_data <- data.frame(num_ev, area=s_names)
@@ -177,8 +182,6 @@ plot_index_UEmap(input_data, "num_ev", NULL)
 
 References
 ==========
-
-- Beguería S, Vicente-Serrano SM, Reig F, Latorre B. 2014. Standardized precipitation evapotranspiration index (SPEI) revisited: parameter fitting, evapotranspiration models, tools, datasets and drought monitoring. International Journal of Climatology 34(10): 3001-3023.
 
 - Bloomfield, H., Brayshaw, D., and Charlton-Perez, A. (2020). ERA5 derived time series of European country-
 aggregate electricity demand, wind power generation and solar power generation: hourly data from 1979-2019.

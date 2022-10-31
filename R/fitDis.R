@@ -1,4 +1,4 @@
-#' Function to estimate the distribution
+#' Function to estimate the distribution function
 #' @param xx the variable to analysis
 #' @param mtype predefined distribution
 #' @param th whether a threshold is needed

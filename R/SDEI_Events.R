@@ -1,18 +1,18 @@
-#' Function to calculate the events based on the SDEI
+#' Function to calculate drought events based on the SEI
 #' @param values index value
 #' @param type ?
 #' @export
-SDEI_Events <- function(values, type) {
+SDEI_Events <- function(values, type, thresholds = c(1, 1.5, 2)) {
   values <- as.numeric(values)
-  sti.extremely.hot   <- sum(values >= 2.00, na.rm=T)
-  sti.very.hot        <- sum(values < 2.00 & values >= 1.50, na.rm=T)
-  sti.moderately.hot  <- sum(values < 1.50 & values >= 1.00, na.rm=T)
-  sti.near.normal     <- sum(values < 1.00 & values > -1.00, na.rm=T)
-  sti.moderately.cold <- sum(values <= -1.00 & values > -1.50, na.rm=T)
-  sti.very.cold       <- sum(values <= -1.50 & values > -2.00, na.rm=T)
-  sti.extremely.cold  <- sum(values <= -2.00, na.rm=T)
-  r <- c(sti.extremely.hot, sti.very.hot, sti.moderately.hot, sti.near.normal, sti.moderately.cold, sti.very.cold, sti.extremely.cold)
-  names(r) = c("Extremely hot","Very hot","Moderately hot","Near normal","Moderately cold","Very cold","Extremely cold") 
+  sei.extremely.high   <- sum(values >= thresholds[3], na.rm=T)
+  sei.severely.high    <- sum(values < thresholds[3] & values >= thresholds[2], na.rm=T)
+  sei.moderately.high  <- sum(values < thresholds[2] & values >= thresholds[1], na.rm=T)
+  sei.near.normal      <- sum(abs(values) < thresholds[1], na.rm=T)
+  sei.moderately.low   <- sum(values <= -thresholds[1] & values > -thresholds[2], na.rm=T)
+  sei.severely.low     <- sum(values <= -thresholds[2] & values > -thresholds[3], na.rm=T)
+  sei.extremely.low    <- sum(values <= -thresholds[3], na.rm=T)
+  r <- c(sei.extremely.high, sei.severely.high, sei.moderately.high, sei.near.normal, sei.moderately.low, sei.severely.low, sei.extremely.low)
+  names(r) = c("Extremely high", "Severely high", "Moderately high", "Near normal", "Moderately low", "Severely low", "Extremely low")
   if (sti.near.normal == 0) {
     return (NA)
   } else {
