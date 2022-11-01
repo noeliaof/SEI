@@ -3,7 +3,8 @@
 #' @param method method to calculate the index
 #' @param scale indicates time scale of aggregation for the index
 #' @details whether the index will be calculated on aggregated amounts or not (e.g., daily, 6h)
-#' @param nvars variable name, e.g., wind production.
+#' @param nvars variable name, e.g., wind production
+#' @param index_type  indicates the type of index: "probability", "bounded" or "normal" 
 #' @export
 
 calculate_energyindex_country <- function(data, method="fitdis", scale, nvars, index_type="normal"){
