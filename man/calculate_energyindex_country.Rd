@@ -4,7 +4,13 @@
 \alias{calculate_energyindex_country}
 \title{Function to obtain the SDEI for selected countries}
 \usage{
-calculate_energyindex_country(data, method = "fitdis", scale, nvars)
+calculate_energyindex_country(
+  data,
+  method = "fitdis",
+  scale,
+  nvars,
+  index_type = "normal"
+)
 }
 \arguments{
 \item{data}{dataframe that contains data for one or more countries}
@@ -13,7 +19,9 @@ calculate_energyindex_country(data, method = "fitdis", scale, nvars)
 
 \item{scale}{indicates time scale of aggregation for the index}
 
-\item{nvars}{variable name, e.g., wind production.}
+\item{nvars}{variable name, e.g., wind production}
+
+\item{index_type}{indicates the type of index: "probability", "bounded" or "normal"}
 }
 \description{
 Function to obtain the SDEI for selected countries

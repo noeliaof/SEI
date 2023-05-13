@@ -4,7 +4,12 @@
 \alias{funSDEI}
 \title{Calculation of Standardised indices to monitor energy droughts}
 \usage{
-funSDEI(x, method = c("fitDis", "empirical", "none"), scale)
+funSDEI(
+  x,
+  method = c("fitDis", "empirical", "none"),
+  scale,
+  index_type = c("probability", "bounded", "normal")
+)
 }
 \arguments{
 \item{x}{the variable to be standarised}
@@ -12,6 +17,8 @@ funSDEI(x, method = c("fitDis", "empirical", "none"), scale)
 \item{method}{estimation method}
 
 \item{scale}{indicates whether the variable is aggregate over time}
+
+\item{index_type}{indicates the type of index: "probability", "bounded" or "normal"}
 }
 \description{
 Given a time series of a variable, e.g., wind and solar power generation, returns a standardised indices

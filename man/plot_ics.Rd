@@ -9,7 +9,7 @@ plot_ics(df, names = NULL)
 \arguments{
 \item{df}{dataframe of the form of data_enerH, with the values of IC wind and solar}
 
-\item{names}{of the countries o be plotted}
+\item{names}{of the countries to be plotted}
 }
 \description{
 Function to plot installed capacity values from the data

@@ -2,15 +2,15 @@
 % Please edit documentation in R/SDEI_Events.R
 \name{SDEI_Events}
 \alias{SDEI_Events}
-\title{Function to calculate the events based on the SDEI}
+\title{Function to calculate drought events based on the SEI}
 \usage{
-SDEI_Events(values, type)
+SDEI_Events(values, thresholds = c(1, 1.5, 2))
 }
 \arguments{
 \item{values}{index value}
 
-\item{type}{?}
+\item{thresholds}{threshold values used to define the event}
 }
 \description{
-Function to calculate the events based on the SDEI
+Function to calculate drought events based on the SEI
 }

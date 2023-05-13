@@ -5,6 +5,7 @@
 #' @param x the variable to be standarised
 #' @param method estimation method
 #' @param scale indicates whether the variable is aggregate over time
+#' @param index_type indicates the type of index: "probability", "bounded" or "normal" 
 #' @references
 #' Sam Allen and Noelia Otero. 2022. Standardised indices to monitor energy droughts.
 #' @export

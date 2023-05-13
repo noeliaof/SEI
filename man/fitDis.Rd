@@ -2,7 +2,7 @@
 % Please edit documentation in R/fitDis.R
 \name{fitDis}
 \alias{fitDis}
-\title{Function to estimate the distribution}
+\title{Function to estimate the distribution function}
 \usage{
 fitDis(xx, mtype, th)
 }
@@ -14,5 +14,5 @@ fitDis(xx, mtype, th)
 \item{th}{whether a threshold is needed}
 }
 \description{
-Function to estimate the distribution
+Function to estimate the distribution function
 }
