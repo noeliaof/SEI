@@ -1,16 +1,41 @@
-#' @title Calculation of Standardised indices to monitor energy droughts
+#' @title Calculate standardised energy indices
 #'
-#' @description Given a time series of a variable, e.g., wind and solar power generation, returns a standardised indices
-#' based on the method chose. The index can be calculate in any timescale that is of interest (e.g., hourly, daily.)
-#' @param x the variable to be standarised
-#' @param method estimation method
-#' @param scale indicates whether the variable is aggregate over time
-#' @param index_type indicates the type of index: "probability", "bounded" or "normal" 
+#' @description Inputs a time series of a chosen variable (e.g. residual load or
+#' energy demand) and returns a time series of standardised indices. Different
+#' types of indices can be calculated, on any timescale that is of interest.
+#'
+#' @param x vector or time series to be converted to standardised indices.
+#' @param distribution string; distribution used to construct the indices.
+#' @param scale optional; numeric specifying the number of values to aggregate over.
+#' @param index_type string; the type of index: "probability", "bounded" or "normal".
+#'
+#' @details
+#' Details about the std_index function will be added here
+#'
+#' @return
+#' Time series of standardised indices.
+#'
+#'
 #' @references
-#' Sam Allen and Noelia Otero. 2022. Standardised indices to monitor energy droughts.
-#' @export
+#' Allen, S. and N. Otero (2022):
+#' `Standardised indices to monitor energy droughts',
+#' \emph{EarthArXiv preprint} 4752.
+#' \doi{10.31223/X51S92}
 #'
-funSDEI <- function(x, method=c("fitDis", "empirical", "none"), scale, index_type=c("probability", "bounded", "normal")){
+#' McKee, T. B., Doesken, N. J., & Kleist, J. (1993):
+#' `The relationship of drought frequency and duration to time scales',
+#' \emph{In Proceedings of the 8th Conference on Applied Climatology} 17, 179-183.
+#'
+#'
+#' @author Sam Allen, Noelia Otero
+#'
+#' @examples
+#' Examples of the std_index function will be added here
+#'
+#' @name std_index
+#'
+#' @export
+std_index <- function(x, method=c("fitDis", "empirical", "none"), scale, index_type=c("probability", "bounded", "normal")){
 
   if (missing('method')){
     method <- 'fitDis'
