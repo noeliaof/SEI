@@ -2,6 +2,12 @@
 
 An R package to calculate standardised indices. Standardised indices are frequently used to convert measurements to a common scale with a meaningful probabilistic interpretation. Well-known examples of such indices include the Standardised Precipitation Index (SPI) and Standardised Precipitation Evapotranpiration Index (SPEI), which are commonly used to monitor hydrological droughts. However, this package can be employed to calculate indices in a wide range of settings. For example, it can readily be used to calculate standardised energy indices, including the Standardised Residual Load Index (SRLI), and the Standardised Renewable Energy Production Index (SREPI).
 
+These standardised energy indices are discussed in
+> Allen, S. and Otero, N (2022). 
+> Standardised indices to monitor energy droughts.
+> EarthArxiv pre-print.
+> [https://doi.org/10.1175/WAF-D-22-0161.1](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4312835)
+
 ## Features
 The main features of this package include:
   - A wide range of distributions from which to calculate standardised indices (including the empirical distribution)
