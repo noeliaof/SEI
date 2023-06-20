@@ -7,7 +7,7 @@
 std_index(
   x_new,
   x_ref = x_new,
-  timescale = "days",
+  timescale = NULL,
   dist = "empirical",
   return_fit = FALSE,
   moving_window = NULL,
@@ -63,7 +63,7 @@ Details about the std_index function will be added here
 data(data_supply)
 # consider hourly German energy supply data in 2019
 supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
-supply_de <- xts(supply_de$PWS, order.by = supply_de$date)
+supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
 options(xts_check_TZ = FALSE)
 
 # convert to hourly standardised indices

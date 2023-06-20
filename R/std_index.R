@@ -42,7 +42,7 @@
 #' data(data_supply)
 #' # consider hourly German energy supply data in 2019
 #' supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
-#' supply_de <- xts(supply_de$PWS, order.by = supply_de$date)
+#' supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
 #' options(xts_check_TZ = FALSE)
 #'
 #' # convert to hourly standardised indices
@@ -89,7 +89,7 @@ NULL
 #' @export
 std_index <- function(x_new,
                       x_ref = x_new,
-                      timescale = "days",
+                      timescale = NULL,
                       dist = "empirical",
                       return_fit = FALSE,
                       moving_window = NULL,
@@ -105,6 +105,23 @@ std_index <- function(x_new,
   # check inputs
   inputs <- as.list(environment())
   check_inputs(inputs)
+
+  # get timescale (if not given)
+  if (is.null(timescale)) {
+    timedif <- diff(index(x_ref))[1]
+    if (timedif == 1) {
+      timescale <- units(timedif)
+    } else if (timedif == 24 && units(timedif) == "hours") {
+      timescale <- "days"
+    } else if (timedif == 7 && units(timedif) == "days") {
+      timescale <- "weeks"
+    } else if (timedif == 365 && units(timedif) == "days") {
+      timescale <- "years"
+    } else {
+      stop("could not automatically determine the timescale of the time series,
+           please specify this manually")
+    }
+  }
 
   # scale data
   if (!is.null(rescale)) {
