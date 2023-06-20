@@ -60,7 +60,48 @@ types of indices can be calculated, on any timescale that is of interest.
 Details about the std_index function will be added here
 }
 \examples{
-Examples of the std_index function will be added here
+data(data_supply)
+# consider hourly German energy supply data in 2019
+supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
+supply_de <- xts(supply_de$PWS, order.by = supply_de$date)
+options(xts_check_TZ = FALSE)
+
+# convert to hourly standardised indices
+supply_de_std <- std_index(supply_de, timescale = "hours")
+par(mfrow = c(1, 2))
+hist(supply_de)
+hist(supply_de_std)
+
+# convert to daily or weekly standardised indices
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days")
+
+# convert to weekly standardised indices calculated on each day
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", agg_period = 1, agg_scale = "weeks")
+
+# calculate standardised indices corresponding to December, based on the previous year
+dec <- index(supply_de) >= "2019-01-12 UTC"
+supply_de_std_dec <- std_index(x_new = supply_de[dec], x_ref = supply_de[!dec], timescale = "hours")
+
+# calculate standardised indices using a 100 day moving window
+supply_de_std_dec <- std_index(supply_de[dec], timescale = "hours", rescale = "days", moving_window = 100)
+
+# suppose we are interested in the daily maximum rather than the daily total
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "max")
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "mean") # or average
+
+# the default uses the empirical distribution, but this requires more data than
+# parametric distributions, meaning it is not ideal when data is short, e.g. in weekly case
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks") # warning
+# instead, we can use a parametric distribution, e.g. a gamma distribution
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "gamma")
+# we can check the fit by checking whether the indices resemble a standard normal distribution
+hist(supply_de)
+hist(supply_de_std)
+# we can also look at the properties of the fit
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "gamma", return_fit = TRUE)
+
+# alternatively, we can use kernel density estimation, which is a flexible compromise between the two
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "kde")
 
 }
 \references{
