@@ -4,7 +4,7 @@
 \alias{get_pit}
 \title{Calculate probability integral transform values}
 \usage{
-get_pit(ref_data, new_data, dist = "empirical", method = "mle")
+get_pit(ref_data, new_data, dist = "empirical")
 }
 \arguments{
 \item{ref_data}{numeric vector from which to estimate the CDF.}
@@ -12,8 +12,6 @@ get_pit(ref_data, new_data, dist = "empirical", method = "mle")
 \item{new_data}{numeric vector from which to calculate the PIT values.}
 
 \item{dist}{string; distribution used to estimate the CDF.}
-
-\item{method}{string; method used to estimate distribution parameters.}
 }
 \value{
 A vector of PIT values.
@@ -24,7 +22,8 @@ of a set of observations, and return the corresponding probability integral
 transform (PIT) values.
 }
 \details{
-Details of the calculate_pit function will be added here
+Functionality is currently available to calculate parameters using maximum
+likelihood estimation, though alternative methods may be introduced later.
 }
 \examples{
 Examples of the calculate_pit function will be added here

@@ -7,10 +7,10 @@
 #' @param ref_data numeric vector from which to estimate the CDF.
 #' @param new_data numeric vector from which to calculate the PIT values.
 #' @param dist string; distribution used to estimate the CDF.
-#' @param method string; method used to estimate distribution parameters.
 #'
 #' @details
-#' Details of the calculate_pit function will be added here
+#' Functionality is currently available to calculate parameters using maximum
+#' likelihood estimation, though alternative methods may be introduced later.
 #'
 #' @return
 #' A vector of PIT values.
@@ -27,11 +27,10 @@ NULL
 #' @export
 get_pit <- function(ref_data,
                     new_data,
-                    dist = "empirical",
-                    method = "mle") {
+                    dist = "empirical") {
 
-  F_x <- fit_dist(ref_data, dist)
-  pit <- F_x(new_data)
+  fit <- fit_dist(as.vector(ref_data), dist)
+  pit <- fit$F_x(as.vector(new_data), fit$params)
 
   return(pit)
 }
