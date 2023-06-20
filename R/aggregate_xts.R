@@ -7,6 +7,7 @@
 #' @param len length of the aggregation period.
 #' @param scale timescale of the aggregation period, default is 'days'.
 #' @param fun function to apply to the aggregated data, default is 'sum'.
+#' @param timescale timescale of \code{x}.
 #' @param na_thres threshold for the percentage of NA values allowed in the
 #'  aggregation period, default = 10.
 #'
@@ -29,11 +30,13 @@ NULL
 #' @export
 aggregate_xts <- function(x,
                           len,
-                          scale = c("hours", "days", "weeks", "quarters", "years"),
+                          scale = c("days", "hours", "weeks", "quarters", "years"),
                           fun = 'sum',
+                          timescale = c("days", "hours", "weeks", "quarters", "years"),
                           na_thres = 10) {
   scale <- match.arg(scale)
-  x_agg <- sapply(index(x), aggregate_xts_1, x, len, scale, fun, na_thres)
+  timescale <- match.arg(timescale)
+  x_agg <- sapply(index(x), aggregate_xts_1, x, len, scale, fun, timescale, na_thres)
   x_agg <- xts(x_agg, order.by = index(x))
   xtsAttributes(x_agg) <- xtsAttributes(x)
   xtsAttributes(x_agg)$agg_length <- as.difftime(len, units = scale)
@@ -46,11 +49,12 @@ aggregate_xts_1 <- function(date,
                             len,
                             scale,
                             fun = 'sum',
+                            timescale,
                             na_thres = 10) {
-  from <- date - as.difftime(len - 1, units = scale)
+  from <- date - as.difftime(len, units = scale) + as.difftime(1, units = timescale)
   to <- date
   data <- data[paste(from, to, sep = '/')]
-  dates <- seq(from = from, to = to, by = as.difftime(1, units = scale))
+  dates <- seq(from = from, to = to, by = as.difftime(1, units = timescale))
   x <- c(coredata(merge(xts(order.by = dates), data, join = 'left')))
 
   if (length(x) != 0) {

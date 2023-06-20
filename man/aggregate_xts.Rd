@@ -7,8 +7,9 @@
 aggregate_xts(
   x,
   len,
-  scale = c("hours", "days", "weeks", "quarters", "years"),
+  scale = c("days", "hours", "weeks", "quarters", "years"),
   fun = "sum",
+  timescale = c("days", "hours", "weeks", "quarters", "years"),
   na_thres = 10
 )
 }
@@ -20,6 +21,8 @@ aggregate_xts(
 \item{scale}{timescale of the aggregation period, default is 'days'.}
 
 \item{fun}{function to apply to the aggregated data, default is 'sum'.}
+
+\item{timescale}{timescale of \code{x}.}
 
 \item{na_thres}{threshold for the percentage of NA values allowed in the
 aggregation period, default = 10.}
