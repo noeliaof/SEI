@@ -4,29 +4,18 @@
 \alias{fit_dist}
 \title{Calculate distribution parameters and statistics}
 \usage{
-fit_dist(data, distr, method = c("mle", "lmom"), na.thres = 10)
+fit_dist(data, dist, n_thres = 20)
 }
 \arguments{
 \item{data}{vector of data}
 
+\item{n_thres}{number of data points required to estimate the distribution}
+
 \item{distr}{character string specifying the distribution, see details}
-
-\item{method}{distribution fitting method, see details}
-
-\item{na.thres}{maximum percentage of NA values allowed in data, default = 10\\%}
 }
 \value{
-a named vector containing:
-\itemize{
-\item{fitted distribution parameters, parameters are distribution-specific}
-\item{prob.zero}{empirical probability of zeros in the data, used in SI calculation with with distributions not including zero such as gamma and Weibull}
-\item{n.obs}{the total number of observations in the data (including NA values)}
-\item{n.na}{the number of NA values in the data}
-\item{pct.na}{the percentage of NA values in the data}
-\item{ks.pval}{p-value for a two-sided Kolmogorov-Smirnov test that data comes form the fitted distribution}
-\item{ad.pval}{p-value for a two-sided Anderson-Darling test that data comes form the fitted distribution}
-The data (without NA values) and distr, method and na.thres settings are added to the result as addditional attributes.
-}
+a list containing the estimated distribution function, its parameters,
+and relevant goodness-of-fit statistics
 }
 \description{
 This function calculates the distribution parameters and a number
@@ -38,24 +27,10 @@ can be used to provide input to it.
 This has been adapted from code available at
 \url{https://github.com/WillemMaetens/standaRdized}.
 
-Supported distributions are: gamma ('gamma'), 3-parameter gamma ('gamma3'), Weibull ('weibull'), 3-parameter Weibull ('weibull3'),
-Generalized Extreme Value ('gev'), and Generalized Logistic ('glogis').
-Supported distribution fitting methods are: Maximum Likelihood Estimation ('mle', default for 'gamma','weibull','gev' and 'glogis') and L-Moments ('lmom', default for 'gamma3' and 'weibull3').
-'mle' is not supported for distributions 'gamma3' and 'weibull3'. For distr = 'glogis' and method = 'lmom', the 'glo' distribution from package 'lmomco' is used, and its parameters are returned.
+where relevant, parameter estimation is performed using maximum likelihood
+estimation.
 }
 \examples{
 data(Ukkel_RR)
-# calculate the total rainfall for all months June
-monthly.precipitation <- apply.monthly(x=Ukkel_RR,FUN=sum)
-data <- c(coredata(monthly.precipitation[format(index(monthly.precipitation),'\%m')=='06']))
-# fit gamma distribution to the data
-fit <- fit.distribution(data=data,distr='gamma',method='mle')
-fitplot(x=fit,main='June precipitation',xlab='precipitation (mm)')
-# fit gev distribution to the data
-fit <- fit.distribution(data=data,distr='gev',method='mle')
-fitplot(x=fit,main='June precipitation',xlab='precipitation (mm)')
-# fit glogis distribution to the data
-fit <- fit.distribution(data=data,distr='glogis',method='mle')
-fitplot(x=fit,main='June precipitation',xlab='precipitation (mm)')
 
 }
