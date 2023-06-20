@@ -4,7 +4,7 @@
 \alias{get_pit}
 \title{Calculate probability integral transform values}
 \usage{
-get_pit(ref_data, new_data, dist = "empirical")
+get_pit(ref_data, new_data, dist = "empirical", return_fit = F)
 }
 \arguments{
 \item{ref_data}{numeric vector from which to estimate the CDF.}
@@ -12,6 +12,8 @@ get_pit(ref_data, new_data, dist = "empirical")
 \item{new_data}{numeric vector from which to calculate the PIT values.}
 
 \item{dist}{string; distribution used to estimate the CDF.}
+
+\item{return_fit}{logical; return parameters and goodness-of-fit statistics.}
 }
 \value{
 A vector of PIT values.

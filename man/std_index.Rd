@@ -7,11 +7,13 @@
 std_index(
   x_new,
   x_ref = x_new,
+  timescale = "days",
   dist = "empirical",
+  return_fit = FALSE,
   moving_window = NULL,
-  window_scale = "days",
+  window_scale = NULL,
   agg_period = NULL,
-  agg_scale = "days",
+  agg_scale = NULL,
   agg_fun = "sum",
   rescale = NULL,
   rescale_fun = "sum",
@@ -25,6 +27,8 @@ std_index(
 \item{x_ref}{vector or time series to be used as reference data when calculating the standardised indices.}
 
 \item{dist}{string; distribution used to calculate the indices.}
+
+\item{return_fit}{logical; return parameters and goodness-of-fit statistics for the distribution fit.}
 
 \item{moving_window}{numeric; length of moving window on which to calculate the indices.}
 

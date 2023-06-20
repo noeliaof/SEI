@@ -7,6 +7,7 @@
 #' @param x_new vector or time series to be converted to standardised indices.
 #' @param x_ref vector or time series to be used as reference data when calculating the standardised indices.
 #' @param dist string; distribution used to calculate the indices.
+#' @param return_fit logical; return parameters and goodness-of-fit statistics for the distribution fit.
 #' @param moving_window numeric; length of moving window on which to calculate the indices.
 #' @param window_scale string; timescale of \code{moving_window}, default is "days".
 #' @param agg_period numeric; the number of values to aggregate over.
@@ -47,11 +48,13 @@ NULL
 #' @export
 std_index <- function(x_new,
                       x_ref = x_new,
+                      timescale = "days",
                       dist = "empirical",
+                      return_fit = FALSE,
                       moving_window = NULL,
-                      window_scale = "days",
+                      window_scale = NULL,
                       agg_period = NULL,
-                      agg_scale = "days",
+                      agg_scale = NULL,
                       agg_fun = "sum",
                       rescale = NULL,
                       rescale_fun = "sum",
@@ -63,42 +66,64 @@ std_index <- function(x_new,
   check_inputs(inputs)
 
   # scale data
-  if (!is.null(rescale_period)) {
-    apply_rescale <- eval(parse(text = paste0("apply.", rescale_period)))
+  if (!is.null(rescale)) {
+    if (rescale == "days") {
+      apply_rescale <- apply.daily
+    } else if (rescale == "weekly") {
+      apply_rescale <- apply.weekly
+    } else if (rescale == "monthly") {
+      apply_rescale <- apply.monthly
+    } else if (rescale == "quarterly") {
+      apply_rescale <- apply.quarterly
+    } else if (rescale == "yearly") {
+      apply_rescale <- apply.yearly
+    }
     x_new <- apply_rescale(x_new, rescale_fun, na.rm = ignore_na)
     x_ref <- apply_rescale(x_ref, rescale_fun, na.rm = ignore_na)
+    timescale <- rescale
   }
 
   # aggregate data
   if (!is.null(agg_period)) {
-    x_new <- aggregate_xts(x_new, len = agg_period, scale = agg_scale, fun = agg_fun)
-    x_ref <- aggregate_xts(x_ref, len = agg_period, scale = agg_scale, fun = agg_fun)
+    if (is.null(agg_scale)) agg_scale <- timescale
+    x_new <- aggregate_xts(x_new, len = agg_period, scale = agg_scale, fun = agg_fun, timescale = timescale)
+    x_ref <- aggregate_xts(x_ref, len = agg_period, scale = agg_scale, fun = agg_fun, timescale = timescale)
   }
 
   # calculate pit values
   if (is.null(moving_window)) {
-    pit <- get_pit(x_ref, x_new, dist = dist)
+    fit <- get_pit(x_ref, x_new, dist = dist, return_fit = return_fit)
   } else {
-    pit <- sapply(index(x_new), function(date) {
-      from <- date - as.difftime(moving_window - 1, units = window_scale)
+    if (is.null(window_scale)) window_scale <- timescale
+    fit <- lapply(index(x_new), function(date) {
+      from <- date - as.difftime(moving_window, units = window_scale) + as.difftime(1, units = timescale)
       to <- date
       data <- x_ref[paste(from, to, sep = "/")]
-      get_pit(data, x_new[date], dist = dist)
+      get_pit(data, x_new[date], dist = dist, return_fit = return_fit)
     })
+    fit_names <- names(fit[[1]])
+    fit <- lapply(fit_names, function(x) sapply(fit, function(z) z[[x]]))
+    names(fit) <- fit_names
   }
 
   # convert to index
   if (index_type == "normal") {
-    si <- qnorm(pit)
+    fit$si <- qnorm(fit$pit)
   } else if (index_type == "bounded") {
-    si <- 2*pit - 1
+    fit$si <- 2*fit$pit - 1
   } else if (index_type == "probability") {
-    si <- pit
+    fit$si <- fit$pit
   }
-  si <- xts(si, order.by = index(x_new))
-  xtsAttributes(si) <- xtsAttributes(x_new)
+  fit$si <- xts(fit$si, order.by = index(x_new))
+  xtsAttributes(fit$si) <- xtsAttributes(x_new)
 
-  return(si)
+  if (return_fit) {
+    fit$F_x <- fit$pit <- NULL
+    return(fit)
+  } else {
+    return(fit$si)
+  }
+
 }
 
 
@@ -130,7 +155,7 @@ check_inputs <- function(inputs) {
   }
 
   # dist
-  available_dists <- c("empirical", "normal", "fit_dist", "kde")
+  available_dists <- c("empirical", "kde", "gamma", "weibull", "gev", "glogis")
   if (!(dist %in% available_dists)) {
     stop("the specified distribution is not available - see details for a list of
          available distributions")
@@ -138,7 +163,7 @@ check_inputs <- function(inputs) {
 
   # moving_window
   if (!is.null(moving_window)) {
-    if (is.numeric(moving_window)) {
+    if (!is.numeric(moving_window)) {
       stop("moving_window must be a single numeric value")
     }
     if (!identical(length(moving_window), 1L)) {
@@ -151,7 +176,7 @@ check_inputs <- function(inputs) {
 
   # agg_period
   if (!is.null(agg_period)) {
-    if (is.numeric(agg_period)) {
+    if (!is.numeric(agg_period)) {
       stop("agg_period must be a single numeric value")
     }
     if (!identical(length(agg_period), 1L)) {
@@ -169,10 +194,17 @@ check_inputs <- function(inputs) {
     }
   }
 
-  # rescale_period
-  if (!is.null(rescale_period)) {
-    if (!(rescale_period %in% c("daily", "weekly", "monthly", "quarterly", "yearly"))) {
-      stop("rescale_period must be one of 'daily', 'weekly', 'monthly', 'quarterly', or 'yearly'")
+  # timescale
+  if (!is.null(timescale)) {
+    if (!(timescale %in% c("hours", "days", "weeks", "months", "quarters", "years"))) {
+      stop("timescale must be one of 'hours', 'days', 'weeks', 'months', 'quarters', or 'years'")
+    }
+  }
+
+  # rescale
+  if (!is.null(rescale)) {
+    if (!(rescale %in% c("days", "weeks", "months", "quarters", "years"))) {
+      stop("rescale must be one of 'days', 'weeks', 'months', 'quarters', or 'years'")
     }
   }
 

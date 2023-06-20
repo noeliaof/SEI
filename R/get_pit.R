@@ -7,6 +7,7 @@
 #' @param ref_data numeric vector from which to estimate the CDF.
 #' @param new_data numeric vector from which to calculate the PIT values.
 #' @param dist string; distribution used to estimate the CDF.
+#' @param return_fit logical; return parameters and goodness-of-fit statistics.
 #'
 #' @details
 #' Functionality is currently available to calculate parameters using maximum
@@ -27,12 +28,17 @@ NULL
 #' @export
 get_pit <- function(ref_data,
                     new_data,
-                    dist = "empirical") {
+                    dist = "empirical",
+                    return_fit = F) {
 
   fit <- fit_dist(as.vector(ref_data), dist)
-  pit <- fit$F_x(as.vector(new_data), fit$params)
+  fit$pit <- fit$F_x(as.vector(new_data), fit$params)
 
-  return(pit)
+  if (return_fit) {
+    return(fit)
+  } else {
+    return(list(pit = fit$pit))
+  }
 }
 
 
