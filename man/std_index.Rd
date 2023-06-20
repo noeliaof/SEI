@@ -5,20 +5,44 @@
 \title{Calculate standardised energy indices}
 \usage{
 std_index(
-  x,
-  method = c("fitDis", "empirical", "none"),
-  scale,
-  index_type = c("probability", "bounded", "normal")
+  x_new,
+  x_ref = x_new,
+  dist = "empirical",
+  moving_window = NULL,
+  window_scale = "days",
+  agg_period = NULL,
+  agg_scale = "days",
+  agg_fun = "sum",
+  rescale = NULL,
+  rescale_fun = "sum",
+  index_type = "normal",
+  ignore_na = FALSE
 )
 }
 \arguments{
-\item{x}{vector or time series to be converted to standardised indices.}
+\item{x_new}{vector or time series to be converted to standardised indices.}
 
-\item{scale}{optional; numeric specifying the number of values to aggregate over.}
+\item{x_ref}{vector or time series to be used as reference data when calculating the standardised indices.}
 
-\item{index_type}{string; the type of index: "probability", "bounded" or "normal".}
+\item{dist}{string; distribution used to calculate the indices.}
 
-\item{distribution}{string; distribution used to construct the indices.}
+\item{moving_window}{numeric; length of moving window on which to calculate the indices.}
+
+\item{window_scale}{string; timescale of \code{moving_window}, default is "days".}
+
+\item{agg_period}{numeric; the number of values to aggregate over.}
+
+\item{agg_scale}{string; timescale of \code{agg_period}, default is "days".}
+
+\item{agg_fun}{string; function used to aggregate the data over the aggregation period, default is "sum".}
+
+\item{rescale}{string; the timescale that the time series should be rescaled to.}
+
+\item{rescale_fun}{string; function used to rescale the data, default is "sum".}
+
+\item{index_type}{string; the type of index: "normal" (default), "probability", or "bounded".}
+
+\item{ignore_na}{logical; should NAs be ignored when rescaling the time series?}
 }
 \value{
 Time series of standardised indices.
