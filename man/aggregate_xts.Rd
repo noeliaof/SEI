@@ -6,20 +6,20 @@
 \usage{
 aggregate_xts(
   x,
-  agg_length,
-  agg_scale = c("days", "hours", "weeks"),
-  agg_fun = "sum",
+  len,
+  scale = c("hours", "days", "weeks", "quarters", "years"),
+  fun = "sum",
   na_thres = 10
 )
 }
 \arguments{
 \item{x}{xts object to be aggregated.}
 
-\item{agg_length}{length of the aggregation period.}
+\item{len}{length of the aggregation period.}
 
-\item{agg_scale}{timescale of the aggregation period, default is 'days'.}
+\item{scale}{timescale of the aggregation period, default is 'days'.}
 
-\item{agg_fun}{function to apply to the aggregated data, default is 'sum'.}
+\item{fun}{function to apply to the aggregated data, default is 'sum'.}
 
 \item{na_thres}{threshold for the percentage of NA values allowed in the
 aggregation period, default = 10.}

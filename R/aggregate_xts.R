@@ -4,9 +4,9 @@
 #' values have been aggregated over a moving window of a user-specified length.
 #'
 #' @param x xts object to be aggregated.
-#' @param agg_length length of the aggregation period.
-#' @param agg_scale timescale of the aggregation period, default is 'days'.
-#' @param agg_fun function to apply to the aggregated data, default is 'sum'.
+#' @param len length of the aggregation period.
+#' @param scale timescale of the aggregation period, default is 'days'.
+#' @param fun function to apply to the aggregated data, default is 'sum'.
 #' @param na_thres threshold for the percentage of NA values allowed in the
 #'  aggregation period, default = 10.
 #'
@@ -28,41 +28,37 @@ NULL
 #' @rdname aggregate_xts
 #' @export
 aggregate_xts <- function(x,
-                          agg_length,
-                          agg_scale = c('days', 'hours', 'weeks'),
-                          agg_fun = 'sum',
+                          len,
+                          scale = c("hours", "days", "weeks", "quarters", "years"),
+                          fun = 'sum',
                           na_thres = 10) {
-  agg_scale = match.arg(agg_scale)
-  x_agg <- sapply(index(x), aggregate_xts_1, x, agg_length, agg_scale, agg_fun, na_thres)
+  scale <- match.arg(scale)
+  x_agg <- sapply(index(x), aggregate_xts_1, x, len, scale, fun, na_thres)
   x_agg <- xts(x_agg, order.by = index(x))
   xtsAttributes(x_agg) <- xtsAttributes(x)
-  xtsAttributes(x_agg)$agg_length <- agg_length
+  xtsAttributes(x_agg)$agg_length <- as.difftime(len, units = scale)
   return(x_agg)
 }
 
 
 aggregate_xts_1 <- function(date,
                             data,
-                            agg_length,
-                            agg_scale = 'days',
-                            agg_fun = 'sum',
+                            len,
+                            scale,
+                            fun = 'sum',
                             na_thres = 10) {
-  from <- date - as.difftime(agg_length - 1, units = agg_scale)
+  from <- date - as.difftime(len - 1, units = scale)
   to <- date
   data <- data[paste(from, to, sep = '/')]
-  dates <- seq(from = from, to = to, by = as.difftime(1, units = agg_scale))
+  dates <- seq(from = from, to = to, by = as.difftime(1, units = scale))
   x <- c(coredata(merge(xts(order.by = dates), data, join = 'left')))
 
   if (length(x) != 0) {
     pct.na <- (length(which(is.na(x))) / length(x)) * 100
     if (pct.na <= na_thres) {
-      if(!all(is.na(x))){
-        x <- x[!is.na(x)]
-        x <- do.call(what = agg_fun, args = list(x = x)) # apply aggregation function
-        return(x)
-      } else {
-        return(as.numeric(NA))
-      }
+      x <- x[!is.na(x)]
+      x <- do.call(what = fun, args = list(x = x)) # apply aggregation function
+      return(x)
     } else {
       return(as.numeric(NA))
     }
