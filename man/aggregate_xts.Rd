@@ -22,7 +22,7 @@ aggregate_xts(
 
 \item{fun}{function to apply to the aggregated data, default is 'sum'.}
 
-\item{timescale}{timescale of \code{x}.}
+\item{timescale}{timescale of \code{x}, default is 'days'.}
 
 \item{na_thres}{threshold for the percentage of NA values allowed in the
 aggregation period, default = 10.}
@@ -37,9 +37,44 @@ values have been aggregated over a moving window of a user-specified length.
 \details{
 This has been adapted from code available at
 \url{https://github.com/WillemMaetens/standaRdized}.
+
+\code{len} is a single numeric value specifying over how many time units the
+data \code{x} is to be aggregated. By default, \code{len} is assumed to correspond
+to a number of days, but this can also be specified manually using the argument
+\code{scale}. \code{scale} must be one of: "days", "weeks", "months", "quarters", and "years".
+
+\code{fun} determines the function used to aggregate the time series. By default,
+\code{fun = "sum"}, meaning the aggregation results in accumulations over the
+aggregation period. Alternative functions can also be used. For example, specifying
+\code{fun = "mean"} would return the mean over the aggregation period.
+
+\code{timescale} is the timescale of the input data \code{x}. By default, this
+is assumed to be "days".
+
+Since the time series \code{x} aggregates data over the aggregation period, problems
+may arise when \code{x} contains missing values. For example, if interest is
+on daily accumulations, but 50\% of the values in the aggregation period are missing,
+the accumulation over this aggregation period will not be accurate.
+This can be controlled using the argument \code{na_thres}.
+\code{na_thres} specifies the percentage of NA values in the aggregation period
+before a NA value is returned. i.e. the proportion of values that are allowed to be missing.
+The default is \code{na_thres = 10}.
 }
 \examples{
-Examples of the aggregate_xts function will be added here
+data(data_supply)
+# consider hourly German energy supply data in 2019
+supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
+supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
+options(xts_check_TZ = FALSE)
+
+# daily accumulations
+supply_de_daily <- aggregate_xts(supply_de, len = 1, timescale = "hours")
+
+# weekly means
+supply_de_weekly <- aggregate_xts(supply_de, len = 1, scale = "weeks", fun = "mean", timescale = "hours")
+
+plot(supply_de)
+plot(supply_de_weekly)
 
 }
 \author{
