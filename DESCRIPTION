@@ -11,17 +11,11 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.2
 Depends: R (>= 2.10)
 Imports: 
-    dplyr,
     ggplot2,
-    RColorBrewer,
-    reshape2,
-    readr,
-    ismev,
     xts,
     EnvStats,
     zoo,
     stringr,
-    gridExtra,
     fitdistrplus
 Suggests: 
     knitr,
