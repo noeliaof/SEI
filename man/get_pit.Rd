@@ -36,7 +36,7 @@ Parametric distributions are more appropriate when there is relatively little da
 and good reason to expect that the data follows a particular distribution. To
 check that the chosen parametric distribution is appropriate, the argument
 \code{return_fit} can be used to return the estimated parameters of the
-distribution, as well as kolmogorov-smirnov goodness-of-fit test statistics.
+distribution, as well as Kolmogorov-Smirnov goodness-of-fit test statistics.
 
 A flexible compromise between using empirical methods and parametric distributions is to
 use kernel density estimation, \code{dist = "kde"}.
@@ -65,6 +65,15 @@ hist(pit$pit)
 
 hist(x_ref, breaks = 30, probability = T)
 lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), pit$params[1], pit$params[2]), col = "blue")
+
+
+# weibull distribution
+pit <- get_pit(x_ref, x_new, dist = "weibull", return_fit = T)
+hist(pit$pit)
+
+hist(x_ref, breaks = 30, probability = T)
+lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), pit$params[1], pit$params[2]), col = "blue")
+
 
 # generalised logistic distribution
 pit <- get_pit(x_ref, x_new, dist = "glogis", return_fit = T)

@@ -2,35 +2,66 @@
 % Please edit documentation in R/fit_dist.R
 \name{fit_dist}
 \alias{fit_dist}
-\title{Calculate distribution parameters and statistics}
+\title{Fit a distribution to data}
 \usage{
 fit_dist(data, dist, n_thres = 20)
 }
 \arguments{
 \item{data}{vector of data}
 
-\item{n_thres}{number of data points required to estimate the distribution}
+\item{dist}{character string specifying the distribution, see details}
 
-\item{distr}{character string specifying the distribution, see details}
+\item{n_thres}{number of data points required to estimate the distribution}
 }
 \value{
-a list containing the estimated distribution function, its parameters,
-and relevant goodness-of-fit statistics
+A list containing the estimated distribution function, its parameters,
+and Kolmogorov-Smirnov goodness-of-fit statistics.
 }
 \description{
-This function calculates the distribution parameters and a number
-of statistics for a numeric vector and returns them as a named vector.
-This function is used internally by the standardized.index function or
-can be used to provide input to it.
+Function to fit a specified distribution a vector of data. Returns
+the estimated distribution and relevant goodness-of-fit statistics.
 }
 \details{
 This has been adapted from code available at
 \url{https://github.com/WillemMaetens/standaRdized}.
 
-where relevant, parameter estimation is performed using maximum likelihood
+\code{data} is a numeric vector of data from which the distribution is to be estimated.
+
+\code{dist} is the specified distribution to be fit to \code{data}. This must be one of
+"empirical" (the empirical distribution given \code{data}), "kde" (kernel density estimation),
+"gamma", "weibull", "gev" (the Generalised Extreme Value distribution), and "glogis"
+(the Generalised Logistic distributions).
+
+By default, \code{dist = "empirical"}, in which case
+the distribution is estimated empirically from \code{data}. This is only
+recommended if there are at least 100 values in \code{data}, and a warning
+message is returned otherwise.
+
+\code{n_thres} is the minimum number of observations required to fit the distribution.
+The default is \code{n_thres = 20}. If the number of values in \code{data} is
+smaller than \code{na_thres}, an error is returned. This guards against over-fitting,
+which can result in distributions that do not generalise well out-of-sample.
+
+Where relevant, parameter estimation is performed using maximum likelihood
 estimation.
 }
 \examples{
-data(Ukkel_RR)
+N <- 1000
+shape <- 3
+rate <- 2
+
+
+# gamma distribution
+data <- rgamma(N, shape, rate)
+out <- fit_dist(data, dist = "gamma")
+hist(data, breaks = 30, probability = T)
+lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+
+
+# weibull distribution
+data <- rweibull(N, shape, 1/rate)
+out <- fit_dist(data, dist = "weibull")
+hist(data, breaks = 30, probability = T)
+lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
 
 }

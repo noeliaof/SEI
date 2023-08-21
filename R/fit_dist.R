@@ -1,26 +1,59 @@
-#' @title Calculate distribution parameters and statistics
+#' @title Fit a distribution to data
 #'
-#' @description This function calculates the distribution parameters and a number
-#'  of statistics for a numeric vector and returns them as a named vector.
-#'  This function is used internally by the standardized.index function or
-#'  can be used to provide input to it.
+#' @description Function to fit a specified distribution a vector of data. Returns
+#' the estimated distribution and relevant goodness-of-fit statistics.
 #'
 #' @param data vector of data
-#' @param distr character string specifying the distribution, see details
+#' @param dist character string specifying the distribution, see details
 #' @param n_thres number of data points required to estimate the distribution
 #'
 #' @details
 #' This has been adapted from code available at
 #' \url{https://github.com/WillemMaetens/standaRdized}.
 #'
-#' where relevant, parameter estimation is performed using maximum likelihood
+#' \code{data} is a numeric vector of data from which the distribution is to be estimated.
+#'
+#' \code{dist} is the specified distribution to be fit to \code{data}. This must be one of
+#' "empirical" (the empirical distribution given \code{data}), "kde" (kernel density estimation),
+#' "gamma", "weibull", "gev" (the Generalised Extreme Value distribution), and "glogis"
+#' (the Generalised Logistic distributions).
+#'
+#' By default, \code{dist = "empirical"}, in which case
+#' the distribution is estimated empirically from \code{data}. This is only
+#' recommended if there are at least 100 values in \code{data}, and a warning
+#' message is returned otherwise.
+#'
+#' \code{n_thres} is the minimum number of observations required to fit the distribution.
+#' The default is \code{n_thres = 20}. If the number of values in \code{data} is
+#' smaller than \code{na_thres}, an error is returned. This guards against over-fitting,
+#' which can result in distributions that do not generalise well out-of-sample.
+#'
+#' Where relevant, parameter estimation is performed using maximum likelihood
 #' estimation.
 #'
-#' @return a list containing the estimated distribution function, its parameters,
-#' and relevant goodness-of-fit statistics
+#'
+#' @return
+#' A list containing the estimated distribution function, its parameters,
+#' and Kolmogorov-Smirnov goodness-of-fit statistics.
 #'
 #' @examples
-#' data(Ukkel_RR)
+#' N <- 1000
+#' shape <- 3
+#' rate <- 2
+#'
+#'
+#' # gamma distribution
+#' data <- rgamma(N, shape, rate)
+#' out <- fit_dist(data, dist = "gamma")
+#' hist(data, breaks = 30, probability = T)
+#' lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+#'
+#'
+#' # weibull distribution
+#' data <- rweibull(N, shape, 1/rate)
+#' out <- fit_dist(data, dist = "weibull")
+#' hist(data, breaks = 30, probability = T)
+#' lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
 #'
 #' @name fit_dist
 NULL
@@ -37,8 +70,7 @@ fit_dist <- function(data, dist, n_thres = 20){
   fit_props <- c(n_obs = as.integer(NA),
                  n_na = as.numeric(NA),
                  pct_na = as.numeric(NA),
-                 ks_pval = as.numeric(NA),
-                 ad_pval = as.numeric(NA))
+                 ks_pval = as.numeric(NA))
 
   fit_props['n_obs'] <- as.integer(length(data))
   fit_props['n_na'] <- length(data[which(is.na(data))])
@@ -103,11 +135,9 @@ fit_dist <- function(data, dist, n_thres = 20){
 
   # calculate goodness-of-fit statistics
   if (!(dist %in% c("empirical", "kde"))) {
-    if(!any(is.na(params))){
+    if (!any(is.na(params))){
       ks_pval <- try(do.call('ks.test', c(list(x = data, y = paste0('p', dist)), as.list(params)))$p.value)
-      if (!inherits(ks_pval, 'try-error')) fit_props['ks.pval'] <- ks_pval
-      ad_pval <- try(do.call('ad.test', c(list(x = data, null = paste0('p', dist)), as.list(params)))$p.value)
-      if (!inherits(ad_pval, 'try-error')) fit_props["ad.pval"] <- ad_pval
+      if (!inherits(ks_pval, 'try-error')) fit_props['ks_pval'] <- ks_pval
     }
   }
 
