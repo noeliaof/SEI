@@ -3,16 +3,14 @@
 #' @description Plot a time series containing standardised indices, or a histogram
 #' of the indices.
 #'
-#' @param x xts object to be plotted.
-#' @param type type of plot (either time series 'ts', or histogram 'hist').
+#' @param x vector or xts object containing the indices to be plotted.
+#' @param type type of plot (either time series "ts", or histogram "hist").
 #' @param title optional title of the plot.
+#' @param lab axis label (y-axis if type = "ts", x-axis if type = "hist").
 #' @param n_bins the number of bins to show in the histogram.
 #'
-#' @details
-#' Details of the plot functions will be added here.
-#'
 #' @return
-#' A plot object displaying the standardised index values.
+#' A ggplot object displaying the standardised index values.
 #'
 #' @author Sam Allen, Noelia Otero
 #'
@@ -38,9 +36,9 @@ NULL
 plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index", ylims = NULL, n_bins = 30){
 
   type <- match.arg(type)
-  df <- zoo::fortify.zoo(x)
 
   if (type == "ts") {
+    df <- zoo::fortify.zoo(x)
     p <- ggplot(df, aes(x = Index, y = x)) +
       geom_ribbon(aes(ymin = pmin(x, 0), ymax = 0), fill = "blue", alpha = 0.5) +
       geom_ribbon(aes(ymin = 0, ymax = pmax(x, 0)), fill = "red", alpha = 0.5) +
@@ -50,6 +48,11 @@ plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index"
       theme_bw() +
       ggtitle(title)
   } else if (type == "hist") {
+    if (xts::is.xts(x)) {
+      df <- zoo::fortify.zoo(x)
+    } else {
+      df <- data.frame(x = x)
+    }
     p <- ggplot(df) +
       geom_histogram(aes_string(x = x), col = "black", bins = n_bins, alpha = 0.4) +
       xlab(lab) +

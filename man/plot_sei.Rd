@@ -14,23 +14,22 @@ plot_sei(
 )
 }
 \arguments{
-\item{x}{xts object to be plotted.}
+\item{x}{vector or xts object containing the indices to be plotted.}
 
-\item{type}{type of plot (either time series 'ts', or histogram 'hist').}
+\item{type}{type of plot (either time series "ts", or histogram "hist").}
 
 \item{title}{optional title of the plot.}
+
+\item{lab}{axis label (y-axis if type = "ts", x-axis if type = "hist").}
 
 \item{n_bins}{the number of bins to show in the histogram.}
 }
 \value{
-A plot object displaying the standardised index values.
+A ggplot object displaying the standardised index values.
 }
 \description{
 Plot a time series containing standardised indices, or a histogram
 of the indices.
-}
-\details{
-Details of the plot functions will be added here.
 }
 \examples{
 data(data_supply)
