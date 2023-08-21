@@ -1,14 +1,15 @@
-#' Data Definitions for \code{data_suplpy} 
+#' Data Definitions for \code{data_supply}
+#'
 #' This dataset contains wind and solar energy production using the installed capacities
-#' of 2017, considered as a baseline power scenario.
-#' The dataset can be found in https://researchdata.reading.ac.uk/321/, and users are reffered to
-#' Bloomield et al. 2019 for further details about the creation of the dataset.
+#' of 2017 considered as a baseline power scenario.
+#' The dataset can be found at https://researchdata.reading.ac.uk/321/, and users are referred to
+#' Bloomfield et al. (2019) for further details.
 #'
 #' @docType data
 #'
 #' @usage data(data_supply)
 #'
-#' @format An object of class
+#' @format An object of class \code{"data.frame"}
 #'
 #' @keywords datasets
 #'
@@ -24,15 +25,15 @@
 
 
 
-#' Data Definitions for \code{data_ic2017} 
+#' Data Definitions for \code{data_ic2017}
 #'
-#' A data frame containing installed capacities of wind and solar power for the 27 countries included in data_supply.
+#' A data frame containing installed wind and solar power capacities for the 27 countries included in data_supply.
 #'
 #' @docType data
 #'
 #' @usage data(data_ic2017)
 #'
-#' @format An object of class \code{"data.frame"}.
+#' @format An object of class \code{"data.frame"}
 #'
 #' @examples
 #' data(data_ic2017)

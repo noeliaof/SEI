@@ -5,13 +5,13 @@
 \alias{data_ic2017}
 \title{Data Definitions for \code{data_ic2017}}
 \format{
-An object of class \code{"data.frame"}.
+An object of class \code{"data.frame"}
 }
 \usage{
 data(data_ic2017)
 }
 \description{
-A data frame containing installed capacities of wind and solar power for the 27 countries included in data_supply.
+A data frame containing installed wind and solar power capacities for the 27 countries included in data_supply.
 }
 \examples{
 data(data_ic2017)
