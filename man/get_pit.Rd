@@ -16,19 +16,63 @@ get_pit(ref_data, new_data, dist = "empirical", return_fit = F)
 \item{return_fit}{logical; return parameters and goodness-of-fit statistics.}
 }
 \value{
-A vector of PIT values.
+A vector of PIT values if return_fit = F, or, if return_fit = T, a list containing
+the estimated CDF (\code{F_x}), the corresponding parameters (\code{params}), and
+properties of the fit (\code{fit_props}).
 }
 \description{
-Functions to estimate the cumulative distribution function (CDF)
-of a set of observations, and return the corresponding probability integral
+Function to estimate the cumulative distribution function (CDF)
+from a set of observations, and return the corresponding probability integral
 transform (PIT) values.
 }
 \details{
-Functionality is currently available to calculate parameters using maximum
-likelihood estimation, though alternative methods may be introduced later.
+\code{dist} specifies the distribution used to estimate the cumulative distribution
+function of the observations. By default, \code{dist = "empirical"}, in which case
+the CDF is estimated empirically from the values \code{ref_data}. This is only
+recommended if there are at least 100 values in \code{ref_data}, and a warning
+message is returned otherwise.
+
+Parametric distributions are more appropriate when there is relatively little data,
+and good reason to expect that the data follows a particular distribution. To
+check that the chosen parametric distribution is appropriate, the argument
+\code{return_fit} can be used to return the estimated parameters of the
+distribution, as well as kolmogorov-smirnov goodness-of-fit test statistics.
+
+A flexible compromise between using empirical methods and parametric distributions is to
+use kernel density estimation, \code{dist = "kde"}.
+
+\code{dist} must be one of: "empirical", "kde", "gamma", "weibull", "gev", and "glogis".
+\code{dist = "gev"} implements the Generalised Extreme Value distribution, while
+\code{dist = "glogis"} corresponds to the generalised logistic distribution.
+For the parametric distributions, parameters are estimated using maximum
+likelihood estimation.
 }
 \examples{
-Examples of the calculate_pit function will be added here
+N <- 1000
+shape <- 3
+rate <- 2
+
+x_ref <- rgamma(N, shape, rate)
+x_new <- rgamma(N, shape, rate)
+
+# empirical distribution
+pit <- get_pit(x_ref, x_new)
+hist(pit)
+
+# gamma distribution
+pit <- get_pit(x_ref, x_new, dist = "gamma", return_fit = T)
+hist(pit$pit)
+
+hist(x_ref, breaks = 30, probability = T)
+lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), pit$params[1], pit$params[2]), col = "blue")
+
+# generalised logistic distribution
+pit <- get_pit(x_ref, x_new, dist = "glogis", return_fit = T)
+hist(pit$pit)
+
+hist(x_ref, breaks = 30, probability = T)
+lines(seq(0, 10, 0.01), dglogis(seq(0, 10, 0.01), pit$params[1], pit$params[2]), col = "blue")
+
 
 }
 \author{
