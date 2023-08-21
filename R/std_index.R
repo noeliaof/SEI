@@ -1,40 +1,99 @@
-#' @title Calculate standardised energy indices
+#' @title Calculate standardised indices
 #'
-#' @description Inputs a time series of a chosen variable (e.g. residual load or
-#' energy demand) and returns a time series of standardised indices. Different
-#' types of indices can be calculated, on any timescale that is of interest.
+#' @description Inputs a time series of a chosen variable (e.g. precipitation,
+#' energy demand, residual load etc.) and returns a time series of standardised indices.
+#' Indices can be calculated on any timescale.
 #'
-#' @param x_new vector or time series to be converted to standardised indices.
-#' @param x_ref vector or time series to be used as reference data when calculating the standardised indices.
+#' @param x_new numeric; vector or time series to be converted to standardised indices.
+#' @param x_ref numeric; vector or time series containing reference data to use when calculating the standardised indices.
 #' @param dist string; distribution used to calculate the indices.
+#' @param timescale string; timescale of the data. Required if the time series is to be aggregated or rescaled.
 #' @param return_fit logical; return parameters and goodness-of-fit statistics for the distribution fit.
 #' @param moving_window numeric; length of moving window on which to calculate the indices.
-#' @param window_scale string; timescale of \code{moving_window}, default is "days".
+#' @param window_scale string; timescale of \code{moving_window}, default is the timescale of the data.
 #' @param agg_period numeric; the number of values to aggregate over.
-#' @param agg_scale string; timescale of \code{agg_period}, default is "days".
+#' @param agg_scale string; timescale of \code{agg_period}, default is the timescale of the data.
 #' @param agg_fun string; function used to aggregate the data over the aggregation period, default is "sum".
 #' @param rescale string; the timescale that the time series should be rescaled to.
 #' @param rescale_fun string; function used to rescale the data, default is "sum".
 #' @param index_type string; the type of index: "normal" (default), "probability", or "bounded".
-#' @param ignore_na logical; should NAs be ignored when rescaling the time series?
+#' @param ignore_na logical; ignore NAs when rescaling the time series.
 #'
 #' @details
-#' Details about the std_index function will be added here
+#' Standardised indices are calculated by estimating the cumulative distribution function (CDF)
+#' of the variable of interest, and using this to transform the measurements to
+#' a standardised scale.
+#'
+#' \code{std_index()} estimates the CDF using a time series of reference data \code{x_ref},
+#' and applies the resulting transformation to the time series \code{x_new}. The result is
+#' a time series of standardised \code{x_new} values. These standardised indices quantify
+#' how extreme the \code{x_new} values are in reference to \code{x_ref}.
+#' \code{x_new} and \code{x_ref} should therefore contain values of the same variable.
+#' If \code{x_ref} is not specified, then \code{x_new} is also used to estimate the CDF.
+#'
+#' \code{x_new} and \code{x_ref} can either be provided as vectors or xts time series.
+#' In the latter case, the time series can be aggregated across timescales or rescaled.
+#' This is useful, for example, if \code{x_new} contains hourly data, but interest is
+#' on daily accumulations or averages of the hourly data.
+#'
+#' The argument \code{rescale} converts the data to a different timescale. The original
+#' timescale of the data can be manually specified using the argument \code{timescale}.
+#' Otherwise, the function will try to automatically determine the timescale of the data.
+#' Manually specifying the timescale of the data is generally more robust. The rescaling
+#' is performed using the function \code{rescale_fun}. By default, this is assumed to be
+#' \code{rescale_fun = "sum"}, so that values are added across the timescale of interest.
+#' This can be changed to any user-specified function.
+#'
+#' The argument \code{agg_period} aggregates the data across the timescale of interest.
+#' This differs from \code{rescale} in that the resolution of the data remains the same.
+#' \code{agg_period} is a number specifying how long the data should be aggregated across.
+#' By default, it is assumed that \code{agg_period} is on the same timescale as \code{x_new}
+#' and \code{x_ref}. For example, if the data is hourly and \code{agg_period = 24}, then
+#' this assumes the data is to be aggregated over the past 24 hours. The scale of the
+#' aggregation period can also be specified manually using \code{agg_scale}. For example,
+#' one could also specify \code{agg_period = 1} and \code{agg_scale = "days"}, and this
+#' would also aggregate the data over the past day. \code{agg_fun} specifies how the
+#' data is to be aggregated, the default is \code{agg_fun = "sum"}.
+#'
+#' \code{timescale}, \code{agg_scale}, and \code{rescale} must all be one of: "days",
+#' "weeks", "months", "quarters", and "years".
+#'
+#' \code{dist} is the distribution used to estimate the CDF from \code{x_ref}.
+#' Currently, functionality is available to fit one of the following distributions to the data:
+#' Gamma, Weibull, Generalised Extreme Value (GEV), and Geralised Logistic.
+#' Alternatively, the CDF can be estimated empirically (\code{dist = "empirical"})
+#' based on the values in \code{x_ref}, or using kernel density estimation (\code{dist = "kde"}).
+#'
+#' If \code{dist} is a parametric family of distributions, then parameters of the
+#' distribution are estimated using maximum likelihood estimation from \code{x_ref}.
+#' The resulting parameters and corresponding goodness-of-fit statistics can be
+#' returned by specifying \code{return_fit = TRUE}.
+#'
+#' By default, the distribution is estimated over all values in \code{x_ref}. Alternatively,
+#' if \code{x_new} is an xts object, parameters can be estimated sequentially using a
+#' moving window of values. \code{moving_window} determines the length of the moving window.
+#' This is a single value, assumed to be on the same timescale as \code{x_new}.
+#' This can also be specified manually using \code{window_scale}. \code{window_scale}
+#' must also be one of "days", "weeks", "months", "quarters", and "years".
+#'
+#' The function returns a vector of time series (depending on the format of \code{x_new})
+#' containing the standardised indices corresponding to \code{x_new}. Three different
+#' types of indices are available, which are explained in detail in the vignette.
+#' The index type can be chosen using \code{index_type}, which must be one of
+#' "normal" (default), "probability", and "bounded".
 #'
 #' @return
 #' Time series of standardised indices.
 #'
-#'
 #' @references
-#' Allen, S. and N. Otero (2022):
+#' Allen, S. and N. Otero (2023):
 #' `Standardised indices to monitor energy droughts',
-#' \emph{EarthArXiv preprint} 4752.
-#' \doi{10.31223/X51S92}
+#' \emph{Renewable Energy}
+#' \doi{10.1016/j.renene.2023.119206}
 #'
 #' McKee, T. B., Doesken, N. J., & Kleist, J. (1993):
 #' `The relationship of drought frequency and duration to time scales',
 #' \emph{In Proceedings of the 8th Conference on Applied Climatology} 17, 179-183.
-#'
 #'
 #' @author Sam Allen, Noelia Otero
 #'
@@ -107,7 +166,7 @@ std_index <- function(x_new,
   check_inputs(inputs)
 
   # get timescale (if not given)
-  if (is.null(timescale)) {
+  if ((!is.null(rescale) | is.null(agg_period) | is.null(moving_window)) & is.null(timescale)) {
     timedif <- diff(index(x_ref))[1]
     if (timedif == 1) {
       timescale <- units(timedif)
@@ -127,13 +186,13 @@ std_index <- function(x_new,
   if (!is.null(rescale)) {
     if (rescale == "days") {
       apply_rescale <- apply.daily
-    } else if (rescale == "weekly") {
+    } else if (rescale == "weeks") {
       apply_rescale <- apply.weekly
-    } else if (rescale == "monthly") {
+    } else if (rescale == "months") {
       apply_rescale <- apply.monthly
-    } else if (rescale == "quarterly") {
+    } else if (rescale == "quarters") {
       apply_rescale <- apply.quarterly
-    } else if (rescale == "yearly") {
+    } else if (rescale == "years") {
       apply_rescale <- apply.yearly
     }
     x_new <- apply_rescale(x_new, rescale_fun, na.rm = ignore_na)
@@ -172,8 +231,8 @@ std_index <- function(x_new,
   } else if (index_type == "probability") {
     fit$si <- fit$pit
   }
-  fit$si <- xts(fit$si, order.by = index(x_new))
-  xtsAttributes(fit$si) <- xtsAttributes(x_new)
+  fit$si <- xts::xts(fit$si, order.by = zoo::index(x_new))
+  xts::xtsAttributes(fit$si) <- xts::xtsAttributes(x_new)
 
   if (return_fit) {
     fit$F_x <- fit$pit <- NULL
@@ -192,10 +251,10 @@ check_inputs <- function(inputs) {
   if (!is.numeric(x_new)) {
     stop("x_new must be a numeric vector")
   }
-  if (!is.xts(x_new) & (!is.null(agg_period) | !is.null(rescale_period))) {
+  if (!xts::is.xts(x_new) & (!is.null(agg_period) | !is.null(rescale))) {
     stop("x_new cannot be aggregated or rescaled if it is not an xts object")
   }
-  if (!is.xts(x_new) & !is.null(moving_window)) {
+  if (!xts::is.xts(x_new) & !is.null(moving_window)) {
     stop("standardised indices cannot be calculated from a moving window if
     x_new and x_ref are not xts objects")
   }
@@ -204,10 +263,10 @@ check_inputs <- function(inputs) {
   if (!is.numeric(x_ref) & is.null(moving_window)) {
     stop("x_ref must be a numeric vector")
   }
-  if (!is.xts(x_ref) & (!is.null(agg_period) | !is.null(rescale_period))) {
+  if (!xts::is.xts(x_ref) & (!is.null(agg_period) | !is.null(rescale))) {
     stop("x_ref cannot be aggregated or rescaled if it is not an xts object")
   }
-  if (!is.xts(x_ref) & !is.null(moving_window)) {
+  if (!xts::is.xts(x_ref) & !is.null(moving_window)) {
     stop("standardised indices cannot be calculated from a moving window if
     x_new and x_ref are not xts objects")
   }
@@ -242,6 +301,13 @@ check_inputs <- function(inputs) {
     }
     if (agg_period > length(x_new) | agg_period > length(x_ref)) {
       stop("agg_period exceeds length of data set")
+    }
+  }
+
+  # agg_scale
+  if (!is.null(agg_scale)) {
+    if (!(agg_scale %in% c("days", "weeks", "months", "quarters", "years"))) {
+      stop("agg_scale must be one of 'days', 'weeks', 'months', 'quarters', or 'years'")
     }
   }
 
