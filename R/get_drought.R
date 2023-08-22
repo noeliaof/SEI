@@ -77,6 +77,7 @@ NULL
 get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96), higher = TRUE, lag = FALSE){
 
   if (xts::is.xts(x)) {
+    x <- unname(x)
     df <- zoo::fortify.zoo(x)
   } else {
     df <- data.frame(x = x)
