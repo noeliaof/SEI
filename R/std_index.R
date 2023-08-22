@@ -224,21 +224,29 @@ std_index <- function(x_new,
   }
 
   # convert to index
-  if (index_type == "normal") {
-    fit$si <- qnorm(fit$pit)
-  } else if (index_type == "bounded") {
-    fit$si <- 2*fit$pit - 1
-  } else if (index_type == "probability") {
-    fit$si <- fit$pit
-  }
-  fit$si <- xts::xts(fit$si, order.by = zoo::index(x_new))
-  xts::xtsAttributes(fit$si) <- xts::xtsAttributes(x_new)
-
   if (return_fit) {
+    pit <- fit$pit
+  } else {
+    pit <- fit
+  }
+
+  if (index_type == "normal") {
+    si <- qnorm(pit)
+  } else if (index_type == "bounded") {
+    si <- 2*pit - 1
+  } else if (index_type == "probability") {
+    si <- pit
+  }
+  si <- xts::xts(si, order.by = zoo::index(x_new))
+  xts::xtsAttributes(si) <- xts::xtsAttributes(x_new)
+
+  # return indices
+  if (return_fit) {
+    fit$si <- si
     fit$F_x <- fit$pit <- NULL
     return(fit)
   } else {
-    return(fit$si)
+    return(si)
   }
 
 }
