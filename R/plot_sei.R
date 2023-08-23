@@ -54,7 +54,7 @@ plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index"
       df <- data.frame(x = x)
     }
     p <- ggplot(df) +
-      geom_histogram(aes_string(x = x), col = "black", bins = n_bins, alpha = 0.4) +
+      geom_histogram(aes_string(x = as.numeric(x)), col = "black", bins = n_bins, alpha = 0.4) +
       xlab(lab) +
       scale_y_continuous(name = "Density", expand = expansion(c(0, 0.05))) +
       theme_bw() +
