@@ -185,15 +185,15 @@ std_index <- function(x_new,
   # scale data
   if (!is.null(rescale)) {
     if (rescale == "days") {
-      apply_rescale <- apply.daily
+      apply_rescale <- xts::apply.daily
     } else if (rescale == "weeks") {
-      apply_rescale <- apply.weekly
+      apply_rescale <- xts::apply.weekly
     } else if (rescale == "months") {
-      apply_rescale <- apply.monthly
+      apply_rescale <- xts::apply.monthly
     } else if (rescale == "quarters") {
-      apply_rescale <- apply.quarterly
+      apply_rescale <- xts::apply.quarterly
     } else if (rescale == "years") {
-      apply_rescale <- apply.yearly
+      apply_rescale <- xts::apply.yearly
     }
     x_new <- apply_rescale(x_new, rescale_fun, na.rm = ignore_na)
     x_ref <- apply_rescale(x_ref, rescale_fun, na.rm = ignore_na)
