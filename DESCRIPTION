@@ -15,7 +15,6 @@ Imports:
     xts,
     EnvStats,
     zoo,
-    stringr,
     fitdistrplus
 Suggests: 
     knitr,

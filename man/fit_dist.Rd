@@ -28,9 +28,8 @@ This has been adapted from code available at
 \code{data} is a numeric vector of data from which the distribution is to be estimated.
 
 \code{dist} is the specified distribution to be fit to \code{data}. This must be one of
-"empirical" (the empirical distribution given \code{data}), "kde" (kernel density estimation),
-"gamma", "weibull", "gev" (the Generalised Extreme Value distribution), and "glogis"
-(the Generalised Logistic distributions).
+'empirical' (the empirical distribution given \code{data}), 'kde' (kernel density estimation),
+'norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
 
 By default, \code{dist = "empirical"}, in which case
 the distribution is estimated empirically from \code{data}. This is only

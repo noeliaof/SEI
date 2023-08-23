@@ -60,7 +60,8 @@
 #'
 #' \code{dist} is the distribution used to estimate the CDF from \code{x_ref}.
 #' Currently, functionality is available to fit one of the following distributions to the data:
-#' Gamma, Weibull, Generalised Extreme Value (GEV), and Geralised Logistic.
+#' Normal ('norm'), Log-normal ('lnorm'), Logistic ('logis'), Log-logistic ('llogis'),
+#' Exponential ('exp'), Gamma ('gamma'), and Weibull ('weibull').
 #' Alternatively, the CDF can be estimated empirically (\code{dist = "empirical"})
 #' based on the values in \code{x_ref}, or using kernel density estimation (\code{dist = "kde"}).
 #'
@@ -280,7 +281,8 @@ check_inputs <- function(inputs) {
   }
 
   # dist
-  available_dists <- c("empirical", "kde", "gamma", "weibull", "gev", "glogis")
+  available_dists <- c("empirical", "kde", "norm", "lnorm",
+                       "logis", "llogis", "exp", "gamma", "weibull")
   if (!(dist %in% available_dists)) {
     stop("the specified distribution is not available - see details for a list of
          available distributions")

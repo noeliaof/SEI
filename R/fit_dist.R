@@ -14,9 +14,8 @@
 #' \code{data} is a numeric vector of data from which the distribution is to be estimated.
 #'
 #' \code{dist} is the specified distribution to be fit to \code{data}. This must be one of
-#' "empirical" (the empirical distribution given \code{data}), "kde" (kernel density estimation),
-#' "gamma", "weibull", "gev" (the Generalised Extreme Value distribution), and "glogis"
-#' (the Generalised Logistic distributions).
+#' 'empirical' (the empirical distribution given \code{data}), 'kde' (kernel density estimation),
+#' 'norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
 #'
 #' By default, \code{dist = "empirical"}, in which case
 #' the distribution is estimated empirically from \code{data}. This is only
@@ -67,29 +66,12 @@ fit_dist <- function(data, dist, n_thres = 20){
   check_distribution(inputs)
 
   # initialise data properties and goodness-of-fit statistics
-  fit_props <- c(n_obs = as.integer(NA),
-                 n_na = as.numeric(NA),
-                 pct_na = as.numeric(NA),
-                 ks_pval = as.numeric(NA))
+  fit_props <- rep(NA, 5)
+  names(fit_props) <- c("na_obs", "n_na", "pct_na", "aic", "ks_pval")
 
   fit_props['n_obs'] <- as.integer(length(data))
-  fit_props['n_na'] <- length(data[which(is.na(data))])
+  fit_props['n_na'] <- sum(is.na(data))
   fit_props['pct_na'] <- (fit_props['n_na']/fit_props['n_obs'])*100
-
-  # initialise parameters
-  if (dist == "empirical") {
-    params <- list(emp_func = NA, n = NA)
-  } else if (dist == "kde") {
-    params <- list(data = NA, bw = NA)
-  } else if (dist == "gamma"){
-    params <- c(shape = as.numeric(NA), rate = as.numeric(NA))
-  } else if (dist == "weibull"){
-    params <- c(shape = as.numeric(NA), scale = as.numeric(NA))
-  } else if (dist == "gev"){
-    params <- c(shape = as.numeric(NA), scale = as.numeric(NA), location = as.numeric(NA))
-  } else if (dist == "glogis"){
-    params <- c(shape = as.numeric(NA), scale = as.numeric(NA), location = as.numeric(NA))
-  }
 
   # check sample size
   data <- data[!is.na(data)]
@@ -99,22 +81,13 @@ fit_dist <- function(data, dist, n_thres = 20){
     return(list(F_x = function(x, params) NA, params = params, fit_props = fit_props))
   }
 
-  # initial estimates
-  if (dist == 'gev' | dist == 'glogis'){
-    start <- list(shape = 1, scale = 1, location = 0)
-  } else {
-    start <- NULL
-  }
-
   # fit distribution
   if (dist == "empirical") {
     emp_func  <- ecdf(data)
-    params$emp_func <- emp_func
-    params$n <- n
+    params <- list(emp_func = emp_func, n = n)
     F_x <- function(x, params) (1 + params$emp_func(x)*params$n)/(params$n + 2)
   } else if (dist == "kde") {
-    params$data <- data
-    params$bw <- bw.nrd(data)
+    params <- list(data = data, bw = bw.nrd(data))
     F_x <- function(x, params) {
       if (length(x) > 1) {
         sapply(x, function(z) mean(pnorm(z, mean = params$data, sd = params$bw)))
@@ -123,21 +96,15 @@ fit_dist <- function(data, dist, n_thres = 20){
       }
     }
   } else {
-    fit <- try(fitdistrplus::fitdist(data = data, distr = dist, method = "mle", start = start))
+    fit <- try(fitdistrplus::fitdist(data = data, distr = dist, method = "mle"))
     if (!inherits(fit, "try-error")){
-      params <- fit$estimate
-      F_x <- function(x, params) do.call(paste0("p", dist), c(list(q = x), as.list(params)))
+      params <- fit$estimate # parameters
+      F_x <- function(x, params) do.call(paste0("p", dist), c(list(q = x), as.list(params))) # cdf
+      fit_props['aic'] <- fit$aic # aic
+      fit_props['ks_pval'] <- do.call('ks.test', c(list(x = data, y = paste0('p', dist)), as.list(params)))$p.value # ks p-value
     } else {
       warning("distribution fitting failed")
-      return(list(F_x = function(x, params) NA, params = params, fit_props = fit_props))
-    }
-  }
-
-  # calculate goodness-of-fit statistics
-  if (!(dist %in% c("empirical", "kde"))) {
-    if (!any(is.na(params))){
-      ks_pval <- try(do.call('ks.test', c(list(x = data, y = paste0('p', dist)), as.list(params)))$p.value)
-      if (!inherits(ks_pval, 'try-error')) fit_props['ks_pval'] <- ks_pval
+      return(list(F_x = function(x, params) NA, params = NULL, fit_props = fit_props))
     }
   }
 
@@ -149,8 +116,10 @@ check_distribution <- function(inputs) {
   for(i in seq_along(inputs)) assign(names(inputs)[i], inputs[[i]])
   data <- data[!is.na(data)]
 
-  if (!(dist %in% c("empirical", "kde", "gamma", "weibull", "gev", "glogis"))) {
-    stop("dist must be one of 'empirical', 'kde', 'gamma', 'weibull', 'gev', 'glogis'")
+  if (!(dist %in% c("empirical", "kde", "norm", "lnorm",
+                    "logis", "llogis", "exp", "gamma", "weibull"))) {
+    stop("dist must be one of 'empirical', 'kde', 'norm', 'lnorm',
+         'logis', 'llogis', 'exp', 'gamma', 'weibull'")
   }
 
   if (dist == "empirical") {
@@ -160,7 +129,7 @@ check_distribution <- function(inputs) {
     }
   }
 
-  if (dist == "gamma" | dist == "weibull") {
+  if (dist %in% c("tnorm", "tlogis", "llogis", "exp", "gamma", "weibull")) {
     if (any(data < 0)) {
       stop(paste("the", dist, "distribution has positive support, but the data contains negative values"))
     } else if (any(data == 0)) {

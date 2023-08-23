@@ -41,11 +41,9 @@ distribution, as well as Kolmogorov-Smirnov goodness-of-fit test statistics.
 A flexible compromise between using empirical methods and parametric distributions is to
 use kernel density estimation, \code{dist = "kde"}.
 
-\code{dist} must be one of: "empirical", "kde", "gamma", "weibull", "gev", and "glogis".
-\code{dist = "gev"} implements the Generalised Extreme Value distribution, while
-\code{dist = "glogis"} corresponds to the generalised logistic distribution.
-For the parametric distributions, parameters are estimated using maximum
-likelihood estimation.
+\code{dist} must be one of: 'empirical' (the empirical distribution given \code{data}),
+'kde' (kernel density estimation), norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
+For the parametric distributions, parameters are estimated using maximum likelihood estimation.
 }
 \examples{
 N <- 1000
