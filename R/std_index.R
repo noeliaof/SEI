@@ -118,11 +118,11 @@
 #' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", agg_period = 1, agg_scale = "weeks")
 #'
 #' # calculate standardised indices corresponding to December, based on the previous year
-#' dec <- index(supply_de) >= "2019-01-12 UTC"
+#' dec <- zoo::index(supply_de) > "2019-12-01 UTC"
 #' supply_de_std_dec <- std_index(x_new = supply_de[dec], x_ref = supply_de[!dec], timescale = "hours")
 #'
 #' # calculate standardised indices using a 100 day moving window
-#' supply_de_std_dec <- std_index(supply_de[dec], timescale = "hours", rescale = "days", moving_window = 100)
+#' supply_de_std_dec <- std_index(supply_de[dec], supply_de, timescale = "hours", rescale = "days", moving_window = 100)
 #'
 #' # suppose we are interested in the daily maximum rather than the daily total
 #' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "max")
@@ -168,7 +168,7 @@ std_index <- function(x_new,
 
   # get timescale (if not given)
   if ((!is.null(rescale) | is.null(agg_period) | is.null(moving_window)) & is.null(timescale)) {
-    timedif <- diff(index(x_ref))[1]
+    timedif <- diff(zoo::index(x_ref))[1]
     if (timedif == 1) {
       timescale <- units(timedif)
     } else if (timedif == 24 && units(timedif) == "hours") {
@@ -213,15 +213,20 @@ std_index <- function(x_new,
     fit <- get_pit(x_ref, x_new, dist = dist, return_fit = return_fit)
   } else {
     if (is.null(window_scale)) window_scale <- timescale
-    fit <- lapply(index(x_new), function(date) {
-      from <- date - as.difftime(moving_window, units = window_scale) + as.difftime(1, units = timescale)
-      to <- date
+    fit <- lapply(zoo::index(x_new), function(date) {
+      from <- date - as.difftime(moving_window, units = window_scale)
+      to <- date - as.difftime(1, units = timescale)
       data <- x_ref[paste(from, to, sep = "/")]
       get_pit(data, x_new[date], dist = dist, return_fit = return_fit)
     })
-    fit_names <- names(fit[[1]])
-    fit <- lapply(fit_names, function(x) sapply(fit, function(z) z[[x]]))
-    names(fit) <- fit_names
+    if (return_fit) {
+      fit_names <- names(fit[[1]])
+      fit <- lapply(fit_names, function(x) sapply(fit, function(z) z[[x]]))
+      names(fit) <- fit_names
+    } else {
+      fit <- unlist(fit)
+    }
+
   }
 
   # convert to index

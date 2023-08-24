@@ -142,11 +142,11 @@ supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days")
 supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", agg_period = 1, agg_scale = "weeks")
 
 # calculate standardised indices corresponding to December, based on the previous year
-dec <- index(supply_de) >= "2019-01-12 UTC"
+dec <- zoo::index(supply_de) > "2019-12-01 UTC"
 supply_de_std_dec <- std_index(x_new = supply_de[dec], x_ref = supply_de[!dec], timescale = "hours")
 
 # calculate standardised indices using a 100 day moving window
-supply_de_std_dec <- std_index(supply_de[dec], timescale = "hours", rescale = "days", moving_window = 100)
+supply_de_std_dec <- std_index(supply_de[dec], supply_de, timescale = "hours", rescale = "days", moving_window = 100)
 
 # suppose we are interested in the daily maximum rather than the daily total
 supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "max")
