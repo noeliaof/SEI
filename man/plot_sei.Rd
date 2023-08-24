@@ -22,6 +22,8 @@ plot_sei(
 
 \item{lab}{axis label (y-axis if type = "ts", x-axis if type = "hist").}
 
+\item{ylims}{lower and upper limits of the time series plot.}
+
 \item{n_bins}{the number of bins to show in the histogram.}
 }
 \value{
