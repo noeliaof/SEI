@@ -71,8 +71,8 @@ aggregate_xts <- function(x,
                           na_thres = 10) {
   scale <- match.arg(scale)
   timescale <- match.arg(timescale)
-  x_agg <- sapply(index(x), aggregate_xts_1, x, len, scale, fun, timescale, na_thres)
-  x_agg <- xts::xts(x_agg, order.by = index(x))
+  x_agg <- sapply(zoo::index(x), aggregate_xts_1, x, len, scale, fun, timescale, na_thres)
+  x_agg <- xts::xts(x_agg, order.by = zoo::index(x))
   xts::xtsAttributes(x_agg) <- xts::xtsAttributes(x)
   xts::xtsAttributes(x_agg)$agg_length <- as.difftime(len, units = scale)
   return(x_agg)
@@ -90,7 +90,7 @@ aggregate_xts_1 <- function(date,
   to <- date
   data <- data[paste(from, to, sep = '/')]
   dates <- seq(from = from, to = to, by = as.difftime(1, units = timescale))
-  x <- c(coredata(merge(xts::xts(order.by = dates), data, join = 'left')))
+  x <- c(zoo::coredata(merge(xts::xts(order.by = dates), data, join = 'left')))
 
   if (length(x) != 0) {
     pct.na <- (length(which(is.na(x))) / length(x)) * 100
