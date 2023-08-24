@@ -4,7 +4,7 @@
 \alias{get_pit}
 \title{Calculate probability integral transform values}
 \usage{
-get_pit(ref_data, new_data, dist = "empirical", return_fit = F)
+get_pit(ref_data, new_data, dist = "empirical", return_fit = FALSE)
 }
 \arguments{
 \item{ref_data}{numeric vector from which to estimate the CDF.}
@@ -58,27 +58,27 @@ pit <- get_pit(x_ref, x_new)
 hist(pit)
 
 # gamma distribution
-pit <- get_pit(x_ref, x_new, dist = "gamma", return_fit = T)
+pit <- get_pit(x_ref, x_new, dist = "gamma", return_fit = TRUE)
 hist(pit$pit)
 
-hist(x_ref, breaks = 30, probability = T)
+hist(x_ref, breaks = 30, probability = TRUE)
 lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), pit$params[1], pit$params[2]), col = "blue")
 
 
 # weibull distribution
-pit <- get_pit(x_ref, x_new, dist = "weibull", return_fit = T)
+pit <- get_pit(x_ref, x_new, dist = "weibull", return_fit = TRUE)
 hist(pit$pit)
 
-hist(x_ref, breaks = 30, probability = T)
+hist(x_ref, breaks = 30, probability = TRUE)
 lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), pit$params[1], pit$params[2]), col = "blue")
 
 
-# generalised logistic distribution
-pit <- get_pit(x_ref, x_new, dist = "glogis", return_fit = T)
+# exponential distribution
+pit <- get_pit(x_ref, x_new, dist = "exp", return_fit = TRUE)
 hist(pit$pit)
 
-hist(x_ref, breaks = 30, probability = T)
-lines(seq(0, 10, 0.01), dglogis(seq(0, 10, 0.01), pit$params[1], pit$params[2]), col = "blue")
+hist(x_ref, breaks = 30, probability = TRUE)
+lines(seq(0, 10, 0.01), dexp(seq(0, 10, 0.01), pit$params[1]), col = "blue")
 
 
 }

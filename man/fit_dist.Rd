@@ -53,14 +53,14 @@ rate <- 2
 # gamma distribution
 data <- rgamma(N, shape, rate)
 out <- fit_dist(data, dist = "gamma")
-hist(data, breaks = 30, probability = T)
+hist(data, breaks = 30, probability = TRUE)
 lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
 
 
 # weibull distribution
 data <- rweibull(N, shape, 1/rate)
 out <- fit_dist(data, dist = "weibull")
-hist(data, breaks = 30, probability = T)
+hist(data, breaks = 30, probability = TRUE)
 lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
 
 }

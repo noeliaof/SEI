@@ -44,14 +44,14 @@
 #' # gamma distribution
 #' data <- rgamma(N, shape, rate)
 #' out <- fit_dist(data, dist = "gamma")
-#' hist(data, breaks = 30, probability = T)
+#' hist(data, breaks = 30, probability = TRUE)
 #' lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
 #'
 #'
 #' # weibull distribution
 #' data <- rweibull(N, shape, 1/rate)
 #' out <- fit_dist(data, dist = "weibull")
-#' hist(data, breaks = 30, probability = T)
+#' hist(data, breaks = 30, probability = TRUE)
 #' lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
 #'
 #' @name fit_dist
@@ -67,7 +67,7 @@ fit_dist <- function(data, dist, n_thres = 20){
 
   # initialise data properties and goodness-of-fit statistics
   fit_props <- rep(NA, 5)
-  names(fit_props) <- c("na_obs", "n_na", "pct_na", "aic", "ks_pval")
+  names(fit_props) <- c("n_obs", "n_na", "pct_na", "aic", "ks_pval")
 
   fit_props['n_obs'] <- as.integer(length(data))
   fit_props['n_na'] <- sum(is.na(data))
@@ -78,7 +78,7 @@ fit_dist <- function(data, dist, n_thres = 20){
   n <- length(data)
   if (n < 20) {
     warning(paste(n_thres, "values are required to fit the distribution - distribution has not been fit"))
-    return(list(F_x = function(x, params) NA, params = params, fit_props = fit_props))
+    return(list(F_x = function(x, params) as.numeric(NA), params = NA, fit_props = fit_props))
   }
 
   # fit distribution
