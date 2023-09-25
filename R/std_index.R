@@ -97,6 +97,22 @@
 #' \emph{In Proceedings of the 8th Conference on Applied Climatology} 17, 179-183.
 #'
 #' @author Sam Allen, Noelia Otero
+#' 
+globalVariables(c(
+  "dist"
+  , "x_new"
+  , "agg_period"
+  , "rescale"
+  , "moving_window"
+  , "x_ref"
+  , "dist"
+  , "agg_scale"
+  , "agg_fun"
+  , "timescale"
+  , "rescale_fun"
+  , "index_type"
+  , "qnorm"
+))
 #'
 #' @examples
 #' data(data_supply)

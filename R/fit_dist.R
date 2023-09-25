@@ -35,6 +35,11 @@
 #' A list containing the estimated distribution function, its parameters,
 #' and Kolmogorov-Smirnov goodness-of-fit statistics.
 #'
+globalVariables(c(
+  "ecdf"
+  , "bw.nrd"
+  , "pnorm"
+))
 #' @examples
 #' N <- 1000
 #' shape <- 3

@@ -15,6 +15,8 @@
 #'
 #' @author Sam Allen, Noelia Otero
 #'
+globalVariables(c(
+  "Index"))
 #' @examples
 #' data(data_supply)
 #' # consider hourly German energy supply data in 2019
