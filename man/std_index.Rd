@@ -139,33 +139,23 @@ hist(supply_de_std)
 supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days")
 
 # convert to weekly standardised indices calculated on each day
-supply_de_std <- std_index(supply_de,
-                 timescale = "hours",
-                 rescale = "days", 
-                 agg_period = 1, 
-                 agg_scale = "weeks")
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+                           agg_period = 1, agg_scale = "weeks")
 
 # calculate standardised indices corresponding to December, based on the previous year
 dec <- zoo::index(supply_de) > "2019-12-01 UTC"
-supply_de_std_dec <- std_index(x_new = supply_de[dec], 
-                      x_ref = supply_de[!dec], 
-                      timescale = "hours")
+supply_de_std_dec <- std_index(x_new = supply_de[dec], x_ref = supply_de[!dec],
+                               timescale = "hours")
 
 # calculate standardised indices using a 100 day moving window
-supply_de_std_dec <- std_index(supply_de[dec], 
-                      supply_de, timescale = "hours", 
-                      rescale = "days", 
-                      moving_window = 100)
+supply_de_std_dec <- std_index(supply_de[dec], supply_de, timescale = "hours",
+                               rescale = "days", moving_window = 100)
 
 # suppose we are interested in the daily maximum rather than the daily total
-supply_de_std <- std_index(supply_de, 
-                  timescale = "hours", 
-                  rescale = "days", 
-                  rescale_fun = "max")
-supply_de_std <- std_index(supply_de, 
-                  timescale = "hours", 
-                  rescale = "days", 
-                  rescale_fun = "mean") # or average
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+                           rescale_fun = "max")
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+                           rescale_fun = "mean") # or average
 
 # the default uses the empirical distribution, but this requires more data than
 # parametric distributions, meaning it is not ideal when data is short, e.g. in weekly case
@@ -176,18 +166,11 @@ supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", di
 hist(supply_de)
 hist(supply_de_std)
 # we can also look at the properties of the fit
-supply_de_std <- std_index(supply_de, 
-                 timescale = "hours", 
-                 rescale = "weeks", 
-                 dist = "gamma", 
-                 return_fit = TRUE)
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks",
+                           dist = "gamma", return_fit = TRUE)
 
-# alternatively, we can use kernel density estimation, 
-# which is a flexible compromise between the two
-supply_de_std <- std_index(supply_de, 
-                timescale = "hours", 
-                rescale = "weeks", 
-                dist = "kde")
+# we could also use kernel density estimation, which is a flexible compromise between the two
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "kde")
 
 }
 \references{

@@ -17,7 +17,7 @@ data(data_supply)
 This dataset contains wind and solar energy production using the installed capacities
 of 2017 considered as a baseline power scenario.
 The dataset can be found at https://researchdata.reading.ac.uk/321/, and users are referred to
-Bloomfield et al. (2019) for further details.
+Bloomfield et al. (2021) for further details.
 }
 \examples{
 data("data_supply")

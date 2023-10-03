@@ -15,8 +15,6 @@
 #'
 #' @author Sam Allen, Noelia Otero
 #'
-globalVariables(c(
-  "Index"))
 #' @examples
 #' data(data_supply)
 #' # consider hourly German energy supply data in 2019
@@ -42,7 +40,8 @@ plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index"
 
   if (type == "ts") {
     df <- zoo::fortify.zoo(x)
-    p <- ggplot2::ggplot(df, ggplot2::aes(x = Index, y = x)) +
+    colnames(df) <- c("date", "x")
+    p <- ggplot2::ggplot(df, ggplot2::aes(x = date, y = x)) +
       ggplot2::geom_ribbon(ggplot2::aes(ymin = pmin(x, 0), ymax = 0), fill = "blue", alpha = 0.5) +
       ggplot2::geom_ribbon(ggplot2::aes(ymin = 0, ymax = pmax(x, 0)), fill = "red", alpha = 0.5) +
       ggplot2::scale_x_datetime(name = "Date", expand = c(0, 0)) +

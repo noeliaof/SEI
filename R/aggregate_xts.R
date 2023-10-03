@@ -53,7 +53,7 @@
 #' supply_de_daily <- aggregate_xts(supply_de, len = 1, timescale = "hours")
 #'
 #' # weekly means
-#' supply_de_weekly <- aggregate_xts(supply_de, len = 1, scale = "weeks", fun = "mean", timescale = "hours")
+#' supply_de_weekly <- aggregate_xts(supply_de, len = 1, scale = "weeks", fun = "mean", "hours")
 #'
 #' plot(supply_de)
 #' plot(supply_de_weekly)

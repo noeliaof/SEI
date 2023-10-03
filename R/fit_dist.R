@@ -35,11 +35,6 @@
 #' A list containing the estimated distribution function, its parameters,
 #' and Kolmogorov-Smirnov goodness-of-fit statistics.
 #'
-globalVariables(c(
-  "ecdf"
-  , "bw.nrd"
-  , "pnorm"
-))
 #' @examples
 #' N <- 1000
 #' shape <- 3
@@ -60,6 +55,7 @@ globalVariables(c(
 #' lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
 #'
 #' @name fit_dist
+#' @importFrom stats bw.nrd ecdf pnorm
 NULL
 
 #' @rdname fit_dist
@@ -118,27 +114,27 @@ fit_dist <- function(data, dist, n_thres = 20){
 
 
 check_distribution <- function(inputs) {
-  for(i in seq_along(inputs)) assign(names(inputs)[i], inputs[[i]])
-  data <- data[!is.na(data)]
 
-  if (!(dist %in% c("empirical", "kde", "norm", "lnorm",
+  data <- inputs$data[!is.na(inputs$data)]
+
+  if (!(inputs$dist %in% c("empirical", "kde", "norm", "lnorm",
                     "logis", "llogis", "exp", "gamma", "weibull"))) {
     stop("dist must be one of 'empirical', 'kde', 'norm', 'lnorm',
          'logis', 'llogis', 'exp', 'gamma', 'weibull'")
   }
 
-  if (dist == "empirical") {
+  if (inputs$dist == "empirical") {
     if (length(data) < 100) {
       warning("using the empirical distribution is only recommended when at least
               100 values are available when fitting the distribution")
     }
   }
 
-  if (dist %in% c("tnorm", "tlogis", "llogis", "exp", "gamma", "weibull")) {
+  if (inputs$dist %in% c("tnorm", "tlogis", "llogis", "exp", "gamma", "weibull")) {
     if (any(data < 0)) {
-      stop(paste("the", dist, "distribution has positive support, but the data contains negative values"))
+      stop(paste("the", inputs$dist, "distribution has positive support, but the data contains negative values"))
     } else if (any(data == 0)) {
-      stop(paste("the", dist, "distribution has positive support, but the data contains values equal to zero"))
+      stop(paste("the", inputs$dist, "distribution has positive support, but the data contains values equal to zero"))
     }
   }
 

@@ -97,22 +97,6 @@
 #' \emph{In Proceedings of the 8th Conference on Applied Climatology} 17, 179-183.
 #'
 #' @author Sam Allen, Noelia Otero
-#' 
-globalVariables(c(
-  "dist"
-  , "x_new"
-  , "agg_period"
-  , "rescale"
-  , "moving_window"
-  , "x_ref"
-  , "dist"
-  , "agg_scale"
-  , "agg_fun"
-  , "timescale"
-  , "rescale_fun"
-  , "index_type"
-  , "qnorm"
-))
 #'
 #' @examples
 #' data(data_supply)
@@ -131,18 +115,23 @@ globalVariables(c(
 #' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days")
 #'
 #' # convert to weekly standardised indices calculated on each day
-#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", agg_period = 1, agg_scale = "weeks")
+#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+#'                            agg_period = 1, agg_scale = "weeks")
 #'
 #' # calculate standardised indices corresponding to December, based on the previous year
 #' dec <- zoo::index(supply_de) > "2019-12-01 UTC"
-#' supply_de_std_dec <- std_index(x_new = supply_de[dec], x_ref = supply_de[!dec], timescale = "hours")
+#' supply_de_std_dec <- std_index(x_new = supply_de[dec], x_ref = supply_de[!dec],
+#'                                timescale = "hours")
 #'
 #' # calculate standardised indices using a 100 day moving window
-#' supply_de_std_dec <- std_index(supply_de[dec], supply_de, timescale = "hours", rescale = "days", moving_window = 100)
+#' supply_de_std_dec <- std_index(supply_de[dec], supply_de, timescale = "hours",
+#'                                rescale = "days", moving_window = 100)
 #'
 #' # suppose we are interested in the daily maximum rather than the daily total
-#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "max")
-#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "mean") # or average
+#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+#'                            rescale_fun = "max")
+#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+#'                            rescale_fun = "mean") # or average
 #'
 #' # the default uses the empirical distribution, but this requires more data than
 #' # parametric distributions, meaning it is not ideal when data is short, e.g. in weekly case
@@ -153,12 +142,14 @@ globalVariables(c(
 #' hist(supply_de)
 #' hist(supply_de_std)
 #' # we can also look at the properties of the fit
-#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "gamma", return_fit = TRUE)
+#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks",
+#'                            dist = "gamma", return_fit = TRUE)
 #'
-#' # alternatively, we can use kernel density estimation, which is a flexible compromise between the two
+#' # we could also use kernel density estimation, which is a flexible compromise between the two
 #' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "kde")
 #'
 #' @name std_index
+#' @importFrom stats qnorm
 NULL
 
 #' @rdname std_index
@@ -275,28 +266,27 @@ std_index <- function(x_new,
 
 
 check_inputs <- function(inputs) {
-  for(i in seq_along(inputs)) assign(names(inputs)[i], inputs[[i]])
 
   # x_new
-  if (!is.numeric(x_new)) {
+  if (!is.numeric(inputs$x_new)) {
     stop("x_new must be a numeric vector")
   }
-  if (!xts::is.xts(x_new) & (!is.null(agg_period) | !is.null(rescale))) {
+  if (!xts::is.xts(inputs$x_new) & (!is.null(inputs$agg_period) | !is.null(inputs$rescale))) {
     stop("x_new cannot be aggregated or rescaled if it is not an xts object")
   }
-  if (!xts::is.xts(x_new) & !is.null(moving_window)) {
+  if (!xts::is.xts(inputs$x_new) & !is.null(inputs$moving_window)) {
     stop("standardised indices cannot be calculated from a moving window if
     x_new and x_ref are not xts objects")
   }
 
   # x_ref
-  if (!is.numeric(x_ref) & is.null(moving_window)) {
+  if (!is.numeric(inputs$x_ref) & is.null(inputs$moving_window)) {
     stop("x_ref must be a numeric vector")
   }
-  if (!xts::is.xts(x_ref) & (!is.null(agg_period) | !is.null(rescale))) {
+  if (!xts::is.xts(inputs$x_ref) & (!is.null(inputs$agg_period) | !is.null(inputs$rescale))) {
     stop("x_ref cannot be aggregated or rescaled if it is not an xts object")
   }
-  if (!xts::is.xts(x_ref) & !is.null(moving_window)) {
+  if (!xts::is.xts(inputs$x_ref) & !is.null(inputs$moving_window)) {
     stop("standardised indices cannot be calculated from a moving window if
     x_new and x_ref are not xts objects")
   }
@@ -304,74 +294,74 @@ check_inputs <- function(inputs) {
   # dist
   available_dists <- c("empirical", "kde", "norm", "lnorm",
                        "logis", "llogis", "exp", "gamma", "weibull")
-  if (!(dist %in% available_dists)) {
+  if (!(inputs$dist %in% available_dists)) {
     stop("the specified distribution is not available - see details for a list of
          available distributions")
   }
 
   # moving_window
-  if (!is.null(moving_window)) {
-    if (!is.numeric(moving_window)) {
+  if (!is.null(inputs$moving_window)) {
+    if (!is.numeric(inputs$moving_window)) {
       stop("moving_window must be a single numeric value")
     }
-    if (!identical(length(moving_window), 1L)) {
+    if (!identical(length(inputs$moving_window), 1L)) {
       stop("moving_window must be a single numeric value")
     }
-    if (moving_window > length(x_ref)) {
+    if (inputs$moving_window > length(inputs$x_ref)) {
       stop("moving_window exceeds length of reference data")
     }
   }
 
   # agg_period
-  if (!is.null(agg_period)) {
-    if (!is.numeric(agg_period)) {
+  if (!is.null(inputs$agg_period)) {
+    if (!is.numeric(inputs$agg_period)) {
       stop("agg_period must be a single numeric value")
     }
-    if (!identical(length(agg_period), 1L)) {
+    if (!identical(length(inputs$agg_period), 1L)) {
       stop("agg_period must be a single numeric value")
     }
-    if (agg_period > length(x_new) | agg_period > length(x_ref)) {
+    if (inputs$agg_period > length(inputs$x_new) | inputs$agg_period > length(inputs$x_ref)) {
       stop("agg_period exceeds length of data set")
     }
   }
 
   # agg_scale
-  if (!is.null(agg_scale)) {
-    if (!(agg_scale %in% c("days", "weeks", "months", "quarters", "years"))) {
+  if (!is.null(inputs$agg_scale)) {
+    if (!(inputs$agg_scale %in% c("days", "weeks", "months", "quarters", "years"))) {
       stop("agg_scale must be one of 'days', 'weeks', 'months', 'quarters', or 'years'")
     }
   }
 
   # agg_fun
-  if (!is.null(agg_fun)) {
-    if (!(agg_fun %in% c("sum", "mean", "min", "max"))) {
+  if (!is.null(inputs$agg_fun)) {
+    if (!(inputs$agg_fun %in% c("sum", "mean", "min", "max"))) {
       stop("agg_fun must be one of 'sum', 'mean', 'min', or 'max'")
     }
   }
 
   # timescale
-  if (!is.null(timescale)) {
-    if (!(timescale %in% c("hours", "days", "weeks", "months", "quarters", "years"))) {
+  if (!is.null(inputs$timescale)) {
+    if (!(inputs$timescale %in% c("hours", "days", "weeks", "months", "quarters", "years"))) {
       stop("timescale must be one of 'hours', 'days', 'weeks', 'months', 'quarters', or 'years'")
     }
   }
 
   # rescale
-  if (!is.null(rescale)) {
-    if (!(rescale %in% c("days", "weeks", "months", "quarters", "years"))) {
+  if (!is.null(inputs$rescale)) {
+    if (!(inputs$rescale %in% c("days", "weeks", "months", "quarters", "years"))) {
       stop("rescale must be one of 'days', 'weeks', 'months', 'quarters', or 'years'")
     }
   }
 
   # rescale_fun
-  if (!is.null(rescale_fun)) {
-    if (!(rescale_fun %in% c("sum", "mean", "min", "max"))) {
+  if (!is.null(inputs$rescale_fun)) {
+    if (!(inputs$rescale_fun %in% c("sum", "mean", "min", "max"))) {
       stop("rescale_fun must be one of 'sum', 'mean', 'min', or 'max'")
     }
   }
 
   # index_type
-  if (!(index_type %in% c("normal", "bounded", "probability"))) {
+  if (!(inputs$index_type %in% c("normal", "bounded", "probability"))) {
     stop("index_type must be one of 'normal', 'bounded', or 'probability'")
   }
 
