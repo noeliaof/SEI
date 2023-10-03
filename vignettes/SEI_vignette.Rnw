@@ -8,6 +8,7 @@
 \usepackage{bbm,booktabs,setspace,longtable}
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
+\usepackage{natbib}
 
 %% custom commands
 \newcommand{\class}[1]{`\code{#1}'}
@@ -43,7 +44,7 @@ library(ggplot2)
 library(dplyr)
 library(xts)
 library(zoo)
-
+library(gridExtra)
 options(xts_check_TZ = FALSE)
 @
 
@@ -59,7 +60,7 @@ options(xts_check_TZ = FALSE)
 \Shorttitle{SEI}
 
 \Abstract{
-  This is the SEI package to calculate standardised indices to monitor droughts.
+  Standardised indices are measurements of variables that have been converted to a standardised scale. The standardised scale facilitates comparisons between different variables, and its probabilistic interpretation means the indices are effective for risk management and decision making. Standardised indices have become popular in weather and climate settings, for example within operational drought monitoring systems, though they have also been applied in other contexts, such as to energy variables. To facilitate their implementation in practice, the \pkg{SEI} package in \proglang{R} allows the flexible calculation of standardised indices. This paper discusses the theory underlying standardised indices, outlines the general framework to construct them, and provides implementation details for the \pkg{SEI} package. %Two case studies are presented whereby standardised indices are applied to climate and energy variables.
 }
 
 \Keywords{energy drought, renewable energy production, residual load, standardised indices, \proglang{R}}
@@ -85,396 +86,330 @@ options(xts_check_TZ = FALSE)
   Oeschger Centre for Climate Change Research\\
 }
 
+\newcommand{\R}{\mathbbm{R}}
+
+
 \begin{document}
 
 \section{Introduction}
 
-In many fields, it is convenient to monitor the value of a variable over time. Doing so can help to identify periods of drought. For example, climate scientists monitor the behaviour of several weather variables to identify trends in the atmosphere; energy suppliers monitor energy demand and production, with particular focus recently on production from renewable sources; financial traders monitor financial indices to assess the behaviour of the economy; and so on. Efficient monitoring over time allows practitioners to not only identify long term trends in the variables of interest, but they can also identify situations where production was very low, which can lead to adverse socio-economic effects. Efficient monitoring systems can help to mitigate these impacts.
+It is common to monitor the value of a variable over time: climate scientists monitor several weather and climate variables in the hope of identifying trends in the atmosphere; energy suppliers monitor energy demand and production, with particular focus recently on production from renewable sources; financial traders monitor financial indices to assess the behaviour of the economy, and so on. Doing so allows practitioners to not only identify long term trends in the variables of interest, but also to analyse abnormal situations with potentially adverse socio-economic consequences. These impacts can often be mitigated by techniques that permit an efficient monitoring of variables over time.
 
-However, it often becomes difficult to compare these variables, since they are often on different scales. In the context of the previous examples, if we wanted to assess the dependence of weather on energy demand, then we not only have to account for the different scales of the two, but also that even temperature, say, will generally be higher or lower in different geographical regions, and so will installed energy capacities. To account for this, it is convenient to transform variables onto the same scale. This standardisation can be achieved easily by framing the observed values in terms of their position relative to past values. The resulting standardised variables are often referred to as \emph{standardised indices}.
+However, it is often difficult to compare time series of variables defined on different scales. For example, different spatial regions have different climates, and hence a rainfall event that is impactful at one location may not be at another. Similarly, energy demand will also depend on the local climate, as well as on installed energy capacities. To account for this, it is convenient to transform variables onto the same, standardised scale. This standardisation can be achieved easily by framing the observed values in terms of their similarity to past values. The resulting standardised variables are often referred to as \emph{standardised indices}.
 
-Well-known examples of standardised indices include the Standardised Precipitation Index \citep[SPI;][]{McKeeEtAl1993} and Standardised Precipitation Evapotranspiration Index \citep[SPEI;][]{VicenteEtAl2010}, which are ubiquitously used to monitor hydrological droughts at several national hydrological centres \citep{BegueriaEtAl2014}. Several other weather and climate indices have similarly been proposed: \cite{ZscheischlerEtAl2014} introduced an analogous Standardised Temperature Index, while \cite{LiEtAl2021} introduced an index to monitor compound hot-dry events. \cite{AllenOtero2023} introduced standardised indices to monitor energy demand, production, and residual load (i.e. demand minus production).
+Well-known examples of standardised indices include the Standardised Precipitation Index \citep[SPI;][]{McKeeEtAl1993} and Standardised Precipitation Evapotranspiration Index \citep[SPEI;][]{VicenteEtAl2010}, which are ubiquitously used to monitor hydrological droughts at national hydrological centres \citep{BegueriaEtAl2014}. Several other weather and climate indices have similarly been proposed: \cite{ZscheischlerEtAl2014} introduced an analogous Standardised Temperature Index, \cite{LiEtAl2021} introduced an index to monitor simultaneously hot and dry weather conditions, while \cite{AllenOtero2023} introduced analogues of the SPI and SPEI that can be used to monitor energy supply and demand.
 
-There are several benefits to standardised indices. The indices are defined on a common scale, and are thus easy to interpret. This standardised scale also has an underlying probabilistic interpretation, making the indices ideal for risk management and decision-making. Moreover, since the standardisation can be performed separately for different seasons and locations, droughts can be defined in a relative sense, allowing the intensity of droughts in different climatic regions to readily be compared. As summarised by \cite{ZargarEtAl2011}, standardised drought indices provide a ``pragmatic way to assimilate large amounts of data into a quantitative information that can be used in applications such as drought forecasting, declaring drought levels, contingency planning and impact assessment.''
+There are several benefits to standardised indices. The indices are defined on a common scale, and are thus easy to interpret. This standardised scale also has an underlying probabilistic interpretation, making the indices ideal for risk management and decision-making. Standardised indices therefore provide an appealing framework with which to define shortages, or droughts, in the variable of interest. Since the standardisation can be performed separately for different seasons and locations, these shortages can be defined in a relative sense, allowing their intensity in different climatic regions to readily be compared. As summarised by \cite{ZargarEtAl2011}, standardised drought indices provide a ``pragmatic way to assimilate large amounts of data into a quantitative information that can be used in applications such as drought forecasting, declaring drought levels, contingency planning and impact assessment.''
 
-However, despite the widespread implementation of these standardised indices, no software package exists that provides comprehensive functionality to apply these in practice. The SPI, SPEI, and STI can be calculated using the \pkg{SPI}, \pkg{SPEI}, and \pkg{STI} \proglang{R} packages, respectively, and the \pkg{SCI} package was introduced to calculate standardised climate indices. However, the functionality of the \pkg{SCI} package is very limited. A developmental package exists at \url{https://github.com/WillemMaetens/standaRdized}, which is much more comprehensive. Nonetheless, this package itself has several shortcomings that limit its use in practice, particularly when interest is not on climate indices. Firstly, the range of distributions available from which to calculate the indices is still limited to those commonly used for the SPI and SPEI; namely the gamma, three-parameter gamma, Weibull, three-parameter Weibull, generalised extreme value (GEV), and generalised logistic distributions. This therefore cannot readily be used to calculate the STI (if not using the generalised logistic), and particularly not energy variables which often have irregular and multimodal distributions. Moreover, this package assumes that there is a large archive of data available from which the indices can be calculated, since only measurements used on the same day in previous years is used as reference data. This means it is not possible to define the indices in terms of recently observed values, and the code breaks down if only a few years of data is available. This is particularly salient in an energy context, since installed capacities regularly change.
+However, despite the widespread implementation of these standardised indices, no software package exists that provides comprehensive functionality to apply these in practice. The SPI, SPEI, and STI can be calculated using the \pkg{SPI}, \pkg{SPEI}, and \pkg{STI} \proglang{R} packages, respectively, and the \pkg{SCI} package was introduced to calculate standardised climate indices. However, the functionality of the \pkg{SCI} package is very limited. A developmental package exists at \url{https://github.com/WillemMaetens/standaRdized}, which is much more comprehensive. Nonetheless, this package itself has several shortcomings that limit its use in practice, particularly when interest is not on climate indices. Firstly, the range of distributions available from which to calculate the indices is still limited to those commonly used for the SPI and SPEI; namely the gamma, three-parameter gamma, Weibull, three-parameter Weibull, generalised extreme value (GEV), and generalised logistic distributions. This package therefore cannot be used to calculate the STI or other indices corresponding to variables with an irregular or multimodal distribution, such as energy demand. Moreover, this package assumes that there is a large archive of data available from which the indices can be calculated, since only measurements used on the same day in previous years are used as reference data. This means it is not possible to define the indices in terms of recently observed values, and the code breaks down if only a few years of data is available. %This is particularly salient in an energy context, since installed capacities regularly change.
 
-In this vignette, we introduce the \pkg{SEI} \proglang{R} package, which seeks to address these deficiencies and provide a flexible software package with which to calculate standardised indices. The primary advantage of this package is that it is not designed solely for climate indices, as the examples listed above are, and therefore contains a much wider range of functionality, making it applicable in a much wider range of applications. Nonetheless, some of the code used in this package has been influenced by this developmental \pkg{standaRdized} package.
+In this vignette, we introduce the \pkg{SEI} \proglang{R} package, which seeks to address these deficiencies and provide a flexible software package with which to calculate standardised indices. The primary advantage of this package is that it is not designed solely for climate indices, as the examples listed above are, and therefore contains a much broader functionality, making it applicable in a wider range of applications. Nonetheless, some of the code used in this package has been influenced by this developmental \pkg{standaRdized} package.
 
-The remainder of this vignette is organised as follows. Section \ref{section:theory} provides some theoretical background on standardised indices and describes the general formula to construct them. Section \ref{section:functionality} demonstrates how the \pkg{SEI} package can be used to calculate standardised indices in practice, and an application of the package is then presented in Section \ref{section:application}, whereby the \pkg{SEI} package is used to calculate standardised energy indices based on time series of renewable energy production and residual load. Section \ref{section:conclusion} concludes the paper and discusses possible extensions to the package.
-
-
-\section{Constructing Standardised Indices}\label{section:theory}
-
-The indices are straightforward to construct, can be defined on any timescale, and behave in a relative sense, meaning they can readily be compared for regions with different climates and different installed capacities.
-To construct the indices, we assume that there exists a time series of previous values of the renewable energy production, $P_{1}, \dots, P_{n}$, and the corresponding residual load, $L_{1}, \dots, L_{n}$. The observations could be on any timescale that is of interest. The general approach to define standardised indices begins by estimating the cumulative distribution function (CDF) corresponding to these previously observed values, which we label $F_{P}$ for the production and $F_{L}$ for the residual load. The estimated CDF is then used to transform the observations onto a standardised scale, exploiting the \textit{probability integral transform} to do so.
+The remainder of this vignette is organised as follows. Section \ref{section:theory} provides some theoretical background on standardised indices and describes the general formula to construct them. Section \ref{section:functionality} demonstrates how the \pkg{SEI} package can be used to calculate standardised indices in practice. An application of the package is then presented in Section \ref{section:application}, whereby the \pkg{SEI} package is used to calculate standardised energy indices based on time series of renewable energy production. Section \ref{section:conclusion} concludes the paper and discusses possible extensions to the package.
 
 
-Standardised indices can be created in several ways. However, several standardised indices constructed within the field of climate science follow a simple procedure. We outline this general procedure here. The general approach is to choose a univariate variable $ X $ that measures the quantity of interest, and then estimate the distribution of $ X $: in the SPI, $ X $ is the precipitation accumulation aggregated over the time scale of interest ; in the SPEI, $ X $ is the difference between precipitation and evapo-transpiration, which is assumed to follow a log-logistic distribution; in the standardised temperature index, temperature is assumed to follow a normal distribution. In these examples, the choice of $ X $ is typically straightforward, though this could be any quantity. For example, \cite{LiEtAl2021} let $ X $ be the probability of a compound hot-dry event, as derived from a copula analysis, and use a parametric distribution to model it.
+\section{How to construct standardised indices}\label{section:theory}
 
-Having estimated $ F $, the distribution of $ X $, the probability integral transform (PIT), a well-known result in probability theory and statistics, says that $ F(X) $ will be uniformly distributed between 0 and 1. We note that this PIT value itself provides an index of sorts, and can be scaled using 2$F(X)$ - 1 to get an index centred at zero, bounded between -1 and 1, and with values intrinsically linked to probabilities. However, it is more common to use the Gaussian quantile function to transform the PIT value, to get an index that is standard normally distributed, i.e. $ \Phi^{-1}(F(X)) $, where $ \Phi^{-1} $ is the quantile function of the standard normal distribution.
+There is no unique way to define standardised indices. However, several widely-adopted indices are constructed using the same, simple procedure. Using this procedure, standardised indices are straightforward to calculate, can be defined on any timescale, and behave in a relative sense, meaning they can readily be compared for different regions, variables, or points in time.
 
-As mentioned, this approach can be used to construct a standardised index for any relevant variable $ X $. Hence, when interest is on energy droughts, we can use energy-related variables as $ X $. Here, we introduce a Standardised Energy Demand Index (SEDI), a Standardised Renewable Energy Production Index (SREPI), and a standardised Residual Load Index (SRLI).
+The general approach is to choose a univariate variable $X$ that measures the quantity of interest, and then to estimate $X$'s distribution: in the SPI, $X$ represents the precipitation accumulation aggregated over the time scale of interest, which is assumed to follow a gamma distribution; in the SPEI, $X$ is the difference between precipitation and evapotranspiration, which is assumed to follow a log-logistic distribution; in the standardised temperature index, $X$ is the temperature (at a given point in time and space), which is assumed to follow a normal distribution. More complicated variables have also been considered. \cite{LiEtAl2021}, for example, consider $X$ to be the probability of a simultaneously hot and dry event, as derived from a copula analysis, while \cite{AllenOtero2023} derive indices corresponding to energy production and demand.
 
-% Since energy demand and renewable energy production are always positive, this distribution for these variables should have a positive support.
+The distribution of $X$ is typically estimated from an archive of realisations of $X$, labelled $X_{1}, \dots, X_{n}$. These could represent precipitation accumulations on different days, for example. It is common to make parametric assumptions about the distribution, as is done when constructing the SPI, SPEI, and STI. However, the choice of distribution has led to much debate about what assumptions are most appropriate, particularly in the context of more extreme events. In reality, the optimal distribution will likely depend on several factors, and we therefore recommend using more flexible density estimation methods, such as the empirical distribution or kernel density estimation, particularly when larger archives of data are available. In any case, the distributional assumptions must be verified and checked for all locations and time periods at which the index is calculated.
 
-In each case, it is necessary to estimate the distribution of $ X $. Rather than using parametric families of distributions, as is done when constructing the SPI, SPEI, and STI, parametric distributions are often not flexible enough to adequately model the distribution of these energy variables under consideration. However, we note that if a sufficiently long time series of observations is available, then it is straightforward to employ the empirical distribution function rather than estimating the parameters of a parametric family.
+Let $F$ denote the distribution function of $X$. A well-known result in statistics says that the \emph{probability integral transform} (PIT), $F(X)$, will be standard uniformly distributed. This assumes that $F$ is continuous, though suitable randomisation can be applied when $F$ is discrete or discrete-continuous. Having estimated $F$ from the archive $X_{1}, \dots, X_{n}$, this transformation therefore provides a convenient approach with which to standardised a new observation $X^{*}$.
 
-The benefit of using the empirical distribution is that the index is essentially based on ranks, meaning it does not make any distributional assumptions that need to be verified and checked at all locations and time periods at which the index is separately implemented. One downside, however, is that it will change depending on the data set used, though this is also the case if the data is used to estimate the parameters of a parametric distribution.
+This \emph{PIT variable}, $F(X^{*})$, itself provides a standardised index of sorts, and can be rescaled using $2F(X^{*}) - 1$ to get an index that is centred at zero, bounded between -1 and 1, and with values intrinsically linked to probabilities. However, it is more common to use the Gaussian quantile function to transform the PIT variable, resulting in an index that follows a standard normal distribution, i.e. $ \Phi^{-1}(F(X^{*})) $, where $ \Phi^{-1} $ is the quantile function of the standard normal distribution.
 
+That is, for any variable of interest, the probability integral transform can be used to define three different types of standardised indices:
+\begin{itemize}
+  \item \emph{Normal indices}: $\Phi^{-1}(F(X^{*}))$
+  \item \emph{Probability indices}: $F(X^{*})$
+  \item \emph{Bounded indices}: $2F(X^{*}) - 1$
+\end{itemize}
 
+All three types of indices can be calculated from observations of the variable $X$ and an estimate of its distribution $F$. In practice, it is most common to use normal indices, though one could argue that probability and bounded indices have a more direct probabilistic interpretation. For example, if we observe the 90$^{th}$ percentile of $X$, then (assuming $F$ is correctly estimated) the corresponding normal index will be 1.28, the 90$^{th}$ percentile of the standard normal distribution, whereas the probability index would be 0.9, and the bounded index would be 0.8. Similarly, for the 10$^{th}$ percentile of $X$, the normal index will be -1.28, the probability index would be 0.1, and the bounded index would be -0.8. For the median of $X$, the normal and bounded indices will be zero, whereas the probability index would be 0.5.
+
+The probabilistic interpretation of standardised indices has made them a useful tool when analysing shortages and excesses of the variable $X$. This was first proposed by \cite{McKeeEtAl1993} in the context of hydrometeorological droughts, and \cite{AllenOtero2023} demonstrate that a similar framework can be employed to define droughts in energy systems. In this case, droughts are defined in terms of thresholds of the standardised indices. Different classes of droughts can be defined using different thresholds, with a more severe drought corresponding to a more extreme threshold.
+
+Following \cite{McKeeEtAl1993}, it is most common to employ three categories, typically labelled ``Moderate'', ``Severe'', and ``Extreme'' droughts. These often correspond to the thresholds 1, 1.5, and 2 of the standardised indices, respectively, though the thresholds 1.28, 1.64, and 1.96 could also be used, which correspond to quantiles of the standard normal distribution. This assumes that an exceedance of the thresholds constitutes a drought, though negatives of these values could analogously be used when interest is on values that fall below a threshold. Table \ref{tab:drought_def} gives corresponding threshold values for the other two types of indices.
+
+\renewcommand*{\arraystretch}{1.5}
+\begin{table}
+    \centering
+    \begin{tabular}{ l | c c c | c c c }
+         & \multicolumn{3}{c |}{Exceedance} & \multicolumn{3}{c}{Fall below} \\
+        Index Type & Moderate & Severe & Extreme & Moderate & Severe & Extreme \\
+        \hline
+        Normal & 1.28 & 1.64 & 1.96 & -1.28 & -1.64 & -1.96 \\
+        Probability & 0.9 & 0.95 & 0.975 & 0.1 & 0.05 & 0.025 \\
+        Bounded & 1.8 & 1.9 & 1.95 & -1.8 & -1.9 & -1.95 \\
+    \end{tabular}
+    \caption{Possible thresholds used to define droughts when using each of the three types of standardised indices.}
+    \label{tab:drought_def}
+\end{table}
+
+The \pkg{SEI} package allows the computation of all three types of droughts, and additionally allows drought occurrences and characteristics to be computed from a time series of standardised indices.
 
 
 \section{Package functionality}\label{section:functionality}
 
+\subsection{Standardised indices}
+
+The \pkg{SEI} package is designed to facilitate the computation of standardised indices. The principal function in the package is \code{std_index()}, which takes a time series or vector \code{x_new} as an input, and returns a time series or vector of corresponding standardised index values.
+
+\begin{Code}
+std_index(
+  x_new,
+  x_ref = x_new,
+  timescale = NULL,
+  dist = "empirical",
+  return_fit = FALSE,
+  moving_window = NULL,
+  window_scale = NULL,
+  agg_period = NULL,
+  agg_scale = NULL,
+  agg_fun = "sum",
+  rescale = NULL,
+  rescale_fun = "sum",
+  index_type = "normal",
+  ignore_na = FALSE
+)
+\end{Code}
+
+The input \code{x_new} must be either a vector or an \pkg{xts} time series object. The argument \code{x_ref} is similarly a vector or time series, containing the archive $X_{1}, \dots, X_{n}$ of past observations that are used to estimate the distribution $F$. This distribution is then applied to each value in \code{x_new}, which therefore correspond to values of $X^{*}$ in the previous section. The default is that \code{x_ref = x_new}, in which case the standardised indices are calculated \emph{in-sample}.
+
+The \code{dist} argument specifies how the distribution $F$ will be estimated from \code{x_ref}. Several parametric distributions are available, as well as non- and semi-parametric methods that are more flexible but require more data. A list of the distributions available in \code{std_index()} is presented in Table \ref{tab:dists}. The default is to use the empirical distribution of \code{x_ref}.
+
+Table \ref{tab:dists} additionally contains the support of the available distributions. The support of the empirical distribution is determined by the archive of observations $X_{1}, \dots, X_{n}$. To accurately estimate $F$, the empirical distribution requires a sufficiently large archive. A warning is therefore returned if the length of \code{x_ref} is smaller than 100, in which case the resolution of the index will be larger than 0.01.
+
+Since we want to obtain a good estimate of $F$, the choice of distribution should be chosen to correspond with the variable of interest. For example, if interest is on precipitation, then we should not choose a distribution that assigns positive probability density to negative values, such as the normal distribution. Conversely, if interest is on temperature (in celcius), then we should not choose a distribution that has support $[0, \infty)$, such as the exponential distribution. An error message is returned if this is the case. The argument \code{return_fit} is a logical that specifies whether or not to return information about the model fit, including estimated parameters and goodness-of-fit statistics; the default is \code{return_fit = FALSE}.
+
+\renewcommand*{\arraystretch}{1.5}
+\begin{table}
+    \centering
+    \begin{tabular}{ l | l | c }
+        Distribution & Argument code & Support \\
+        \hline
+        Empirical & \code{"empirical"} & range$(X_{1}, \dots, X_{n})$ \\
+        Kernel density estimation & \code{"kde"} & $\R$ \\
+        Normal & \code{"norm"} & $\R$ \\
+        Log-normal & \code{"lnorm"} & $[0, \infty)$ \\
+        Logistic & \code{"logis"} & $\R$ \\
+        Log-logistic & \code{"llogis"} & $[0, \infty)$ \\
+        Exponential & \code{"exp"} & $[0, \infty)$ \\
+        Gamma & \code{"gamma"} & $[0, \infty)$ \\
+        Weibull & \code{"weibull"} & $[0, \infty)$ \\
+    \end{tabular}
+    \caption{Distributions available in \pkg{SEI}, and their supports.}
+    \label{tab:dists}
+\end{table}
+
+The distribution fitting is performed using \code{fit_dist()}, which is essentially a wrapper for \code{fitdist()} in the \pkg{fitdistrplus} package, along with extensions that are relevant for the construction of standardised indices. The \code{fit_dist()} function is also exported by \pkg{SEI}, and further details can therefore be found on the associated help pages.
+
+The argument \code{index_type} to \code{std_index()} specifies which type of standardised index should be used. This must be one of \code{"normal"} (the default), \code{"probability"}, or \code{"bounded"}, corresponding to the three definitions in the previous section.
+
+The remaining arguments are only applicable when \code{x_new} and \code{x_ref} are time series, rather than vectors, since they all involve manipulations based on the date of the data. For example, the argument \code{moving_window} can be used to calculate standardised indices using a moving window. In this case, \code{x_ref} is updated for each observation in \code{x_new} so that it contains the previous \code{moving_window} (an integer) observations in the time series; the indices are therefore determined relative to recently observed values. The argument \code{window_scale} specifies the timescale that \code{moving_window} refers to. For example, setting \code{moving_window = 10} and \code{window_scale = "days"} would calculate standardised indices using a moving window of length 10 days.
+
+If \code{moving_window} is specified but \code{window_scale = NULL}, then it is assumed that the units of \code{moving_window} correspond to the timescale of \code{x_new}. If the time difference between consecutive observations is consistent throughout the time series, then this can be determined automatically within \code{std_index()}. Alternatively, and more robustly, it can be specified by the user using the \code{timescale} argument. This (and \code{window_scale}) must be one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, or \code{"years"}.
+
+If the original time series contains, say, hourly data, but the time series of standardised indices is desired on a different timescale, then the \code{rescale} argument can be used to rescale the data. This must also be one of the timescales listed above. By default, \code{std_index()} assumes the sum of the values should be returned when rescaling. For example, if interest is on precipitation accumulations, then converting hourly data to daily data will return the daily aggregations. However, alternative rescaling could also be performed using the \code{rescale_fun} argument, which is a function specifying what operation to perform over the aggregated data. If \code{rescale_fun = "mean"} or \code{rescale_fun = "max"}, for example, then the daily (or weekly, monthly, etc) mean or maximum would be provided, respectively, in place of the hourly data.
+
+Similarly, the \code{agg_period} argument can be used to aggregate data across multiple time steps. Like \code{moving_window} and \code{window_scale}, \code{agg_period} is an integer representing the number of previous time steps over which the data should be aggregated, while \code{agg_scale} specifies the timescale of the aggregation period, which is by default assumed to be the timescale of the data. The argument \code{agg_fun} represents the function used to aggregate the data over the aggregation period.
+
+This differs from \code{rescale} in the following way. If we want to convert a time series of daily observations to a time series of weekly observations, then we can use \code{rescale = "weeks"} (and \code{timescale = "days"}). On the other hand, if we set \code{agg_period = 1} and \code{agg_scale = "weeks"}, then we get a daily time series of weekly aggregated data.
+
+To perform the rescaling, \code{std_index()} calls one of the \pkg{xts} functions \code{apply.daily}, \code{apply.weekly}, \code{apply.monthly}, \code{apply.quarterly}, and \code{apply.yearly}, alongside the argument \code{rescale_fun}. To perform the aggregation, \code{std_index()} uses the function \code{aggregate_xts()}, which is additionally exported by \pkg{SEI}.
+
+\begin{Code}
+aggregate_xts(
+  x,
+  len,
+  scale = c("days", "hours", "weeks", "quarters", "years"),
+  fun = "sum",
+  timescale = c("days", "hours", "weeks", "quarters", "years"),
+  na_thres = 10
+)
+\end{Code}
+
+The interpretation of the arguments is equivalent to in the discussion above. Further information can be found on the corresponding help pages.
 
 
+\subsection{Plotting indices}
 
-\section{Applications}\label{section:application}
+To visualise the indices, \pkg{SEI} includes the \code{plot_sei()} function.
 
-<<unused_functions, echo=FALSE, results='hide'>>=
+\begin{Code}
+plot_sei(
+  x,
+  type = c("ts", "hist"),
+  title = NULL,
+  lab = "Std. Index",
+  ylims = NULL,
+  n_bins = 30
+)
+\end{Code}
 
-calculate_std_index <- function(data, evars, countries, refdata = data,
-                                dist = "empirical", rescale = NULL){
-  # wrapper to convert the raw data to standardised indices for all countries and variables
+The argument \code{x} is either a vector or an \pkg{xts} time series object that contains the index values to be displayed. This function can either be used to plot a time series of the values (\code{type = "ts"}), or a histogram (\code{type = "hist"}). In the latter case, the function is essentially a wrapper of \code{geom_histogram()} in \pkg{ggplot2}. Here, \code{n_bins} can be used to specify the number of bins in the histogram.
 
-  ener_ind <- list()
-  for (icountry in 1:length(countries)) {
-    ener_ind[[icountry]] <- list()
-    cnt <- countries[icountry]
-    for (ivar in 1:length(evars)) {
-      evar <- evars[ivar]
-      X <- data %>% filter(country == cnt) %>% dplyr::select(date, evar)
-      X <- xts(X[[evar]], as.POSIXct(X[["date"]]))
-      X_ref <- refdata %>% filter(country == cnt) %>% dplyr::select(date, evar)
-      X_ref <- xts(X_ref[[evar]], as.POSIXct(X_ref[["date"]]))
-      if (dist == "none") {
-        if (!is.null(rescale)) {
-          if (rescale == "days") {
-            X <- apply.daily(X, "sum")
-          } else if (rescale == "weeks") {
-            X <- apply.weekly(X, "sum")
-          }
-        }
-        ener_ind[[icountry]][[ivar]] <- X
-      } else {
-        ener_ind[[icountry]][[ivar]] <- std_index(X, X_ref, timescale = "hours", dist = dist, rescale = rescale)
-      }
-    }
-    names(ener_ind[[icountry]]) <- evars
-    ener_ind[[icountry]] <- do.call(merge.xts, ener_ind[[icountry]])
-  }
-  names(ener_ind) <- countries
-
-  return(ener_ind)
-}
+Additional aspects of the plot can be specified using \code{title}, \code{lab}, and \code{ylims}. For the time series, \code{lab} refers to the label of the y-axis, whereas it corresponds to the x-axis label of the histogram.
 
 
-get_abbrevs <- function(countries) {
-  # get abbreviations from list of country strings
-
-  abbrevs <- sapply(seq_along(countries), function(i) substr(countries[i], 1, 3))
-
-  if ("Slovakia" %in% countries & "Slovenia" %in% countries) {
-    abbrevs[countries == "Slovakia"] <- "Sva"
-    abbrevs[countries == "Slovenia"] <- "Sve"
-  }
-  if ("Czech_Republic" %in% countries) {
-    abbrevs[countries == "Czech_Republic"] <- "CR"
-  }
-  if ("United_Kingdom" %in% countries) {
-    abbrevs[countries == "United_Kingdom"] <- "UK"
-  }
-
-  return(abbrevs)
-}
+\section{Application}\label{section:application}
 
 
-get_shortcountry_names <- function(longname){
+\subsection{Renewable energy production}
 
-  if (longname == "Austria") shortname <- "AT"
-  if (longname == "Albania") shortname <- "AL"
-  if (longname == "Belgium") shortname <- "BE"
-  if (longname == "Bulgaria") shortname <- "BG"
-  if (longname == "Switzerland") shortname <- "CH"
-  if (longname == "Cyprus") shortname <- "CY"
-  if (longname == "Czech_Republic") shortname <- "CZ"
-  if (longname == "Germany") shortname <- "DE"
-  if (longname == "Denmark") shortname <- "DK"
-  if (longname == "Estonia") shortname <- "EE"
-  if (longname == "Greece") shortname <- "EL"
-  if (longname == "Spain") shortname <- "ES"
-  if (longname == "Finland") shortname <- "FI"
-  if (longname == "France") shortname <- "FR"
-  if (longname == "Croatia") shortname <- "HR"
-  if (longname == "Hungary") shortname <- "HU"
-  if (longname == "Ireland") shortname <- "IE"
-  if (longname == "Iceland") shortname <- "IS"
-  if (longname == "Italy") shortname <- "IT"
-  if (longname == "Liechtenstein") shortname <- "LI"
-  if (longname == "Latvia") shortname <- "LV"
-  if (longname == "Lithuania") shortname <- "LT"
-  if (longname == "Luxembourg") shortname <- "LU"
-  if (longname == "Montenegro") shortname <- "ME"
-  if (longname == "Macedonia") shortname <- "MK"
-  if (longname == "Malta") shortname <- "MT"
-  if (longname == "Netherlands") shortname <- "NL"
-  if (longname == "Norway") shortname <- "NO"
-  if (longname == "Poland") shortname <- "PL"
-  if (longname == "Portugal") shortname <- "PT"
-  if (longname == "Romania") shortname <- "RO"
-  if (longname == "Serbia") shortname <- "RS"
-  if (longname == "Slovenia") shortname <- "SI"
-  if (longname == "Sweden") shortname <- "SE"
-  if (longname == "Slovakia") shortname <- "SK"
-  if (longname == "Turkey") shortname <- "TR"
-  if (longname == "United_Kingdom") shortname <- "UK"
-
-  return(shortname)
-}
-
-
-plot_ics <- function(df, names = NULL, ratio = F) {
-  # plot installed wind and solar capacities in each country
-
-  if (is.null(names)) {
-    names <- df$country
-  }
-
-  if (ratio) {
-    df <- data.frame(n = names,
-                     prop = c(df$wind_prop, df$solar_prop),
-                     Source = rep(c("Wind", "Solar"), each = nrow(df)))
-    p <- ggplot(df) +
-      geom_bar(aes(x = n, y = prop, fill = Source), stat = "identity") +
-      scale_y_continuous(name = "Proportion of installed capacities", expand = c(0, 0)) +
-      scale_x_discrete(name = "") +
-      theme_bw() +
-      theme(legend.title = element_blank())
-  } else {
-    p <- ggplot(data.frame(n = names, c = c(df$IC17_wind, df$IC17_solar),
-                           Source = rep(c("Wind", "Solar"), each = nrow(df)))) +
-      geom_bar(aes(x = n, y = c, fill = Source), position = "dodge", stat = "identity") +
-      scale_y_continuous(name = "Installed capacity 2017 (MW)", expand = expansion(c(0, 0.05))) +
-      scale_x_discrete(name = "") +
-      theme_bw() +
-      theme(legend.justification = c(1, 1), legend.position = c(0.99, 0.99), legend.title = element_blank())
-  }
-
-  return(p)
-}
-
-
-plot_map <- function(x, countries, lims = c(0, 50), breaks = seq(lims[1], lims[2], length.out = 11)){
-
-  world <- map_data('world')
-  europe <- c('UK', 'France', 'Germany', 'Italy', 'Spain', 'Ukraine',
-              'Poland', 'Romania', 'Netherlands', 'Belgium',
-              'Czech Republic', 'Greece', 'Portugal', 'Sweden',
-              'Hungary', 'Belarus', 'Austria', 'Serbia', 'Switzerland',
-              'Bulgaria', 'Denmark', 'Finland', 'Slovakia', 'Norway',
-              'Ireland', 'Croatia', 'Moldova', 'Bosnia and Herzegovina',
-              'Albania', 'Lithuania', 'Macedonia', 'Slovenia', 'Latvia',
-              'Estonia', 'Montenegro', 'Luxembourg', 'Malta', 'Iceland',
-              'Andorra', 'Monaco', 'Liechtenstein', 'San Marino',
-              'Vatican', 'Kosovo')
-  eur <- world[world$region %in% europe, ]
-
-  eur$value <- NA
-
-  df <- data.frame(c = x, country = countries)
-  df$country[df$country == "Czech_Republic"] <- "Czech Republic"; df$country[df$country == "United_Kingdom"] <- "UK"
-  for(i in df$country) eur$value[eur$region == i] <- df$c[df$country == i]
-
-  p <- ggplot(data = eur, mapping = aes(x = long, y = lat, group = group)) +
-    coord_map() + geom_polygon(aes(fill = value), colour = 'black') + theme_bw() +
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-          axis.text = element_blank(), axis.ticks = element_blank()) +
-    scale_fill_fermenter(name = NULL, palette = "RdBu", direction = -1, breaks = breaks, limits = lims) +
-    scale_y_continuous(name = NULL, limits = c(35, 65), expand = c(0, 0)) +
-    scale_x_continuous(name = NULL, limits = c(-15, 25), expand = c(0, 0))
-
-  return(p)
-}
-
-@
-
-
-The data used for the case study correspond to time series of renewable generation solar and wind for a total of 27 countries across Europe. This data is publicity available at the [University of Reading](https://researchdata.reading.ac.uk/275/). More details about this dataset can be found in \cite{BloomfieldEtAl2020}. The original data provides the capacity factors for solar and wind, which were later multiplied by the installed capacities (IC). In this case, we use the installed capacities of 2017.
-
-
-
-Let's first have a look at the IC.
-
-<<load_ic_data>>=
-data("data_ic2017", package = "SEI")
-head(data_ic2017)
-@
-
-
-We can use either country abbreviations or codes to use in the plots.
-
-<<get_abbrevs>>=
-abbrevs <- get_abbrevs(unique(data_ic2017$country))
-s_names <- unlist(lapply(unique(data_ic2017$country), get_shortcountry_names))
-@
-
-
-\begin{figure}
-<<plot_ics, dev='pdf', fig.width=10.4, fig.height=3.5, fig.align="center", out.width = "\\linewidth">>=
-plot_ics(data_ic2017, abbrevs)
-@
-\caption{Installed capacities.}
-\label{fig:ics}
-\end{figure}
-
-
-We begin by looking at the raw renewable energy production, in this case, "PWS", which is wind and solar production.
-But it can be applied to any other energy indicator, such as, electricity demand or individual renewable energy sources.
+Consider an application of standardised indices to renewable energy production in Europe. Hourly time series of wind and solar power generation is available for 27 European countries. This data is publicly available at \url{https://researchdata.reading.ac.uk/275/} \citep[see][for details]{BloomfieldEtAl2020}, and a subset of this data set corresponding to 2019 production can also be accessed from \pkg{SEI} using
 
 <<load_supply_data>>=
 data("data_supply", package = "SEI")
 head(data_supply)
 @
 
-<<set_variables, echo=FALSE>>=
-evars <- c("PWS")
-countries <- unique(data_supply$country)
+The data frame \code{data_supply} contains a \code{POSIXct} time series of dates, along with the corresponding country and wind and solar power production (\code{PWS}). The units of the production are Gigawatt hours (GWh).
+
+The resources available for a country to generate wind and solar power can be quantified using its corresponding installed wind and solar capacities. The installed wind and solar capacities for the 27 countries (in 2017) are also available from \pkg{SEI}.
+
+<<load_ic>>=
+data("data_ic2017", package = "SEI")
+head(data_ic2017)
 @
 
-Here, we calculate raw data at hourly and daily. Note that it can calculate at any preferred time scale (e.g., weekly,  two-weekly etc...) and the units are GW.
+We restrict attention here to renewable energy production in Germany.
 
-<<calculate_raw_index>>=
-raw_1h <- calculate_std_index(data_supply, evars, countries, dist = "none")
-raw_1d <- calculate_std_index(data_supply, evars, countries, dist = "none", rescale = "days")
-head(raw_1h[["Portugal"]])
+<<subset_germany>>=
+de_supply_h <- subset(data_supply, country == "Germany")
+de_supply_h <- xts::xts(de_supply_h$PWS, de_supply_h$date) # convert to xts
 @
 
+This can be rescaled from hourly to daily or weekly time series using \pkg{xts} functionality.
 
-The output is a data frame that contains the time series of the index. We can visualize the values for one country. As an example we can plot the index for Portugal.
-
-<<set_pars>>=
-country_str <- "Portugal"
-variable_str <- "PWS"
-year_vec <- 2019
+<<rescale>>=
+de_supply_d <- xts::apply.daily(de_supply_h, "sum")    # daily data
+de_supply_w <- xts::apply.weekly(de_supply_h, "sum")   # weekly data
 @
 
-Visualize the time series:
+These time series of renewable energy production in Germany can be visualised using the \code{plot_sei()} function.
 
 \begin{figure}
-<<plot_raw_ts, dev='pdf', fig.width=7, fig.height=4, fig.align="center", out.width = "\\linewidth">>=
-raw_reduced <- raw_1h[[country_str]][, variable_str]
-year_ind <- format(index(raw_reduced), "%Y") %in% year_vec
-plot_sei(raw_reduced[year_ind], lab = "Renewable Energy Production", title = "Hourly")
-
-rawD_reduced <- raw_1d[[country_str]][, variable_str]
-year_ind <- format(index(rawD_reduced), "%Y") %in% year_vec
-plot_sei(rawD_reduced[year_ind], lab = "Renewable Energy Production", title = "Daily")
+<<plot_raw_ts, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+lab <- "Renewable Energy Production (GWh)"
+plot_h <- plot_sei(de_supply_h, lab = lab, title = "Hourly")
+plot_d <- plot_sei(de_supply_d, lab = lab, title = "Daily")
+plot_w <- plot_sei(de_supply_w, lab = lab, title = "Weekly")
+grid.arrange(plot_h, plot_d, plot_w, nrow = 1)
 @
-\caption{Portgual renewable energy production time series.}
+\caption{Time series of 2019 renewable energy production in Germany at hourly, daily, and weekly time scales.}
 \label{fig:ts_raw}
 \end{figure}
 
-Standardised values:
+All three time series display the same patterns, though the weekly time series removes the hourly and daily fluctuations.
 
-Next, we calculate the standardised renewable energy production index (SREPI) at hourly and daily time scales. Note that the SREPI is dimensionless.
+The raw renewable energy production values can be transformed to a standardised index using \code{std_index()}. Following, \cite{AllenOtero2023}, we refer to this as the standardised renewable energy production index (SREPI).
 
 <<calculate_index>>=
-sei_1h <- calculate_std_index(data_supply, evars, countries, dist = "empirical")
-sei_1d <- calculate_std_index(data_supply, evars, countries, dist = "empirical", rescale = "days")
-head(sei_1h[["Portugal"]])
+srepi_h <- std_index(de_supply_h)
+srepi_d <- std_index(de_supply_d)
+srepi_w <- std_index(de_supply_w)
+@
+
+In this case, the reference data \code{x_ref} is assumed to be the input time series itself, meaning the indices are calculated relative to this input data. By default, \code{std_index()} returns normal indices (rather than probability or bounded indices), and estimates the distribution of the renewable energy production using the empirical distribution. This returns a warning for the weekly data, since there are fewer than 100 weekly production values in the time series, whereas the empirical distribution function is only recommended if at least 100 reference values are available. Instead, the weekly indices could be calculated using kernel density estimation, by specifying \code{dist = "kde"} in \code{std_index()}.
+
+While these indices are created by standardising the respective hourly, daily, and weekly time series of raw production values, they could all be obtained from the original hourly time series by specifying the \code{rescale} argument in \code{std_index()}.
+
+<<use_rescale>>=
+z <- std_index(de_supply_h, rescale = "days")
+all.equal(srepi_d, z)
 @
 
 \begin{figure}
-<<plot_index_ts, dev='pdf', fig.width=7, fig.height=4, fig.align="center", out.width = "\\linewidth">>=
-sei__reduced <- sei_1h[[country_str]][, variable_str]
-year_ind <- format(index(sei__reduced), "%Y") %in% year_vec
-plot_sei(sei__reduced[year_ind], lab = "SREPI", title = "Hourly", ylims = c(-4, 4))
-
-seiD_reduced <- sei_1d[[country_str]][, variable_str]
-year_ind <- format(index(seiD_reduced), "%Y") %in% year_vec
-plot_sei(seiD_reduced[year_ind], lab = "SREPI", title = "Daily", ylims = c(-4, 4))
+<<plot_sei_ts, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+lab <- "SREPI"
+plot_h <- plot_sei(srepi_h, lab = lab, title = "Hourly", )
+plot_d <- plot_sei(srepi_d, lab = lab, title = "Daily")
+plot_w <- plot_sei(srepi_w, lab = lab, title = "Weekly")
+grid.arrange(plot_h, plot_d, plot_w, nrow = 1)
 @
-\caption{Portgual SREPI time series.}
+\caption{Time series of 2019 SREPI values in Germany at hourly, daily, and weekly time scales.}
 \label{fig:ts_si}
 \end{figure}
 
-
-Distributions:
-
-The corresponding distribution for the raw values:
+By default, the \code{plot_sei()} function displays the time series of input values. However, by specifying \code{type = "hist"} (rather than the default \code{type = "ts"}), this function can additionally be used to plot a histogram of the input values. An example of this for the daily data production and corresponding SREPI values is presented in Figure \ref{fig:dist_raw}.
 
 \begin{figure}
-<<plot_raw_dist, dev='pdf', fig.width=7, fig.height=4, fig.align="center", out.width = "\\linewidth">>=
-plot_sei(rawD_reduced, type = "hist", lab = "Renewable Energy Production (GWh)", title = "Daily")
+<<plot_dist, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+plot_raw <- plot_sei(de_supply_d, type = "hist",
+                     lab = "Renewable Energy Production (GWh)")
+plot_ind <- plot_sei(srepi_d, type = "hist", lab = "SREPI")
+grid.arrange(plot_raw, plot_ind, nrow = 1)
 @
-\caption{Portgual distribution.}
+\caption{Histogram of 2019 daily renewable energy production and SREPI values in Germany.}
 \label{fig:dist_raw}
 \end{figure}
 
-
-and for the standardised distribution:
+While the raw renewable energy production follows a heavily skewed distribution, the SREPI values, by construction, resemble a sample from a standard normal distribution. Note that this is only the case for the ``normal indices'', if probability or bounded indices are used, then the resulting histograms should be flat. This is illustrated in Figure \ref{fig:dist_raw_unif}.
 
 \begin{figure}
-<<plot_si_dist, dev='pdf', fig.width=7, fig.height=4, fig.align="center", out.width = "\\linewidth">>=
-plot_sei(seiD_reduced, type = "hist", lab = "SREPI", title = "Daily")
+<<plot_dist_unif, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+srepi_d_prob <- std_index(de_supply_d, index_type = "probability")
+plot_prob <- plot_sei(srepi_d_prob, type = "hist", lab = "SREPI",
+                      title = "Probability")
+srepi_d_bnd <- std_index(de_supply_d, index_type = "bounded")
+plot_bnd <- plot_sei(srepi_d_prob, type = "hist", lab = "SREPI",
+                     title = "Bounded")
+grid.arrange(plot_prob, plot_bnd, nrow = 1)
 @
-\caption{Portgual distribution.}
-\label{fig:dist_si}
+\caption{Histogram of 2019 daily renewable energy production and SREPI values in Germany, where the indices are probability and bounded indices.}
+\label{fig:dist_raw_unif}
 \end{figure}
 
-Define energy droughts:
+Finally, the \pkg{SEI} package additionally allows shortages or drought characteristics of the time series to be assessed. In this case, an energy supply drought could occur if the renewable energy production is low compared to previously observed values \citep{AllenOtero2023}. This corresponds to a low SREPI.
 
-These indices can be used to characterize \emph{energy droughts}, which could occur due to low values of the renewable energy production, or high values of the residual load.
-
-Here, we show how the SEI can be used to characterize droughts of renewable energy production (PWS). For that, threshold values are used to categorize the type of \emph{energy production drought}. In this case,  we say that an energy production drought occurs if the index falls below -1. The function \code{def_energy_drought} calculates the main characteristics of droughts: intensity, occurrence, duration and magnitude, in terms of the threshold values previously defined.
-
-
+As in Table \ref{tab:drought_def}, we define three categories of droughts, each defined using increasing thresholds of the SREPI. The function \code{get_drought()} can then be used to obtain a time series of drought occurrences, intensities, durations, and magnitudes.
 
 <<define_droughts, echo=FALSE>>=
-threshvals <- -qnorm(c(0.9, 0.95, 0.975)) # -1.28, -1.64, -1.96
+thresholds <- -qnorm(c(0.9, 0.95, 0.975)) # -1.28, -1.64, -1.96
 
-# energy drought characteristics
-drought_df <- lapply(countries, function(z) get_drought(sei_1d[[z]][, "PWS"], threshvals, higher = F))
-names(drought_df) <- countries
+drought_df <- get_drought(srepi_d, thresholds, higher = F)
 @
 
+The output \code{drought_df} is a dataframe containing the original time series, as well as four additional columns: the intensity (\code{ins}), which corresponds to the category of drought, a higher value referring to a more severe drought category; the occurrence (\code{occ}), which corresponds to the intensity being higher than zero; the duration (\code{dur}), which provides the number of consecutive time steps that are in a drought state; and the drought magnitude (\code{mag}), which is the sum of all indices within the drought event. Note that if only one threshold were used to define a drought, rather than the three used here, then the intensity is equivalent to the occurrence, and is therefore not returned.
 
-We can now calculate the number of droughts per year in each country. As this analysis only considers 2019, \code{n_year = 1}.
+From \code{drought_df}, it is straightforward to analyse the properties of these drought events. For example, we can list the frequency that a moderate, severe, or extreme drought event occurs,
 
 <<calculate event frequency>>=
-n_year <- 1
-num_ev <- sapply(drought_df, function(x) sum(x$occ != 0)/n_year)
+num_ev <- sapply(0:3, function(i) sum(drought_df$ins == i))
+names(num_ev) <- c("None", "Moderate", "Severe", "Extreme")
+print(num_ev)
 @
 
-and visualize the frequency of energy production drought. Note that this includes all types of energy production droughts (i.e., mild, moderate, severe and extreme). See more details in \citep{AllenOtero2023}.
-
-
-\begin{figure}
-<<plot_freq_map, dev='pdf', fig.width=7, fig.height=4, fig.align="center", out.width = "\\linewidth">>=
-plot_map(num_ev, countries)
+we could display the relative frequency of drought durations,
+<<calculate event duration>>=
+table(drought_df$dur[drought_df$dur > 0])
 @
-\caption{Average drought occurrences per year.}
-\label{fig:freq_map}
-\end{figure}
+
+or we could calculate the average drought magnitude
+<<calculate event magnitude>>=
+mean(drought_df$mag[drought_df$mag != 0])
+@
 
 
+These are just simple examples of analyses that could be performed using the output of \code{get_drought()}. For a more thorough analysis, readers are referred to \code{AllenOtero2023}.
 
-\section{Conclusion}\label{section:conclusion}
 
-This paper has introduced the \pkg{SEI} package in \proglang{R}, which provides comprehensive functionality to calculate standardised indices. This includes not only standardised climate indices, which have been the focus of most existing software packages, but also standardised indices in a wide range of alternative settings. For example, an example is presented in Section \ref{section:application} whereby the package is employed when calculating standardised energy indices to monitor energy droughts.
+\section{Summary}\label{section:conclusion}
 
-The main features of this package in comparison with alternatives are that it facilitates a wide range of distributions from which to calculate standardised indices, including the empirical distribution and flexible kernel density estimation techniques; the standardised indices can be computed from a rolling window of values, giving the indices an interpretation in terms of recent behaviour; and there is the capability to construct indices on any timescale. Finally, plot capabilities are also included to illustrate the behaviour of the indices over time.
+This vignette documents the \pkg{SEI} package in \proglang{R}, which provides comprehensive functionality to calculate standardised indices. Standardised indices are projections of variables onto an interpretable and probabilistically meaningful scale, and they have become popular tools when monitoring variables of interest over time. The \pkg{SEI} package converts a time series (or vector) of observations to a time series (or vector) of standardised indices. The package allows the time series to be aggregated and rescaled to different time scales, and plot capabilities are also available to visualise the indices over time.
 
-Nonetheless, there is still scope to further extend the functionality of \pkg{SEI}.
-
+The package additionally allows users to define and analyse shortages, or droughts, of the variable under consideration. An example is presented in Section \ref{section:application} whereby the package is employed to calculate standardised indices to monitor renewable energy production droughts. However, the package is applicable in much larger generality. We outline the general framework for constructing standardised indices, and reiterate that this approach can be applied to any variable of interest, not just those previously considered in the literature. With this in mind, the \pkg{SEI} offers an extensive collection of distributions with which to calculate the indices, including flexible non-parametric methods, making it applicable in a variety of settings. This is in contrast to existing software packages for standardised indices, which restrict attention to the SPI and SPEI.
 
 
 \section*{Acknowledgements}
 
-This work was funded by the Oeschger Centre for Climate Change Research and the Swiss Federal Office of Meteorology and Climatology (MeteoSwiss).
+This package was created under funding by the Oeschger Centre for Climate Change Research and the Swiss Federal Office of Meteorology and Climatology (MeteoSwiss).
 
 %% Bibliography
 \bibliography{bibliography}
 
 \end{document}
+

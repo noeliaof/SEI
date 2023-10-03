@@ -130,7 +130,7 @@ check_distribution <- function(inputs) {
     }
   }
 
-  if (inputs$dist %in% c("tnorm", "tlogis", "llogis", "exp", "gamma", "weibull")) {
+  if (inputs$dist %in% c("lnorm", "llogis", "exp", "gamma", "weibull")) {
     if (any(data < 0)) {
       stop(paste("the", inputs$dist, "distribution has positive support, but the data contains negative values"))
     } else if (any(data == 0)) {

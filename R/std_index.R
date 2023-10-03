@@ -312,6 +312,13 @@ check_inputs <- function(inputs) {
     }
   }
 
+  # window_scale
+  if (!is.null(inputs$window_scale)) {
+    if (!(inputs$window_scale %in% c("days", "weeks", "months", "quarters", "years"))) {
+      stop("window_scale must be one of 'days', 'weeks', 'months', 'quarters', or 'years'")
+    }
+  }
+
   # agg_period
   if (!is.null(inputs$agg_period)) {
     if (!is.numeric(inputs$agg_period)) {
