@@ -1,6 +1,6 @@
 Package: SEI
-Title: SEI: Calculating standardised energy indices
-Version: 0.0.0.9000
+Title: Calculating standardised energy indices
+Version: 0.1.0
 Authors@R: 
   c(person(given = "Noelia", family = "Otero", email = "noeli1680@gmail.com", role=c('aut','cre')),
   person(given = "Sam", family = "Allen", email = "sam.allen@stat.unibe.ch", role = c('aut')))
