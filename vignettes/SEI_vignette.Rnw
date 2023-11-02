@@ -24,7 +24,7 @@
 %\usepackage{Sweave}
 <<preliminaries, echo=FALSE, results='hide', message=FALSE>>=
 # Using knitr for manuscript
-library(knitr)
+library(knitr, quietly = TRUE)
 opts_chunk$set(engine='R', tidy = FALSE, message = FALSE)
 #render_sweave()
 
