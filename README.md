@@ -21,7 +21,7 @@ This package has not been submitted to CRAN. The developmental version can be in
 ```r
 # install.packages("devtools")
 library(devtools)
-install_github("noeliaof/SEI")
+install_github("noeliaof/SEI", build_vignettes = TRUE)
 ```
 The vignette lists several possible extensions that could be implemented. Additional comments, suggestions, and input are more than welcome.
 
