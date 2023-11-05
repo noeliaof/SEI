@@ -43,6 +43,8 @@
 #' @author Sam Allen, Noelia Otero
 #'
 #' @examples
+#' \dontrun{
+#'
 #' data(data_supply)
 #' # consider hourly German energy supply data in 2019
 #' supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
@@ -57,6 +59,8 @@
 #'
 #' plot(supply_de)
 #' plot(supply_de_weekly)
+#'
+#' }
 #'
 #' @name aggregate_xts
 NULL

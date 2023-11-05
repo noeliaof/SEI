@@ -61,6 +61,8 @@ before a NA value is returned. i.e. the proportion of values that are allowed to
 The default is \code{na_thres = 10}.
 }
 \examples{
+\dontrun{
+
 data(data_supply)
 # consider hourly German energy supply data in 2019
 supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
@@ -75,6 +77,8 @@ supply_de_weekly <- aggregate_xts(supply_de, len = 1, scale = "weeks", fun = "me
 
 plot(supply_de)
 plot(supply_de_weekly)
+
+}
 
 }
 \author{
