@@ -89,7 +89,7 @@
 #' @references
 #' Allen, S. and N. Otero (2023):
 #' `Standardised indices to monitor energy droughts',
-#' \emph{Renewable Energy}
+#' \emph{Renewable Energy} 217, 119206
 #' \doi{10.1016/j.renene.2023.119206}
 #'
 #' McKee, T. B., Doesken, N. J., & Kleist, J. (1993):
