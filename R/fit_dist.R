@@ -77,7 +77,7 @@ fit_dist <- function(data, dist, n_thres = 20){
   # check sample size
   data <- data[!is.na(data)]
   n <- length(data)
-  if (n < 20) {
+  if (n < n_thres) {
     warning(paste(n_thres, "values are required to fit the distribution - distribution has not been fit"))
     return(list(F_x = function(x, params) as.numeric(NA), params = NA, fit_props = fit_props))
   }
