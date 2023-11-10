@@ -9,6 +9,7 @@ plot_sei(
   type = c("ts", "hist"),
   title = NULL,
   lab = "Std. Index",
+  xlims = NULL,
   ylims = NULL,
   n_bins = 30
 )
@@ -22,7 +23,7 @@ plot_sei(
 
 \item{lab}{axis label (y-axis if type = "ts", x-axis if type = "hist").}
 
-\item{ylims}{lower and upper limits of the time series plot.}
+\item{xlims, ylims}{lower and upper limits of the axes.}
 
 \item{n_bins}{the number of bins to show in the histogram.}
 }

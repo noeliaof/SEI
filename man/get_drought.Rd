@@ -4,14 +4,14 @@
 \alias{get_drought}
 \title{Get drought characteristics}
 \usage{
-get_drought(x, thresholds = c(1.28, 1.64, 1.96), higher = TRUE, lag = FALSE)
+get_drought(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag = FALSE)
 }
 \arguments{
 \item{x}{vector or xts object.}
 
-\item{thresholds}{numeric vector containing thresholds to use when defining droughts/}
+\item{thresholds}{numeric vector containing thresholds to use when defining droughts.}
 
-\item{higher}{logical; TRUE if a drought is defined when \code{x} is above the thresholds, FALSE otherwise/}
+\item{exceed}{logical; TRUE if a drought is defined when \code{x} is above the thresholds, FALSE otherwise.}
 
 \item{lag}{logical; TRUE if the drought should end when the value changes sign.}
 }
@@ -24,7 +24,7 @@ include the occurrence, intensity, magnitude, and duration of the drought.
 }
 \details{
 A drought is assumed to be defined as an instance when the vector \code{x} exceeds
-(if \code{higher = TRUE}) or falls below (if \code{higher = FALSE}) the specified
+(if \code{exceed = TRUE}) or falls below (if \code{exceed = FALSE}) the specified
 thresholds in \code{thresholds}.
 
 \code{thresholds} can be a single value, or a vector of values. In the latter case,
