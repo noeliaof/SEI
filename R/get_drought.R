@@ -67,7 +67,7 @@
 #' options(xts_check_TZ = FALSE)
 #' supply_de_std <- std_index(supply_de, timescale = "hours")
 #'
-#' get_drought(supply_de_std, thresholds = c(-1, -1.5, -2), higher = FALSE)
+#' get_drought(supply_de_std, thresholds = c(-1, -1.5, -2), exceed = FALSE)
 #'
 #' @name get_drought
 NULL
