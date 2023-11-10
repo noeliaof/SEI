@@ -30,6 +30,7 @@
 #' plot_sei(supply_de_std, type = "hist", title = "German SREPI in 2019")
 #'
 #' @name plot_sei
+#' @importFrom stats density
 NULL
 
 #' @rdname plot_sei
