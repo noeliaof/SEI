@@ -174,8 +174,8 @@ std_index <- function(x_new,
   check_inputs(inputs)
 
   # get timescale (if not given)
-  if ((!is.null(rescale) | is.null(agg_period) | is.null(moving_window)) & is.null(timescale)) {
-    timedif <- diff(zoo::index(x_ref))[1]
+  if (!(is.null(rescale) | is.null(agg_period) | is.null(moving_window)) & is.null(timescale)) {
+    timedif <- diff(zoo::index(x_ref))[1] # timedif <- deltat(x_ref)/3600
     if (timedif == 1) {
       timescale <- units(timedif)
     } else if (timedif == 24 && units(timedif) == "hours") {
@@ -250,8 +250,12 @@ std_index <- function(x_new,
   } else if (index_type == "probability") {
     si <- pit
   }
-  si <- xts::xts(si, order.by = zoo::index(x_new))
-  xts::xtsAttributes(si) <- xts::xtsAttributes(x_new)
+
+  if (xts::is.xts(x_new)) {
+    si <- xts::xts(si, order.by = zoo::index(x_new))
+    xts::xtsAttributes(si) <- xts::xtsAttributes(x_new)
+  }
+
 
   # return indices
   if (return_fit) {
