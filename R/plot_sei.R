@@ -7,7 +7,7 @@
 #' @param type type of plot (either time series "ts", or histogram "hist").
 #' @param title optional title of the plot.
 #' @param lab axis label (y-axis if type = "ts", x-axis if type = "hist").
-#' @param ylims lower and upper limits of the time series plot.
+#' @param xlims,ylims lower and upper limits of the axes.
 #' @param n_bins the number of bins to show in the histogram.
 #'
 #' @return
@@ -34,7 +34,7 @@ NULL
 
 #' @rdname plot_sei
 #' @export
-plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index", ylims = NULL, n_bins = 30){
+plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index", xlims = NULL, ylims = NULL, n_bins = 30){
 
   type <- match.arg(type)
 
@@ -56,9 +56,9 @@ plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index"
       df <- data.frame(x = x)
     }
     p <- ggplot2::ggplot(df) +
-      ggplot2::geom_histogram(ggplot2::aes_string(x = as.numeric(x)), col = "black", bins = n_bins, alpha = 0.4) +
-      ggplot2::xlab(lab) +
-      ggplot2::scale_y_continuous(name = "Density", expand = ggplot2::expansion(c(0, 0.05))) +
+      ggplot2::geom_histogram(ggplot2::aes(x = as.numeric(x), y = ggplot2::after_stat(density)), col = "black", bins = n_bins, alpha = 0.4) +
+      ggplot2::scale_x_continuous(name = lab, limits = xlims, expand = ggplot2::expansion(c(0, 0))) +
+      ggplot2::scale_y_continuous(name = "Density", limits = ylims, expand = ggplot2::expansion(c(0, 0.05))) +
       ggplot2::theme_bw() +
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
                      panel.grid.minor = ggplot2::element_blank(),
