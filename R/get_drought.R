@@ -5,13 +5,13 @@
 #' include the occurrence, intensity, magnitude, and duration of the drought.
 #'
 #' @param x vector or xts object.
-#' @param thresholds numeric vector containing thresholds to use when defining droughts/
-#' @param higher logical; TRUE if a drought is defined when \code{x} is above the thresholds, FALSE otherwise/
+#' @param thresholds numeric vector containing thresholds to use when defining droughts.
+#' @param exceed logical; TRUE if a drought is defined when \code{x} is above the thresholds, FALSE otherwise.
 #' @param lag logical; TRUE if the drought should end when the value changes sign.
 #'
 #' @details
 #' A drought is assumed to be defined as an instance when the vector \code{x} exceeds
-#' (if \code{higher = TRUE}) or falls below (if \code{higher = FALSE}) the specified
+#' (if \code{exceed = TRUE}) or falls below (if \code{exceed = FALSE}) the specified
 #' thresholds in \code{thresholds}.
 #'
 #' \code{thresholds} can be a single value, or a vector of values. In the latter case,
@@ -74,7 +74,7 @@ NULL
 
 #' @rdname get_drought
 #' @export
-get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96), higher = TRUE, lag = FALSE){
+get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag = FALSE){
 
   if (xts::is.xts(x)) {
     x <- unname(x)
@@ -84,7 +84,7 @@ get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96), higher = TRUE, lag 
   }
 
   # intensity
-  if (higher) {
+  if (exceed) {
     if (length(thresholds) == 1) {
       df$occ <- as.numeric(df$x >= thresholds)
     } else {
