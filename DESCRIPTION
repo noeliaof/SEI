@@ -4,9 +4,12 @@ Version: 0.1.0
 Authors@R: 
   c(person(given = "Noelia", family = "Otero", email = "noeli1680@gmail.com", role=c('aut','cre')),
   person(given = "Sam", family = "Allen", email = "sam.allen@unibe.ch", role = c('aut')))
-Description: Calculate standardised indices that can be used to monitor variables 
-  on a common and probabilistically interpretable scale. Functions are also provided
-  to visualise the standardised indices.
+Description: Convert a time series of observations to a time series of standardised indices 
+  that can be used to monitor variables on a common and probabilistically interpretable scale. 
+  The indices can be aggregated and rescaled to different time scales, visualised
+  using plot capabilities, and calculated using a range of distributions, 
+  including flexible non- and semi-parametric methods.
+URL: https://github.com/noeliaof/SEI
 License: GPL (>= 2)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
