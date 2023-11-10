@@ -8,7 +8,7 @@
 An object of class \code{"data.frame"}
 }
 \source{
-University of Reading. Dataset.  \url{https://doi.org/10.17864/1947.000321}
+University of Reading. Dataset.  \doi{10.17864/1947.000321}
 }
 \usage{
 data(data_supply)
@@ -24,7 +24,6 @@ data("data_supply")
 }
 \references{
 Bloomfield, Hannah and Brayshaw, David (2021): ERA5 derived time series of European aggregated surface weather variables,
-wind power, and solar power capacity factors: hourly data from 1950-2020.
-(\href{https://doi.org/10.17864/1947.000321}{PubMed})
+wind power, and solar power capacity factors: hourly data from 1950-2020. \doi{10.17864/1947.000321}
 }
 \keyword{datasets}

@@ -14,10 +14,9 @@
 #' @keywords datasets
 #'
 #' @references Bloomfield, Hannah and Brayshaw, David (2021): ERA5 derived time series of European aggregated surface weather variables,
-#' wind power, and solar power capacity factors: hourly data from 1950-2020.
-#' ([PubMed](https://doi.org/10.17864/1947.000321))
+#' wind power, and solar power capacity factors: hourly data from 1950-2020. \doi{10.17864/1947.000321}
 #'
-#' @source  University of Reading. Dataset.  <https://doi.org/10.17864/1947.000321>
+#' @source  University of Reading. Dataset.  \doi{10.17864/1947.000321}
 #'
 #' @examples
 #' data("data_supply")
