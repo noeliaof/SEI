@@ -63,8 +63,8 @@ The default is \code{na_thres = 10}.
 \examples{
 \donttest{
 
-data(data_supply)
-# consider hourly German energy supply data in 2019
+data(data_supply, package = "SEI")
+# consider hourly German energy production data in 2019
 supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
 supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
 
@@ -74,8 +74,9 @@ supply_de_daily <- aggregate_xts(supply_de, len = 1, timescale = "hours")
 # weekly means
 supply_de_weekly <- aggregate_xts(supply_de, len = 1, scale = "weeks", fun = "mean", "hours")
 
-plot(supply_de)
-plot(supply_de_weekly)
+plot(supply_de, main = "Hourly energy production in Germany")
+plot(supply_de_daily, main = "Daily energy production in Germany")
+plot(supply_de_weekly, main = "Weekly energy production in Germany")
 
 }
 
