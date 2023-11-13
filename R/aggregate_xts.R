@@ -43,13 +43,12 @@
 #' @author Sam Allen, Noelia Otero
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'
 #' data(data_supply)
 #' # consider hourly German energy supply data in 2019
 #' supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
 #' supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
-#' options(xts_check_TZ = FALSE)
 #'
 #' # daily accumulations
 #' supply_de_daily <- aggregate_xts(supply_de, len = 1, timescale = "hours")

@@ -45,7 +45,7 @@ library(dplyr)
 library(xts)
 library(zoo)
 library(gridExtra)
-options(xts_check_TZ = FALSE)
+#options(xts_check_TZ = FALSE)
 @
 
 

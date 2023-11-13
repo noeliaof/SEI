@@ -6,9 +6,18 @@
 #' @param x vector or xts object containing the indices to be plotted.
 #' @param type type of plot (either time series "ts", or histogram "hist").
 #' @param title optional title of the plot.
-#' @param lab axis label (y-axis if type = "ts", x-axis if type = "hist").
+#' @param lab axis label.
 #' @param xlims,ylims lower and upper limits of the axes.
 #' @param n_bins the number of bins to show in the histogram.
+#'
+#' @details
+#' The \code{plot_sei()} function can be used to plot either a time series (if
+#' \code{type = "ts"}) or a histogram (if \code{type = "hist"}) of the values in \code{x}.
+#'
+#' A time series can only be displayed if \code{x} is an \pkg{xts} time series.
+#'
+#' The argument \code{lab} is a string containing the label of the x-axis if
+#' \code{type = "hist"} and the y-axis if \code{type = "ts"}.
 #'
 #' @return
 #' A ggplot object displaying the standardised index values.
@@ -20,7 +29,6 @@
 #' # consider hourly German energy supply data in 2019
 #' supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
 #' supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
-#' options(xts_check_TZ = FALSE)
 #' supply_de_std <- std_index(supply_de, timescale = "hours")
 #'
 #' plot_sei(supply_de, title = "German renewable energy production in 2019")

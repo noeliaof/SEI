@@ -103,13 +103,12 @@
 #' # consider hourly German energy supply data in 2019
 #' supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
 #' supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
-#' options(xts_check_TZ = FALSE)
+#' #options(xts_check_TZ = FALSE)
 #'
 #' # convert to hourly standardised indices
 #' supply_de_std <- std_index(supply_de, timescale = "hours")
-#' par(mfrow = c(1, 2))
-#' hist(supply_de)
-#' hist(supply_de_std)
+#' hist(supply_de, main = "Raw values")
+#' hist(supply_de_std, main = "Standardised values")
 #'
 #' # convert to daily or weekly standardised indices
 #' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days")
