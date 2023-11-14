@@ -29,10 +29,10 @@ opts_chunk$set(engine='R', tidy = FALSE, message = FALSE)
 #render_sweave()
 
 # JSS code formatting
-options(prompt = "R> ", continue = "+  ", width = 70, useFancyQuotes = FALSE)
+#options(prompt = "R> ", continue = "+  ", width = 70, useFancyQuotes = FALSE)
 
 # Formatting
-options(scipen = 1, digits = 3)
+#options(scipen = 1, digits = 3)
 Sys.setenv(LANG = 'en')
 
 # RNG initialization
