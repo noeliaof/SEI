@@ -517,7 +517,7 @@ par(mfrow = c(1, 1))
 @
 
 
-Similarly than in the previous application, the functionality of the \pkg{SEI} package can be further explore the wind droughts chatacteristics, after obtaining the standardised index. As described below the \code{std_index()} function returns the index, which can be follow an specific distribution. Figure \ref{fig:ts_sei_ws} shows the values of SEI for wind speed at different time scales, namely, daily, weekly and monthly and figure \ref{fig:dist_wind} illustrates the daily wind speed conditions and the corresponding SEI values for Germany.
+Similarly than in the previous application, the functionality of the \pkg{SEI} package can be further explore the wind droughts chatacteristics, after obtaining the standardised index. As described below the \code{std_index()} function returns the index, which can follow an specific distribution. Figure \ref{fig:ts_sei_ws} shows the values of SEI for wind speed at different time scales, namely, daily, weekly and monthly and figure \ref{fig:dist_wind} illustrates the daily wind speed conditions and the corresponding SEI values for Germany.
 
 <<use_rescale>>=
 sei_ws_d <- std_index(de_wind_d)
@@ -571,7 +571,6 @@ table(drought_df$dur[drought_df$dur > 0])
 <<calculate event magnitude>>=
 mean(drought_df$mag[drought_df$mag != 0])
 @
-
 
 
 These are just simple examples of analyses that could be performed using the output of \code{get_drought()}. For a more thorough analysis, readers are referred to \cite{AllenOtero2023}.
