@@ -3,27 +3,37 @@
 \docType{data}
 \name{data_supply}
 \alias{data_supply}
-\title{Data Definitions for \code{data_supply}}
+\title{Time series of wind and solar energy production}
 \format{
-An object of class \code{"data.frame"}
+An object of type \code{data.frame} containing 3 variables:
+\describe{
+\item{date}{A \code{POSIXct} series of times at which energy production
+is available.}
+\item{country}{The country to which the energy production measurement corresponds.}
+\item{PWS}{The hourly wind and solar energy production for the corresponding time and country.}
 }
-\source{
-University of Reading. Dataset.  \doi{10.17864/1947.000321}
 }
 \usage{
-data(data_supply)
+data("data_supply")
 }
 \description{
-This dataset contains wind and solar energy production using the installed capacities
-of 2017 considered as a baseline power scenario.
-The dataset can be found at https://researchdata.reading.ac.uk/321/, and users are referred to
-Bloomfield et al. (2021) for further details.
+This dataset contains hourly time series of wind and solar energy production
+in 27 European countries in 2019.
+}
+\details{
+The dataframe \code{data_supply} contains 236520 (24 x 365 x 27) rows, containing the wind
+and solar energy production for each hour in 2019 for each of the 27 countries.
+
+This corresponds to a subset of the data used in Bloomfield and Brayshaw. (2021),
+which can be accessed at https://researchdata.reading.ac.uk/321/.
+Users are referred to this paper for further details.
 }
 \examples{
 data("data_supply")
 }
 \references{
-Bloomfield, Hannah and Brayshaw, David (2021): ERA5 derived time series of European aggregated surface weather variables,
-wind power, and solar power capacity factors: hourly data from 1950-2020. \doi{10.17864/1947.000321}
+Bloomfield, Hannah and Brayshaw, David (2021):
+ERA5 derived time series of European aggregated surface weather variables, wind power, and solar power capacity factors: hourly data from 1950-2020.
+\doi{10.17864/1947.000321}
 }
 \keyword{datasets}
