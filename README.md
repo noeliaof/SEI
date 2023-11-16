@@ -8,8 +8,8 @@ These standardised energy indices are discussed in
 > Renewable Energy.
 > [https://doi.org/10.1016/j.renene.2023.119206](https://doi.org/10.1016/j.renene.2023.119206)
 
-This package facilitates the implementation of standardised indices in practice. In contrast to other software packages, the SEI package includes 
-  - A wide range of distributions from which to calculate standardised indices (including the empirical distribution),
+This package facilitates the implementation of standardised indices in practice. The SEI package includes 
+  - A range of distributions from which to calculate standardised indices (including flexible non- and semi-parametric methods),
   - Diagnostic checks to ensure the chosen distribution is valid for the input data,
   - The ability to compute indices from a rolling window of values,
   - The ability to compute indices on any timescale,
@@ -17,7 +17,7 @@ This package facilitates the implementation of standardised indices in practice.
   
 ## Installation
 
-This package has not been submitted to CRAN. The developmental version can be installed using devtools:
+The developmental version can be installed using devtools:
 ```r
 # install.packages("devtools")
 library(devtools)
