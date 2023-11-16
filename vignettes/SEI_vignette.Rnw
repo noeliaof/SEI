@@ -60,7 +60,7 @@ library(gridExtra)
 \Shorttitle{SEI}
 
 \Abstract{
-  Standardised indices are measurements of variables on a standardised scale. The standardised scale facilitates comparisons between different variables, and its probabilistic interpretation means the indices are effective for risk management and decision making. Standardised indices have become popular in weather and climate settings, for example within operational drought monitoring systems, and have also been applied in other contexts, such as to energy variables. To facilitate their implementation in practice, the \pkg{SEI} package in \proglang{R} allows the flexible calculation of standardised indices. This vignette discusses the theory underlying well-known standardised indices, outlines the general framework to construct them, and provides implementation details for the \pkg{SEI} package. %Two case studies are presented whereby standardised indices are applied to climate and energy variables.
+  Standardised indices are measurements of variables on a standardised scale. The standardised scale facilitates comparisons between different variables, and its probabilistic interpretation means the indices are effective for risk management and decision making. Standardised indices have become popular in weather and climate settings, for example within operational drought monitoring systems, and have also been applied in other contexts, such as to energy variables. To facilitate their implementation in practice, the \pkg{SEI} package in \proglang{R} allows the flexible calculation of standardised indices. This vignette discusses the theory underlying well-known standardised indices, outlines the general framework to construct them, and provides implementation details for the \pkg{SEI} package. Two case studies are presented whereby standardised indices are applied to climate and energy variables.
 }
 
 \Keywords{standardised indices, drought monitoring, energy droughts, \proglang{R}}
@@ -108,7 +108,7 @@ As a result, several software packages have been developed to apply standardised
 
 However, existing software packages are limited in their flexibility, with functionality typically restricted to particular standardised indices (generally the SPI and SPEI), and particular assumptions about the reference data or parametric distributions used to calculate the indices (see next section for details). In this vignette, we introduce the \pkg{SEI} \proglang{R} package, which seeks to assimilate the advantages of these various packages to provide a flexible and comprehensive software package with which to calculate standardised indices. In particular, the package is not designed solely for climate indices, and is therefore applicable in much broader generality. The package can handle variables defined on any time scale and with any underlying distribution, permits user-specified reference data when calculating the indices, and additionally provides plot capabilities to visualise the resulting standardised indices.
 
-The remainder of this vignette is organised as follows. Section \ref{section:theory} provides some theoretical background on standardised indices and describes the general formula to construct them. Section \ref{section:distribution} discusses diagnostic checks that confirm the standardisation was appropriate. Section \ref{section:functionality} demonstrates how the \pkg{SEI} package can be used to calculate standardised indices in practice. An application is then presented in Section \ref{section:application}, whereby the \pkg{SEI} package is used to calculate standardised energy indices based on time series of renewable energy production. Section \ref{section:conclusion} concludes the vignette and discusses possible extensions to the package.
+The remainder of this vignette is organised as follows. Section \ref{section:theory} provides some theoretical background on standardised indices and describes the general formula to construct them. Section \ref{section:distribution} discusses diagnostic checks that confirm the standardisation was appropriate. Section \ref{section:functionality} demonstrates how the \pkg{SEI} package can be used to calculate standardised indices in practice. Two applications are then presented in Section \ref{section:application}, whereby the \pkg{SEI} package is used to calculate standardised energy indices based on time series of renewable energy production, as well as standardised wind speed indices. Section \ref{section:conclusion} concludes the vignette and discusses possible extensions to the package.
 
 
 \section{How to construct standardised indices}\label{section:theory}
@@ -326,7 +326,7 @@ When defining meteorological droughts, it is often common to introduce a lag suc
 The output is a dataframe containing the original vector or time series, as well as four additional columns: the intensity (\code{ins}), which corresponds to the category of drought, a higher value referring to a more severe drought category; the occurrence (\code{occ}), which corresponds to the intensity being higher than zero; the duration (\code{dur}), which provides the number of consecutive time steps that are in a drought state; and the drought magnitude (\code{mag}), which is the sum of all indices within the drought event. If only one threshold is used to define a drought, rather than the three used in Table \ref{tab:drought_def}, then the intensity is equivalent to the occurrence, and is therefore not returned.
 
 
-\section{Application}\label{section:application}
+\section{Applications}\label{section:application}
 
 \subsection{Renewable energy production}
 
@@ -338,13 +338,6 @@ head(data_supply)
 @
 
 The dataframe \code{data_supply} contains a \code{POSIXct} time series of dates, along with the corresponding country and wind and solar power production (\code{PWS}). The units of the production are Gigawatt hours (GWh).
-
-The resources available for a country to generate wind and solar power can be quantified using its corresponding installed wind and solar capacities. The installed wind (\code{IC17_wind}) and solar (\code{IC17_solar}) capacities for the 27 countries (in 2017) are also available from \pkg{SEI}.
-
-<<load_ic>>=
-data("data_ic2017", package = "SEI")
-head(data_ic2017)
-@
 
 For concision, we restrict attention here to renewable energy production in Germany.
 
@@ -461,18 +454,18 @@ mean(drought_df$mag[drought_df$mag != 0])
 
 \subsection{Wind speed}
 
-Within the same context of renewable energy, the standardised indices can be applied to assess the wind resource, a variable of interest directly related to wind power production. Hourly estimates of near-surface wind speed of 10 m (WS) are publicly available at \url{https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview} \citep[see][for details]{Hersbach2023}. Similarly than in \citep{Otero2022A}, daily time series of WS corresponding to the period 1979-2019 were obtained from the original data, which was subsequently country-wise aggregated.Consistent with the energy example, the use case is restricted to Germany. For the sake of clarity in the visualization, the analysis is limited to 3 years (2017-2019) . The subset can be accessed from \pkg{SEI} using
+Within the same context of renewable energy, the standardised indices can be applied to assess the wind resource, a variable of interest directly related to wind power production. Hourly estimates of near-surface wind speed of 10 m (WS) are publicly available at\citep[see][for details]{HersbachEtAl2023}. Similarly than in \citep{OteroEtAl2022b}, daily time series of WS corresponding to the period 1979-2019 were obtained from the original data, which was subsequently country-wise aggregated.Consistent with the energy example, the use case is restricted to Germany. For the sake of clarity in the visualization, the analysis is limited to 3 years (2017-2019) . The subset can be accessed from \pkg{SEI} using
 
 <<load_wind_data>>=
-data("data_wind_DE", package = "SEI")
-data_wind_DE <- subset(data_wind_DE, format(date,"%Y")>=2017 & format(date,"%Y")<=2019)
-head(data_wind_DE)
+data("data_wind_de", package = "SEI")
+data_wind_de <- subset(data_wind_de, format(date,"%Y")>=2017 & format(date,"%Y")<=2019)
+head(data_wind_de)
 @
 
 As in the previous case, the data can be rescaled from daily to weekly and to monthly time series using \pkg{xts} functionality.
 
-<<rescale>>=
-de_wind_d <- xts::xts(data_wind_DE$wsmean, data_wind_DE$date) # convert to xts
+<<rescale_wind>>=
+de_wind_d <- xts::xts(data_wind_de$wsmean, data_wind_de$date) # convert to xts
 de_wind_w <- xts::apply.weekly(de_wind_d, "mean")   # weekly data
 de_wind_m <- xts::apply.monthly(de_wind_d, "mean")  # monthly data
 @
@@ -480,7 +473,7 @@ de_wind_m <- xts::apply.monthly(de_wind_d, "mean")  # monthly data
 A preliminary examination of the wind speed is obtained by using the \code{plot_sei()} function. Figure \ref{fig:ts_ws_raw} depicts consistent behavior across all three time series displays, with the monthly time series exhibiting the smoothest patterns, as anticipated.
 
 \begin{figure}
-<<plot_raw_ts, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+<<plot_raw_ts_wind, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
 lab <- "10m Wind speed (m/s)"
 plot_ws_d <- plot_sei(de_wind_d, lab = lab, title = "Daily")
 plot_ws_w <- plot_sei(de_wind_w, lab = lab, title = "Weekly")
@@ -498,18 +491,18 @@ The raw data can be transformed into a standardised index using \code{std_index(
 # Set up the layout for a 1x2 grid
 par(mfrow = c(1, 3))
 # Plot 1: Normal distribution
-out_norm <- fit_dist(data_wind_DE$wsmean, dist = "norm")
-hist(data_wind_DE$wsmean, breaks = 30, probability = TRUE, main = "Normal Distribution", xlab = "Wind Speed", ylab = "Probability Density")
-lines(seq(0, 10, 0.01), dnorm(seq(0, 10, 0.01), out_norm$params[1], out_gamma$params[2]), col = "blue")
+out_norm <- fit_dist(data_wind_de$wsmean, dist = "norm")
+hist(data_wind_de$wsmean, breaks = 30, probability = TRUE, main = "Normal Distribution", xlab = "Wind Speed", ylab = "Probability Density")
+lines(seq(0, 10, 0.01), dnorm(seq(0, 10, 0.01), out_norm$params[1], out_norm$params[2]), col = "blue")
 
 # Plot 1: Gamma distribution
-out_gamma <- fit_dist(data_wind_DE$wsmean, dist = "gamma")
-hist(data_wind_DE$wsmean, breaks = 30, probability = TRUE, main = "Gamma Distribution", xlab = "Wind Speed", ylab = "Probability Density")
+out_gamma <- fit_dist(data_wind_de$wsmean, dist = "gamma")
+hist(data_wind_de$wsmean, breaks = 30, probability = TRUE, main = "Gamma Distribution", xlab = "Wind Speed", ylab = "Probability Density")
 lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out_gamma$params[1], out_gamma$params[2]), col = "blue")
 
 # Plot 2: Weibull distribution
-out_weibull <- fit_dist(data_wind_DE$wsmean, dist = "weibull")
-hist(data_wind_DE$wsmean, breaks = 30, probability = TRUE, main = "Weibull Distribution", xlab = "Wind Speed", ylab = "Probability Density")
+out_weibull <- fit_dist(data_wind_de$wsmean, dist = "weibull")
+hist(data_wind_de$wsmean, breaks = 30, probability = TRUE, main = "Weibull Distribution", xlab = "Wind Speed", ylab = "Probability Density")
 lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out_weibull$params[1], out_weibull$params[2]), col = "blue")
 
 # Reset par to default values
@@ -519,17 +512,17 @@ par(mfrow = c(1, 1))
 
 Similarly than in the previous application, the functionality of the \pkg{SEI} package can be further explore the wind droughts chatacteristics, after obtaining the standardised index. As described below the \code{std_index()} function returns the index, which can follow an specific distribution. Figure \ref{fig:ts_sei_ws} shows the values of SEI for wind speed at different time scales, namely, daily, weekly and monthly and figure \ref{fig:dist_wind} illustrates the daily wind speed conditions and the corresponding SEI values for Germany.
 
-<<use_rescale>>=
+<<use_rescale_wind>>=
 sei_ws_d <- std_index(de_wind_d)
 @
 
 
 \begin{figure}
-<<plot_sei_ts, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+<<plot_sei_ts_wind, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
 lab <- "SEI 10m-WS"
 plot_h <- plot_sei(std_index(de_wind_d), lab = lab, title = "Daily")
-plot_d <- plot_sei(std_index(de_wind_d, timescale = "days", rescale = "weeks"), lab = lab, title = "Weekly") 
-plot_w <- plot_sei(std_index(de_wind_d, timescale = "days", rescale = "months"), lab = lab, title = "Monthly") 
+plot_d <- plot_sei(std_index(de_wind_d, timescale = "days", rescale = "weeks"), lab = lab, title = "Weekly")
+plot_w <- plot_sei(std_index(de_wind_d, timescale = "days", rescale = "months"), lab = lab, title = "Monthly")
 grid.arrange(plot_h, plot_d, plot_w, nrow = 1)
 @
 \caption{Time series of SEI values in Germany at daily, weekly and monthly time scales during the period 2017-2019.}
@@ -538,10 +531,10 @@ grid.arrange(plot_h, plot_d, plot_w, nrow = 1)
 
 
 \begin{figure}
-<<plot_dist, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+<<plot_dist_wind, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
 plot_raw <- plot_sei(de_wind_d, type = "hist",
                      lab = "Wind speed (m/s)")
-plot_ind <- plot_sei(sei_ws_wd, type = "hist", lab = "SEI")
+plot_ind <- plot_sei(sei_ws_d, type = "hist", lab = "SEI")
 grid.arrange(plot_raw, plot_ind, nrow = 1)
 @
 
@@ -549,26 +542,26 @@ grid.arrange(plot_raw, plot_ind, nrow = 1)
 \label{fig:dist_wind}
 \end{figure}
 
-To conclude this section, wind droughts are calculated using the \code{get_drought()} function. The phenomenon of wind droughts has gained increasing attention in recent years \citep[e.g.,][]{Otero2022}, and we anticipate that future studies in this field can greatly benefit from the use of the \pkg{SEI} package.
+To conclude this section, wind droughts are calculated using the \code{get_drought()} function. The phenomenon of wind droughts has gained increasing attention in recent years \citep[e.g.,][]{OteroEtAl2022b}, and we anticipate that future studies in this field can greatly benefit from the use of the \pkg{SEI} package.
 
 
-<<define_droughts>>=
+<<define_droughts_wind>>=
 thresholds <- -qnorm(c(0.9, 0.95, 0.975)) # -1.28, -1.64, -1.96
 drought_df <- get_drought(sei_ws_d, thresholds, exceed = F)
 @
 
 We can now further explore the wind drought characteristics, such as, the frequency, duration or intensity as follows
 
-<<calculate event frequency>>=
+<<event_frequency_wind>>=
 num_ev <- sapply(0:3, function(i) sum(drought_df$ins == i))
 names(num_ev) <- c("None", "Moderate", "Severe", "Extreme")
 print(num_ev)
 @
-<<calculate event duration>>=
+<<event_duration_wind>>=
 table(drought_df$dur[drought_df$dur > 0])
 @
 
-<<calculate event magnitude>>=
+<<event_magnitude_wind>>=
 mean(drought_df$mag[drought_df$mag != 0])
 @
 
@@ -580,7 +573,7 @@ These are just simple examples of analyses that could be performed using the out
 
 This vignette documents the \pkg{SEI} package in \proglang{R}, which provides comprehensive functionality to calculate time series of standardised indices. Standardised indices are projections of variables onto an interpretable and probabilistically meaningful scale, and they have become popular tools when monitoring variables of interest over time, particularly in the context of drought analysis. While there is no unique way to define standardised indices, several widely-adopted indices are constructed using the same, simple procedure. We outline this general framework for constructing standardised indices, and reiterate that this approach can be applied to any variable of interest, not just those previously considered in the literature.
 
-The \pkg{SEI} package converts a time series of observations to a time series of standardised indices. The package allows the time series to be aggregated and rescaled to different time scales, provides plot capabilities to visualise the resulting indices, and offers a range of distributions with which to calculate the indices, including flexible non- and semi-parametric methods. The package additionally allows users to define and analyse shortages, or droughts, of the variable under consideration. An example is presented in Section \ref{section:application} whereby the package is employed to calculate standardised indices to monitor shortages in renewable energy production.
+The \pkg{SEI} package converts a time series of observations to a time series of standardised indices. The package allows the time series to be aggregated and rescaled to different time scales, provides plot capabilities to visualise the resulting indices, and offers a range of distributions with which to calculate the indices, including flexible non- and semi-parametric methods. The package additionally allows users to define and analyse shortages, or droughts, of the variable under consideration. Two examples are presented in Section \ref{section:application} whereby the package is employed to calculate standardised indices to monitor shortages in renewable energy production, and to calculate standardised wind speed indices.
 
 The package has been designed to facilitate applications of standardised indices in practice. While standardised indices have received considerable attention within the field of climate science, such indices would also be relevant in several other domains. The \pkg{SEI} package is applicable in broad generality, though the package could also be extended so that it is suitable for more elaborate analyses. For example, several extensions of standardised indices have been proposed in the literature, and these could be integrated into the package: the package currently only considers indices corresponding to univariate variables, though multivariate extensions have also been studied in the literature \citep[e.g.][]{ErhardtCzado2018,HaoEtAl2019}; non-stationary standardised indices have also been proposed that allow the indices to depend on covariates \citep{RussoEtAl2013,LiEtAl2015}; functionality could also be added to automatically implement methods that remove seasonality and temporal dependence in the data \citep{ErhardtCzado2018}. %The data could be divided into several time series corresponding to each month or season, and the standardisation performed separately, before recombining the resulting time series; currently, this must be performed manually by the user.
 
