@@ -62,6 +62,7 @@
 #' Hersbach, H et al. (2023):
 #' ERA5 hourly data on single levels from 1940 to present. Copernicus Climate Change Service (C3S) Climate Data Store (CDS)
 #' \doi{10.24381/cds.adbb2d47}
+#' Accessed 01-09-2022.
 #'
 #' @docType data
 #'
