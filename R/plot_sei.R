@@ -4,20 +4,26 @@
 #' of the indices.
 #'
 #' @param x vector or xts object containing the indices to be plotted.
-#' @param type type of plot (either time series "ts", or histogram "hist").
+#' @param type type of plot (either time series "ts", histogram "hist", or barplot "bar").
 #' @param title optional title of the plot.
 #' @param lab axis label.
 #' @param xlims,ylims lower and upper limits of the axes.
 #' @param n_bins the number of bins to show in the histogram.
 #'
 #' @details
-#' The \code{plot_sei()} function can be used to plot either a time series (if
-#' \code{type = "ts"}) or a histogram (if \code{type = "hist"}) of the values in \code{x}.
+#' The \code{plot_sei()} function can be used to plot either a time series (if \code{type = "ts"})
+#' or a histogram (if \code{type = "hist"} or \code{type = "bar"}) of the values in \code{x}.
 #'
 #' A time series can only be displayed if \code{x} is an \pkg{xts} time series.
 #'
 #' The argument \code{lab} is a string containing the label of the x-axis if
-#' \code{type = "hist"} and the y-axis if \code{type = "ts"}.
+#' \code{type = "hist"} or \code{type = "bar"} and the y-axis if \code{type = "ts"}.
+#'
+#' The options \code{type = "hist"} and \code{type = "bar"} both display histograms
+#' of the data \code{x}. With \code{type = "hist"}, \code{plot_sei()} is essentially a
+#' wrapper of \code{geom_histogram()}, while \code{type = "bar"} is a wrapper of
+#' \code{geom_bar()}. The latter can provide more flexibility when plotting bounded data,
+#' whereas the former is easier to use when superimposing densities on top.
 #'
 #' @return
 #' A ggplot object displaying the standardised index values.
@@ -43,7 +49,7 @@ NULL
 
 #' @rdname plot_sei
 #' @export
-plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index", xlims = NULL, ylims = NULL, n_bins = 30){
+plot_sei <- function(x, type = c("ts", "hist", "bar"), title = NULL, lab = "Std. Index", xlims = NULL, ylims = NULL, n_bins = 30){
 
   type <- match.arg(type)
 
@@ -73,6 +79,21 @@ plot_sei <- function(x, type = c("ts", "hist"), title = NULL, lab = "Std. Index"
                      panel.grid.minor = ggplot2::element_blank(),
                      axis.text.y = ggplot2::element_blank(),
                      axis.ticks.y = ggplot2::element_blank()) +
+      ggplot2::ggtitle(title)
+  } else if (type == "bar") {
+
+    if (is.null(xlims)) xlims <- range(x) + 0.05*c(-min(x), max(x))
+    bin_bounds <- seq(xlims[1], xlims[2], length.out = n_bins + 1)
+    delta <- diff(bin_bounds)[1]
+    rank_freq <- sapply(1:n_bins, function(i) mean((x >= bin_bounds[i]) & (x < bin_bounds[i + 1]), na.rm = T))
+
+    df <- data.frame(freq = rank_freq, rank = bin_bounds[1:n_bins] + delta/2)
+    p <- ggplot2::ggplot(df, ggplot2::aes_string(x = "rank", y = "freq")) +
+      ggplot2::geom_bar(stat = "identity", width = delta, col = "black", alpha = 0.8) +
+      ggplot2::scale_x_continuous(name = lab, limits = xlims) +
+      ggplot2::scale_y_continuous(name = "Density", limits = ylims, expand = ggplot2::expansion(c(0, 0.05))) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(legend.title = ggplot2::element_blank(), panel.grid = ggplot2::element_blank()) +
       ggplot2::ggtitle(title)
   }
 

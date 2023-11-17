@@ -6,7 +6,7 @@
 \usage{
 plot_sei(
   x,
-  type = c("ts", "hist"),
+  type = c("ts", "hist", "bar"),
   title = NULL,
   lab = "Std. Index",
   xlims = NULL,
@@ -17,7 +17,7 @@ plot_sei(
 \arguments{
 \item{x}{vector or xts object containing the indices to be plotted.}
 
-\item{type}{type of plot (either time series "ts", or histogram "hist").}
+\item{type}{type of plot (either time series "ts", histogram "hist", or barplot "bar").}
 
 \item{title}{optional title of the plot.}
 
@@ -35,13 +35,19 @@ Plot a time series containing standardised indices, or a histogram
 of the indices.
 }
 \details{
-The \code{plot_sei()} function can be used to plot either a time series (if
-\code{type = "ts"}) or a histogram (if \code{type = "hist"}) of the values in \code{x}.
+The \code{plot_sei()} function can be used to plot either a time series (if \code{type = "ts"})
+or a histogram (if \code{type = "hist"} or \code{type = "bar"}) of the values in \code{x}.
 
 A time series can only be displayed if \code{x} is an \pkg{xts} time series.
 
 The argument \code{lab} is a string containing the label of the x-axis if
-\code{type = "hist"} and the y-axis if \code{type = "ts"}.
+\code{type = "hist"} or \code{type = "bar"} and the y-axis if \code{type = "ts"}.
+
+The options \code{type = "hist"} and \code{type = "bar"} both display histograms
+of the data \code{x}. With \code{type = "hist"}, \code{plot_sei()} is essentially a
+wrapper of \code{geom_histogram()}, while \code{type = "bar"} is a wrapper of
+\code{geom_bar()}. The latter can provide more flexibility when plotting bounded data,
+whereas the former is easier to use when superimposing densities on top.
 }
 \examples{
 data(data_supply)
