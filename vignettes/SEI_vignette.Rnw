@@ -100,7 +100,7 @@ However, it can be difficult to compare time series of variables defined on diff
 
 Well-known examples of standardised indices include the Standardised Precipitation Index \citep[SPI;][]{McKeeEtAl1993} and Standardised Precipitation Evapotranspiration Index \citep[SPEI;][]{VicenteEtAl2010}, which are ubiquitously used to monitor hydrometeorological droughts \citep{BegueriaEtAl2014}. The framework used to construct the SPI and SPEI is simple and interpretable, framing the observed values in terms of their similarity to past values. As such, while other methods of standardisation exist, this framework has also been used to construct many other weather and climate indices.
 
-This includes, for example, a Standardised Runoff Index \citep{ShuklaWood2008}, a Standardised Streamflow Index \citep{VicenteEtAl2012}, a Standardised Groundwater Index \citep{BloomfieldMarchant2013}, and a Standardised Temperature Index \citep{ZscheischlerEtAl2014}. Multivariate extensions of these standardised indices have also been proposed \citep{ErhardtCzado2018}. \cite{HaoEtAl2019}, for example, define a Standardised Compound Event Index, which is used by \cite{LiEtAl2021} to construct a Standardised Compound Drought and Heat Index. Outside of a weather and climate context, \cite{AllenOtero2023} introduced analogues of the SPI and SPEI that can be used to monitor energy supply and demand.
+This includes, for example, a Standardised Runoff Index \citep{ShuklaWood2008}, a Standardised Streamflow Index \citep{VicenteEtAl2012}, a Standardised Groundwater Index \citep{BloomfieldMarchant2013}, and a Standardised Temperature Index \citep{ZscheischlerEtAl2014}. Multivariate extensions of these standardised indices have also been proposed \citep{ErhardtCzado2018}. \cite{HaoEtAl2019}, for example, define a Standardised Compound Event Index, which is used by \cite{LiEtAl2021} to construct a Standardised Compound Drought and Heat Index. Outside of a weather and climate context, \cite{AllenOtero2023} introduced analogues of the SPI and SPEI that can be used to monitor energy supply and demand. This general framework for constructing standardised indices can be applied to any variable of interest, not just those previously considered in the literature.
 
 There are several benefits to these standardised indices. The indices are easy to interpret, and are defined on a scale with a probabilistic interpretation, making them useful tools for risk management and decision making. Standardised indices therefore provide an appealing framework with which to define shortages, or droughts, in the variable of interest. Since the standardisation can be performed separately in different conditions, for example in different seasons and locations, these shortages can be defined in a relative sense, allowing their intensity in the different conditions to be compared. As summarised by \cite{ZargarEtAl2011}, standardised indices provide a ``pragmatic way to assimilate large amounts of data into a quantitative information that can be used in applications such as drought forecasting, declaring drought levels, contingency planning and impact assessment.''
 
@@ -119,7 +119,7 @@ The general approach is to choose a univariate variable $X$ that measures the qu
 
 The distribution of $X$ is typically estimated from an archive of realisations, $x_{1}, \dots, x_{n}$. These could represent precipitation accumulations in different months, for example, or energy demand on different days. It is common to make parametric assumptions about the distribution, as in the examples above, though non- and semi-parametric density estimation methods could also be employed. The choice of distribution is discussed in detail in the following section. In any case, the distributional assumptions must be verified when the index is calculated.
 
-Let $F$ denote the distribution function of $X$, and let $\hat{F}$ denote an estimate of $F$ obtained from $x_{1}, \dots, x_{n}$. If $F$ is continuous, then the \emph{probability integral transform} (PIT) $F(X)$ will be standard uniformly distributed. Hence, this transformation provides a convenient approach with which to standardise an observation $X^{*}$.
+Let $F$ denote the distribution function of $X$, and let $\hat{F}$ denote an estimate of $F$ obtained from $x_{1}, \dots, x_{n}$. If $F$ is continuous, then the \emph{probability integral transform} (PIT) $F(X)$ will be standard uniformly distributed. Hence, this transformation provides a convenient approach with which to standardise an (new) observation $X^{*}$.
 
 This \emph{PIT variable} $\hat{F}(X^{*})$ is bounded between 0 and 1, with values intrinsically linked to probabilities. This therefore itself provides a standardised index of sorts. This PIT variable can also be rescaled using $2\hat{F}(X^{*}) - 1$ to get an index that is centred at zero and bounded between -1 and 1, though it is more common to use the Gaussian quantile function $\Phi^{-1}$ to transform $\hat{F}(X^{*})$. In this case, if $X^{*}$ is identically distributed to $X$, and $\hat{F}$ is a good approximation of $F$, then the standardised index will follow a standard normal distribution.
 
@@ -170,7 +170,7 @@ As an alternative, it has been argued \citep[e.g.][]{ErhardtCzado2018,HaoEtAl201
 \begin{equation}\label{eq:ecdf}
 \hat{F}_{n}(x) = \frac{1}{n} \sum_{i=1}^{n} \one \{ x_{i} \leq x \},
 \end{equation}
-where $\one\{ \cdot \}$ is equal to one if the statement inside the brackets is true, and zero otherwise. Since $\Phi^{-1}(0) = -\infty$ and $\Phi^{-1}(1) = \infty$, it is common to rescale $\hat{F}_{n}(x)$ so that it is never equal to zero or one, thereby ensuring that the standardised indices are real-valued; for example, using $(n \hat{F}_{n}(x) + 1)/(n + 2)$. The empirical distribution function returns a standardised index that can only take on $n + 1$ possible values. This is not an issue in practice if $n$ is large, but can become problematic with smaller sample sizes, particularly when interest is on extreme events.
+where $\one\{ \cdot \}$ is equal to one if the statement inside the brackets is true, and zero otherwise. Since $\Phi^{-1}(0) = -\infty$ and $\Phi^{-1}(1) = \infty$, it is common to rescale $\hat{F}_{n}(x)$ so that it is never equal to zero or one, thereby ensuring that the (normal) standardised indices are real-valued; for example, using $(n \hat{F}_{n}(x) + 1)/(n + 2)$. The empirical distribution function returns a standardised index that can only take on $n + 1$ possible values. This is not an issue in practice if $n$ is large, but can become problematic with smaller sample sizes, particularly when interest is on extreme events.
 
 \cite{AllenOtero2023} propose the use of semi-parametric density estimation methods, which provide a compromise between parsimonious parametric distributions and the empirical distribution function. For example, kernel density estimators estimate the density function $f$ corresponding to $F$ using
 \[
@@ -286,7 +286,7 @@ aggregate_xts(
 )
 \end{Code}
 
-The interpretation of the arguments is equivalent to in the discussion above: \code{x} represents the \pkg{xts} time series to be aggregated, \code{len} and \code{scale} are the length and time scale of the aggregation period, \code{fun} is the function used in the aggregation, and \code{timescale} is the time scale of \code{x}. The final argument \code{na_thres} represents the maximum proportion of values that can be missing (i.e. \code{NA}) in the aggregation period, before the aggregation itself returns \code{NA}. For example, if on one day 23 hours of precipitation accumulations are missing and only one hourly accumulation is available, this sole observation is not representative of the daily accumulation, so \code{NA} is returned instead. The default is a threshold of 10\% missing values in the aggregation period. Further information can be found on the corresponding help pages.
+The interpretation of the arguments is equivalent to in the discussion above: \code{x} represents the \pkg{xts} time series to be aggregated, \code{len} and \code{scale} are the length and time scale of the aggregation period, \code{fun} is the function used in the aggregation, and \code{timescale} is the time scale of \code{x}. The final argument \code{na_thres} represents the maximum proportion of values that can be missing (i.e. \code{NA}) in the aggregation period, before the aggregation itself returns \code{NA}. For example, if 23 hours of precipitation accumulations are missing on one day so that only one hourly accumulation is available, this sole observation is not representative of the daily accumulation. By default, \code{NA} is returned if more than 10\% of the values in the aggregation period are missing.
 
 
 \subsection{Plotting indices}
@@ -323,7 +323,7 @@ The argument \code{thresholds} is a vector containing the thresholds used to def
 
 When defining meteorological droughts, it is often common to introduce a lag such that the drought does not end when the standardised index no longer exceeds the drought threshold, but rather when the index changes sign \citep[e.g.][]{McKeeEtAl1993}. This accounts for cases where there are small fluctuations in the index around the drought threshold, classing this as one persistent drought rather than several shorter droughts. This can also be implemented here by setting the \code{lag} argument to \code{TRUE}.
 
-The output is a dataframe containing the original vector or time series, as well as four additional columns: the intensity (\code{ins}), which corresponds to the category of drought, a higher value referring to a more severe drought category; the occurrence (\code{occ}), which corresponds to the intensity being higher than zero; the duration (\code{dur}), which provides the number of consecutive time steps that are in a drought state; and the drought magnitude (\code{mag}), which is the sum of all indices within the drought event. If only one threshold is used to define a drought, rather than the three used in Table \ref{tab:drought_def}, then the intensity is equivalent to the occurrence, and is therefore not returned.
+The output is a dataframe containing the original vector or time series, as well as four additional columns: the intensity (\code{ins}), which corresponds to the category of drought, a higher value referring to a more severe drought category; the occurrence (\code{occ}), which corresponds to the intensity being higher than zero; the duration (\code{dur}), which provides the number of consecutive time steps that are in a drought state; and the drought magnitude (\code{mag}), which is the sum of all indices within the drought event \citep[see][for details]{McKeeEtAl1993}. If only one threshold is used to define a drought, rather than the three used in Table \ref{tab:drought_def}, then the intensity is equivalent to the occurrence, and is therefore not returned.
 
 
 \section{Applications}\label{section:application}
@@ -562,6 +562,7 @@ Histograms of the standardised indices, constructed using \code{plot_sei()}, are
 \begin{figure}
 <<ws_ind_plot_dist, echo=FALSE, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
 x <- seq(-3.5, 3.5, length.out = length(sei_ws_gam))
+xlab <- "SWSI"
 plt_gam <- plot_sei(sei_ws_gam, type = "hist", lab = xlab, title = "Gamma") +
   geom_line(aes(x = x, y = dnorm(x)), col = "blue")
 plt_lnorm <- plot_sei(sei_ws_lnorm, type = "hist", lab = xlab, title = "Log-normal") +
@@ -570,7 +571,7 @@ plt_weib <- plot_sei(sei_ws_weib, type = "hist", lab = xlab, title = "Weibull") 
   geom_line(aes(x = x, y = dnorm(x)), col = "blue")
 grid.arrange(plt_gam, plt_lnorm, plt_weib, nrow = 1)
 @
-\caption{Distribution of standardised wind speed indices constructed using the gamma, log-normal, and Weibull distributions. The standard normal density is displayed in blue.}
+\caption{Distribution of standardised wind speed indices (SWSI) constructed using the gamma, log-normal, and Weibull distributions. The standard normal density is displayed in blue.}
 \label{fig:dist_ws_ind}
 \end{figure}
 
