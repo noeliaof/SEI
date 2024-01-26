@@ -371,13 +371,13 @@ grid.arrange(plot_h, plot_d, plot_w, nrow = 1)
 
 The raw renewable energy production values can be transformed to a standardised index using \code{std_index()}. Following, \cite{AllenOtero2023}, we refer to this as the standardised renewable energy production index (SREPI). Time series of hourly, daily, and weekly standardised indices are presented in Figure \ref{fig:ts_si}.
 
-<<calculate_index, warning=FALSE>>=
+<<calculate_index>>=
 srepi_h <- std_index(de_supply_h)
 srepi_d <- std_index(de_supply_d)
-srepi_w <- std_index(de_supply_w)
+srepi_w <- std_index(de_supply_w, dist = "kde")
 @
 
-In this case, the reference data \code{x_ref} is assumed to be the input time series itself, meaning the indices are calculated relative to this input data. By default, \code{std_index()} returns normal indices (rather than probability or bounded indices), and estimates the distribution of the renewable energy production using the empirical distribution. This returns a warning for the weekly data, since there are fewer than 100 weekly production values in the time series, whereas the empirical distribution function is only recommended if at least 100 reference values are available. Alternative distributions could be implemented by changing the \code{dist} argument in \code{std_index()}.
+In this case, the reference data \code{x_ref} is assumed to be the input time series itself, meaning the indices are calculated relative to this input data. By default, \code{std_index()} returns normal indices (rather than probability or bounded indices), and estimates the distribution of the renewable energy production using the empirical distribution. This returns a warning for the weekly data, since there are fewer than 100 weekly production values in the time series, whereas the empirical distribution function is only recommended if at least 100 reference values are available. Instead, for weekly data, we estimate the distribution of production values using kernel density estimation (\code{dist = "kde"}). Alternative distributions can be implemented by changing the \code{dist} argument in \code{std_index()}.
 
 While these indices are created by standardising the respective hourly, daily, and weekly time series of raw production values, they could all be obtained from the original hourly time series by specifying the \code{rescale} argument in \code{std_index()}.
 
