@@ -1,3 +1,5 @@
+[![](https://cranlogs.r-pkg.org/badges/SEI)](https://cran.r-project.org/package=SEI)
+
 # SEI
 
 SEI is an R package to calculate standardised indices. Standardised indices are frequently used to convert measurements to a common scale with a meaningful probabilistic interpretation. Well-known examples include the Standardised Precipitation Index (SPI) and Standardised Precipitation Evapotranspiration Index (SPEI), which are used to monitor hydrological droughts. Standardised indices have also recently been proposed to monitor energy droughts, including the Standardised Residual Load Index (SRLI), and the Standardised Renewable Energy Production Index (SREPI). 
