@@ -9,9 +9,12 @@ fit_dist(data, dist, n_thres = 20)
 \arguments{
 \item{data}{vector of data}
 
-\item{dist}{character string specifying the distribution, see details}
+\item{dist}{character string specifying the distribution to be fit to the data;
+one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
+\code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
 
-\item{n_thres}{number of data points required to estimate the distribution}
+\item{n_thres}{minimum number of data points required to estimate the distribution;
+default is 20.}
 }
 \value{
 A list containing the estimated distribution function, its parameters,

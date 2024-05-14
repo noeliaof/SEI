@@ -10,6 +10,7 @@ std_index(
   timescale = NULL,
   dist = "empirical",
   return_fit = FALSE,
+  index_type = "normal",
   moving_window = NULL,
   window_scale = NULL,
   agg_period = NULL,
@@ -17,41 +18,53 @@ std_index(
   agg_fun = "sum",
   rescale = NULL,
   rescale_fun = "sum",
-  index_type = "normal",
-  ignore_na = FALSE
+  ignore_na = FALSE,
+  n_thres = 20,
+  na_thres = 10
 )
 }
 \arguments{
-\item{x_new}{numeric; vector or time series to be converted to standardised indices.}
+\item{x_new}{vector or time series to be converted to standardised indices.}
 
-\item{x_ref}{numeric; vector or time series containing reference data to use when calculating the standardised indices.}
+\item{x_ref}{vector or time series containing reference data to use when calculating the standardised indices.}
 
-\item{timescale}{string; timescale of the data. One of "days", "weeks", "months",
-"quarters", and "years". Required if the time series is to be aggregated or rescaled.}
+\item{timescale}{timescale of the data; one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"},
+\code{"quarters"}, and \code{"years"}.}
 
-\item{dist}{string; distribution used to calculate the indices.}
+\item{dist}{character string specifying the distribution to be fit to the data;
+one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
+\code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
 
-\item{return_fit}{logical; return parameters and goodness-of-fit statistics for the distribution fit.}
+\item{return_fit}{logical specifying whether to return parameters and goodness-of-fit
+statistics for the distribution fit.}
 
-\item{moving_window}{numeric; length of moving window on which to calculate the indices.}
+\item{index_type}{the type of standardised index: \code{"normal"} (default), \code{"prob01"},
+or \code{"prob11"} (see details).}
 
-\item{window_scale}{string; timescale of \code{moving_window}, default is the timescale of the data.}
+\item{moving_window}{length of moving window on which to calculate the indices.}
 
-\item{agg_period}{numeric; the number of values to aggregate over.}
+\item{window_scale}{timescale of \code{moving_window}; default is the timescale of the data.}
 
-\item{agg_scale}{string; timescale of \code{agg_period}. One of "days", "weeks", "months",
-"quarters", and "years". Default is the timescale of the data.}
+\item{agg_period}{length of the aggregation period.}
 
-\item{agg_fun}{string; function used to aggregate the data over the aggregation period, default is "sum".}
+\item{agg_scale}{timescale of \code{agg_period};
+one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, and \code{"years"}.}
 
-\item{rescale}{string; the timescale that the time series should be rescaled to. One of "days", "weeks", "months",
-"quarters", and "years".}
+\item{agg_fun}{string specifying the function used to aggregate the data over the
+aggregation period, default is \code{"sum"}.}
 
-\item{rescale_fun}{string; function used to rescale the data, default is "sum".}
+\item{rescale}{the timescale that the time series should be rescaled to;
+one of \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, and \code{"years"}.}
 
-\item{index_type}{string; the type of index: "normal" (default), "prob01", or "prob11".}
+\item{rescale_fun}{string specifying the function used to rescale the data; default is \code{"sum"}.}
 
-\item{ignore_na}{logical; ignore NAs when rescaling the time series.}
+\item{ignore_na}{logical specifying whether to ignore NAs when rescaling the time series.}
+
+\item{n_thres}{minimum number of data points required to estimate the distribution;
+default is 20.}
+
+\item{na_thres}{threshold for the percentage of NA values allowed in the
+aggregation period; default is 10.}
 }
 \value{
 Time series of standardised indices.
@@ -80,6 +93,7 @@ on daily accumulations or averages of the hourly data.
 
 The argument \code{rescale} converts the data to a different timescale. The original
 timescale of the data can be manually specified using the argument \code{timescale}.
+\code{timescale} is required if the time series is to be aggregated or rescaled.
 Otherwise, the function will try to automatically determine the timescale of the data.
 Manually specifying the timescale of the data is generally more robust. The rescaling
 is performed using the function \code{rescale_fun}. By default, this is assumed to be

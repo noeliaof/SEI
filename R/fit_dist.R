@@ -4,8 +4,11 @@
 #' the estimated distribution and relevant goodness-of-fit statistics.
 #'
 #' @param data vector of data
-#' @param dist character string specifying the distribution, see details
-#' @param n_thres number of data points required to estimate the distribution
+#' @param dist character string specifying the distribution to be fit to the data;
+#'  one of `"empirical"`, `"kde"`, `"norm"`, `"lnorm"`, `"logis"`, `"llogis"`,
+#'  `"exp"`, `"gamma"`, and `"weibull"`.
+#' @param n_thres minimum number of data points required to estimate the distribution;
+#'  default is 20.
 #'
 #' @details
 #' This has been adapted from code available at

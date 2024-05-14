@@ -6,9 +6,9 @@
 \usage{
 aggregate_xts(
   x,
-  len,
-  scale = c("days", "hours", "weeks", "quarters", "years"),
-  fun = "sum",
+  agg_period,
+  agg_scale = c("days", "hours", "weeks", "quarters", "years"),
+  agg_fun = "sum",
   timescale = c("days", "hours", "weeks", "quarters", "years"),
   na_thres = 10
 )
@@ -16,16 +16,19 @@ aggregate_xts(
 \arguments{
 \item{x}{xts object to be aggregated.}
 
-\item{len}{length of the aggregation period.}
+\item{agg_period}{length of the aggregation period.}
 
-\item{scale}{timescale of the aggregation period, default is 'days'.}
+\item{agg_scale}{timescale of \code{agg_period};
+one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, and \code{"years"}.}
 
-\item{fun}{function to apply to the aggregated data, default is 'sum'.}
+\item{agg_fun}{string specifying the function used to aggregate the data over the
+aggregation period, default is \code{"sum"}.}
 
-\item{timescale}{timescale of \code{x}, default is 'days'.}
+\item{timescale}{timescale of the data; one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"},
+\code{"quarters"}, and \code{"years"}.}
 
 \item{na_thres}{threshold for the percentage of NA values allowed in the
-aggregation period, default = 10.}
+aggregation period; default is 10.}
 }
 \value{
 An xts time series with aggregated values.
@@ -38,15 +41,15 @@ values have been aggregated over a moving window of a user-specified length.
 This has been adapted from code available at
 \url{https://github.com/WillemMaetens/standaRdized}.
 
-\code{len} is a single numeric value specifying over how many time units the
-data \code{x} is to be aggregated. By default, \code{len} is assumed to correspond
+\code{agg_period} is a single numeric value specifying over how many time units the
+data \code{x} is to be aggregated. By default, \code{agg_period} is assumed to correspond
 to a number of days, but this can also be specified manually using the argument
-\code{scale}. \code{scale} must be one of: "days", "weeks", "months", "quarters", and "years".
+\code{agg_scale}.
 
-\code{fun} determines the function used to aggregate the time series. By default,
-\code{fun = "sum"}, meaning the aggregation results in accumulations over the
+\code{agg_fun} determines the function used to aggregate the time series. By default,
+\code{agg_fun = "sum"}, meaning the aggregation results in accumulations over the
 aggregation period. Alternative functions can also be used. For example, specifying
-\code{fun = "mean"} would return the mean over the aggregation period.
+\code{agg_fun = "mean"} would return the mean over the aggregation period.
 
 \code{timescale} is the timescale of the input data \code{x}. By default, this
 is assumed to be "days".
@@ -69,14 +72,15 @@ supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS")
 supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
 
 # daily accumulations
-supply_de_daily <- aggregate_xts(supply_de, len = 1, timescale = "hours")
+supply_de_daily <- aggregate_xts(supply_de, agg_period = 1, timescale = "hours")
 
 # weekly means
-supply_de_weekly <- aggregate_xts(supply_de, len = 1, scale = "weeks", fun = "mean", "hours")
+supply_de_weekly <- aggregate_xts(supply_de, agg_period = 1, agg_scale = "weeks",
+                                  agg_fun = "mean", timescale = "hours")
 
 plot(supply_de, main = "Hourly energy production in Germany")
 plot(supply_de_daily, main = "Daily energy production in Germany")
-plot(supply_de_weekly, main = "Weekly energy production in Germany")
+plot(supply_de_weekly, main = "Average weekly energy production in Germany")
 
 }
 

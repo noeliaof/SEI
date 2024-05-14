@@ -4,16 +4,28 @@
 \alias{get_pit}
 \title{Calculate probability integral transform values}
 \usage{
-get_pit(ref_data, new_data, dist = "empirical", return_fit = FALSE)
+get_pit(
+  ref_data,
+  new_data,
+  dist = "empirical",
+  return_fit = FALSE,
+  n_thres = 20
+)
 }
 \arguments{
 \item{ref_data}{numeric vector from which to estimate the CDF.}
 
 \item{new_data}{numeric vector from which to calculate the PIT values.}
 
-\item{dist}{string; distribution used to estimate the CDF.}
+\item{dist}{character string specifying the distribution to be fit to the data;
+one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
+\code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
 
-\item{return_fit}{logical; return parameters and goodness-of-fit statistics.}
+\item{return_fit}{logical specifying whether to return parameters and goodness-of-fit
+statistics for the distribution fit.}
+
+\item{n_thres}{minimum number of data points required to estimate the distribution;
+default is 20.}
 }
 \value{
 A vector of PIT values if return_fit = F, or, if return_fit = T, a list containing

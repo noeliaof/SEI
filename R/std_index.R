@@ -4,23 +4,19 @@
 #' energy demand, residual load etc.) and returns a time series of standardised indices.
 #' Indices can be calculated on any timescale.
 #'
-#' @param x_new numeric; vector or time series to be converted to standardised indices.
-#' @param x_ref numeric; vector or time series containing reference data to use when calculating the standardised indices.
-#' @param dist string; distribution used to calculate the indices.
-#' @param timescale string; timescale of the data. One of "days", "weeks", "months",
-#' "quarters", and "years". Required if the time series is to be aggregated or rescaled.
-#' @param return_fit logical; return parameters and goodness-of-fit statistics for the distribution fit.
-#' @param moving_window numeric; length of moving window on which to calculate the indices.
-#' @param window_scale string; timescale of \code{moving_window}, default is the timescale of the data.
-#' @param agg_period numeric; the number of values to aggregate over.
-#' @param agg_scale string; timescale of \code{agg_period}. One of "days", "weeks", "months",
-#' "quarters", and "years". Default is the timescale of the data.
-#' @param agg_fun string; function used to aggregate the data over the aggregation period, default is "sum".
-#' @param rescale string; the timescale that the time series should be rescaled to. One of "days", "weeks", "months",
-#' "quarters", and "years".
-#' @param rescale_fun string; function used to rescale the data, default is "sum".
-#' @param index_type string; the type of index: "normal" (default), "prob01", or "prob11".
-#' @param ignore_na logical; ignore NAs when rescaling the time series.
+#' @param x_new vector or time series to be converted to standardised indices.
+#' @param x_ref vector or time series containing reference data to use when calculating the standardised indices.
+#' @param moving_window length of moving window on which to calculate the indices.
+#' @param window_scale timescale of \code{moving_window}; default is the timescale of the data.
+#' @param rescale the timescale that the time series should be rescaled to;
+#'  one of `"days"`, `"weeks"`, `"months"`, `"quarters"`, and `"years"`.
+#' @param rescale_fun string specifying the function used to rescale the data; default is `"sum"`.
+#' @param index_type the type of standardised index: `"normal"` (default), `"prob01"`,
+#'  or `"prob11"` (see details).
+#' @param ignore_na logical specifying whether to ignore NAs when rescaling the time series.
+#' @inheritParams aggregate_xts
+#' @inheritParams get_pit
+#' @inheritParams fit_dist
 #'
 #' @details
 #' Standardised indices are calculated by estimating the cumulative distribution function (CDF)
@@ -41,6 +37,7 @@
 #'
 #' The argument \code{rescale} converts the data to a different timescale. The original
 #' timescale of the data can be manually specified using the argument \code{timescale}.
+#' \code{timescale} is required if the time series is to be aggregated or rescaled.
 #' Otherwise, the function will try to automatically determine the timescale of the data.
 #' Manually specifying the timescale of the data is generally more robust. The rescaling
 #' is performed using the function \code{rescale_fun}. By default, this is assumed to be
@@ -82,6 +79,7 @@
 #' types of indices are available, which are explained in detail in the vignette.
 #' The index type can be chosen using \code{index_type}, which must be one of
 #' "normal" (default), "prob01", and "prob11".
+#'
 #'
 #' @return
 #' Time series of standardised indices.
@@ -158,6 +156,7 @@ std_index <- function(x_new,
                       timescale = NULL,
                       dist = "empirical",
                       return_fit = FALSE,
+                      index_type = "normal",
                       moving_window = NULL,
                       window_scale = NULL,
                       agg_period = NULL,
@@ -165,8 +164,9 @@ std_index <- function(x_new,
                       agg_fun = "sum",
                       rescale = NULL,
                       rescale_fun = "sum",
-                      index_type = "normal",
-                      ignore_na = FALSE) {
+                      ignore_na = FALSE,
+                      n_thres = 20,
+                      na_thres = 10) {
 
   # check inputs
   inputs <- as.list(environment())
@@ -210,20 +210,22 @@ std_index <- function(x_new,
   # aggregate data
   if (!is.null(agg_period)) {
     if (is.null(agg_scale)) agg_scale <- timescale
-    x_new <- aggregate_xts(x_new, len = agg_period, scale = agg_scale, fun = agg_fun, timescale = timescale)
-    x_ref <- aggregate_xts(x_ref, len = agg_period, scale = agg_scale, fun = agg_fun, timescale = timescale)
+    x_new <- aggregate_xts(x_new, len = agg_period, scale = agg_scale, fun = agg_fun,
+                           timescale = timescale, na_thres = na_thres)
+    x_ref <- aggregate_xts(x_ref, len = agg_period, scale = agg_scale, fun = agg_fun,
+                           timescale = timescale, na_thres = na_thres)
   }
 
   # calculate pit values
   if (is.null(moving_window)) {
-    fit <- get_pit(x_ref, x_new, dist = dist, return_fit = return_fit)
+    fit <- get_pit(x_ref, x_new, dist = dist, return_fit = return_fit, n_thres = n_thres)
   } else {
     if (is.null(window_scale)) window_scale <- timescale
     fit <- lapply(zoo::index(x_new), function(date) {
       from <- date - as.difftime(moving_window, units = window_scale)
       to <- date - as.difftime(1, units = timescale)
       data <- x_ref[paste(from, to, sep = "/")]
-      get_pit(data, x_new[date], dist = dist, return_fit = return_fit)
+      get_pit(data, x_new[date], dist = dist, return_fit = return_fit, n_thres = n_thres)
     })
     if (return_fit) {
       fit_names <- names(fit[[1]])

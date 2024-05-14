@@ -4,26 +4,29 @@
 #' values have been aggregated over a moving window of a user-specified length.
 #'
 #' @param x xts object to be aggregated.
-#' @param len length of the aggregation period.
-#' @param scale timescale of the aggregation period, default is 'days'.
-#' @param fun function to apply to the aggregated data, default is 'sum'.
-#' @param timescale timescale of \code{x}, default is 'days'.
+#' @param agg_period length of the aggregation period.
+#' @param agg_scale timescale of \code{agg_period};
+#'  one of `"hours"`, `"days"`, `"weeks"`, `"months"`, `"quarters"`, and `"years"`.
+#' @param agg_fun string specifying the function used to aggregate the data over the
+#'  aggregation period, default is `"sum"`.
+#' @param timescale timescale of the data; one of `"hours"`, `"days"`, `"weeks"`, `"months"`,
+#'  `"quarters"`, and `"years"`.
 #' @param na_thres threshold for the percentage of NA values allowed in the
-#'  aggregation period, default = 10.
+#'  aggregation period; default is 10.
 #'
 #' @details
 #' This has been adapted from code available at
 #' \url{https://github.com/WillemMaetens/standaRdized}.
 #'
-#' \code{len} is a single numeric value specifying over how many time units the
-#' data \code{x} is to be aggregated. By default, \code{len} is assumed to correspond
+#' \code{agg_period} is a single numeric value specifying over how many time units the
+#' data \code{x} is to be aggregated. By default, \code{agg_period} is assumed to correspond
 #' to a number of days, but this can also be specified manually using the argument
-#' \code{scale}. \code{scale} must be one of: "days", "weeks", "months", "quarters", and "years".
+#' \code{agg_scale}.
 #'
-#' \code{fun} determines the function used to aggregate the time series. By default,
-#' \code{fun = "sum"}, meaning the aggregation results in accumulations over the
+#' \code{agg_fun} determines the function used to aggregate the time series. By default,
+#' \code{agg_fun = "sum"}, meaning the aggregation results in accumulations over the
 #' aggregation period. Alternative functions can also be used. For example, specifying
-#' \code{fun = "mean"} would return the mean over the aggregation period.
+#' \code{agg_fun = "mean"} would return the mean over the aggregation period.
 #'
 #' \code{timescale} is the timescale of the input data \code{x}. By default, this
 #' is assumed to be "days".
@@ -51,14 +54,15 @@
 #' supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
 #'
 #' # daily accumulations
-#' supply_de_daily <- aggregate_xts(supply_de, len = 1, timescale = "hours")
+#' supply_de_daily <- aggregate_xts(supply_de, agg_period = 1, timescale = "hours")
 #'
 #' # weekly means
-#' supply_de_weekly <- aggregate_xts(supply_de, len = 1, scale = "weeks", fun = "mean", "hours")
+#' supply_de_weekly <- aggregate_xts(supply_de, agg_period = 1, agg_scale = "weeks",
+#'                                   agg_fun = "mean", timescale = "hours")
 #'
 #' plot(supply_de, main = "Hourly energy production in Germany")
 #' plot(supply_de_daily, main = "Daily energy production in Germany")
-#' plot(supply_de_weekly, main = "Weekly energy production in Germany")
+#' plot(supply_de_weekly, main = "Average weekly energy production in Germany")
 #'
 #' }
 #'
@@ -68,17 +72,17 @@ NULL
 #' @rdname aggregate_xts
 #' @export
 aggregate_xts <- function(x,
-                          len,
-                          scale = c("days", "hours", "weeks", "quarters", "years"),
-                          fun = 'sum',
+                          agg_period,
+                          agg_scale = c("days", "hours", "weeks", "quarters", "years"),
+                          agg_fun = 'sum',
                           timescale = c("days", "hours", "weeks", "quarters", "years"),
                           na_thres = 10) {
-  scale <- match.arg(scale)
+  agg_scale <- match.arg(agg_scale)
   timescale <- match.arg(timescale)
-  x_agg <- sapply(zoo::index(x), aggregate_xts_1, x, len, scale, fun, timescale, na_thres)
+  x_agg <- sapply(zoo::index(x), aggregate_xts_1, x, agg_period, agg_scale, agg_fun, timescale, na_thres)
   x_agg <- xts::xts(x_agg, order.by = zoo::index(x))
   xts::xtsAttributes(x_agg) <- xts::xtsAttributes(x)
-  xts::xtsAttributes(x_agg)$agg_length <- as.difftime(len, units = scale)
+  xts::xtsAttributes(x_agg)$agg_length <- as.difftime(agg_period, units = agg_scale)
   return(x_agg)
 }
 
