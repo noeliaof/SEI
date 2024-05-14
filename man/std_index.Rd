@@ -26,7 +26,8 @@ std_index(
 
 \item{x_ref}{numeric; vector or time series containing reference data to use when calculating the standardised indices.}
 
-\item{timescale}{string; timescale of the data. Required if the time series is to be aggregated or rescaled.}
+\item{timescale}{string; timescale of the data. One of "days", "weeks", "months",
+"quarters", and "years". Required if the time series is to be aggregated or rescaled.}
 
 \item{dist}{string; distribution used to calculate the indices.}
 
@@ -38,15 +39,17 @@ std_index(
 
 \item{agg_period}{numeric; the number of values to aggregate over.}
 
-\item{agg_scale}{string; timescale of \code{agg_period}, default is the timescale of the data.}
+\item{agg_scale}{string; timescale of \code{agg_period}. One of "days", "weeks", "months",
+"quarters", and "years". Default is the timescale of the data.}
 
 \item{agg_fun}{string; function used to aggregate the data over the aggregation period, default is "sum".}
 
-\item{rescale}{string; the timescale that the time series should be rescaled to.}
+\item{rescale}{string; the timescale that the time series should be rescaled to. One of "days", "weeks", "months",
+"quarters", and "years".}
 
 \item{rescale_fun}{string; function used to rescale the data, default is "sum".}
 
-\item{index_type}{string; the type of index: "normal" (default), "probability", or "bounded".}
+\item{index_type}{string; the type of index: "normal" (default), "prob01", or "prob11".}
 
 \item{ignore_na}{logical; ignore NAs when rescaling the time series.}
 }
@@ -94,9 +97,6 @@ one could also specify \code{agg_period = 1} and \code{agg_scale = "days"}, and 
 would also aggregate the data over the past day. \code{agg_fun} specifies how the
 data is to be aggregated, the default is \code{agg_fun = "sum"}.
 
-\code{timescale}, \code{agg_scale}, and \code{rescale} must all be one of: "days",
-"weeks", "months", "quarters", and "years".
-
 \code{dist} is the distribution used to estimate the CDF from \code{x_ref}.
 Currently, functionality is available to fit one of the following distributions to the data:
 Normal ('norm'), Log-normal ('lnorm'), Logistic ('logis'), Log-logistic ('llogis'),
@@ -120,7 +120,7 @@ The function returns a vector of time series (depending on the format of \code{x
 containing the standardised indices corresponding to \code{x_new}. Three different
 types of indices are available, which are explained in detail in the vignette.
 The index type can be chosen using \code{index_type}, which must be one of
-"normal" (default), "probability", and "bounded".
+"normal" (default), "prob01", and "prob11".
 }
 \examples{
 data(data_supply)

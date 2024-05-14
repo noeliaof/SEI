@@ -7,16 +7,19 @@
 #' @param x_new numeric; vector or time series to be converted to standardised indices.
 #' @param x_ref numeric; vector or time series containing reference data to use when calculating the standardised indices.
 #' @param dist string; distribution used to calculate the indices.
-#' @param timescale string; timescale of the data. Required if the time series is to be aggregated or rescaled.
+#' @param timescale string; timescale of the data. One of "days", "weeks", "months",
+#' "quarters", and "years". Required if the time series is to be aggregated or rescaled.
 #' @param return_fit logical; return parameters and goodness-of-fit statistics for the distribution fit.
 #' @param moving_window numeric; length of moving window on which to calculate the indices.
 #' @param window_scale string; timescale of \code{moving_window}, default is the timescale of the data.
 #' @param agg_period numeric; the number of values to aggregate over.
-#' @param agg_scale string; timescale of \code{agg_period}, default is the timescale of the data.
+#' @param agg_scale string; timescale of \code{agg_period}. One of "days", "weeks", "months",
+#' "quarters", and "years". Default is the timescale of the data.
 #' @param agg_fun string; function used to aggregate the data over the aggregation period, default is "sum".
-#' @param rescale string; the timescale that the time series should be rescaled to.
+#' @param rescale string; the timescale that the time series should be rescaled to. One of "days", "weeks", "months",
+#' "quarters", and "years".
 #' @param rescale_fun string; function used to rescale the data, default is "sum".
-#' @param index_type string; the type of index: "normal" (default), "probability", or "bounded".
+#' @param index_type string; the type of index: "normal" (default), "prob01", or "prob11".
 #' @param ignore_na logical; ignore NAs when rescaling the time series.
 #'
 #' @details
@@ -55,9 +58,6 @@
 #' would also aggregate the data over the past day. \code{agg_fun} specifies how the
 #' data is to be aggregated, the default is \code{agg_fun = "sum"}.
 #'
-#' \code{timescale}, \code{agg_scale}, and \code{rescale} must all be one of: "days",
-#' "weeks", "months", "quarters", and "years".
-#'
 #' \code{dist} is the distribution used to estimate the CDF from \code{x_ref}.
 #' Currently, functionality is available to fit one of the following distributions to the data:
 #' Normal ('norm'), Log-normal ('lnorm'), Logistic ('logis'), Log-logistic ('llogis'),
@@ -81,7 +81,7 @@
 #' containing the standardised indices corresponding to \code{x_new}. Three different
 #' types of indices are available, which are explained in detail in the vignette.
 #' The index type can be chosen using \code{index_type}, which must be one of
-#' "normal" (default), "probability", and "bounded".
+#' "normal" (default), "prob01", and "prob11".
 #'
 #' @return
 #' Time series of standardised indices.
@@ -244,9 +244,9 @@ std_index <- function(x_new,
 
   if (index_type == "normal") {
     si <- qnorm(pit)
-  } else if (index_type == "bounded") {
+  } else if (index_type == "prob11") {
     si <- 2*pit - 1
-  } else if (index_type == "probability") {
+  } else if (index_type == "prob01") {
     si <- pit
   }
 
@@ -371,8 +371,8 @@ check_inputs <- function(inputs) {
   }
 
   # index_type
-  if (!(inputs$index_type %in% c("normal", "bounded", "probability"))) {
-    stop("index_type must be one of 'normal', 'bounded', or 'probability'")
+  if (!(inputs$index_type %in% c("normal", "prob01", "prob11"))) {
+    stop("index_type must be one of 'normal', 'prob01', or 'prob11'")
   }
 
 
