@@ -66,7 +66,8 @@
 #' supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
 #' supply_de_std <- std_index(supply_de, timescale = "hours")
 #'
-#' get_drought(supply_de_std, thresholds = c(-1, -1.5, -2), exceed = FALSE)
+#' drought_df <- get_drought(supply_de_std, thresholds = c(-1, -1.5, -2), exceed = FALSE)
+#' head(drought_df)
 #'
 #' @name get_drought
 NULL
