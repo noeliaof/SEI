@@ -7,9 +7,9 @@
 aggregate_xts(
   x,
   agg_period,
-  agg_scale = c("days", "hours", "weeks", "quarters", "years"),
+  agg_scale = c("days", "mins", "hours", "weeks", "months", "years"),
   agg_fun = "sum",
-  timescale = c("days", "hours", "weeks", "quarters", "years"),
+  timescale = c("days", "mins", "hours", "weeks", "months", "years"),
   na_thres = 10
 )
 }
@@ -19,13 +19,12 @@ aggregate_xts(
 \item{agg_period}{length of the aggregation period.}
 
 \item{agg_scale}{timescale of \code{agg_period};
-one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, and \code{"years"}.}
+one of \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{agg_fun}{string specifying the function used to aggregate the data over the
-aggregation period, default is \code{"sum"}.}
+aggregation period, default is \code{'sum'}.}
 
-\item{timescale}{timescale of the data; one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"},
-\code{"quarters"}, and \code{"years"}.}
+\item{timescale}{timescale of the data; \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{na_thres}{threshold for the percentage of NA values allowed in the
 aggregation period; default is 10.}
@@ -79,8 +78,8 @@ supply_de_weekly <- aggregate_xts(supply_de, agg_period = 1, agg_scale = "weeks"
                                   agg_fun = "mean", timescale = "hours")
 
 plot(supply_de, main = "Hourly energy production in Germany")
-plot(supply_de_daily, main = "Daily energy production in Germany")
-plot(supply_de_weekly, main = "Average weekly energy production in Germany")
+plot(supply_de_daily, main = "Daily accumulated energy production in Germany")
+plot(supply_de_weekly, main = "Weekly averaged energy production in Germany")
 
 }
 

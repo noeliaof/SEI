@@ -6,11 +6,10 @@
 #' @param x xts object to be aggregated.
 #' @param agg_period length of the aggregation period.
 #' @param agg_scale timescale of \code{agg_period};
-#'  one of `"hours"`, `"days"`, `"weeks"`, `"months"`, `"quarters"`, and `"years"`.
+#'  one of `'mins'`, `'hours'`, `'days'`, `'weeks'`, `'months'`, `'years'`.
 #' @param agg_fun string specifying the function used to aggregate the data over the
-#'  aggregation period, default is `"sum"`.
-#' @param timescale timescale of the data; one of `"hours"`, `"days"`, `"weeks"`, `"months"`,
-#'  `"quarters"`, and `"years"`.
+#'  aggregation period, default is `'sum'`.
+#' @param timescale timescale of the data; `'mins'`, `'hours'`, `'days'`, `'weeks'`, `'months'`, `'years'`.
 #' @param na_thres threshold for the percentage of NA values allowed in the
 #'  aggregation period; default is 10.
 #'
@@ -61,8 +60,8 @@
 #'                                   agg_fun = "mean", timescale = "hours")
 #'
 #' plot(supply_de, main = "Hourly energy production in Germany")
-#' plot(supply_de_daily, main = "Daily energy production in Germany")
-#' plot(supply_de_weekly, main = "Average weekly energy production in Germany")
+#' plot(supply_de_daily, main = "Daily accumulated energy production in Germany")
+#' plot(supply_de_weekly, main = "Weekly averaged energy production in Germany")
 #'
 #' }
 #'
@@ -73,16 +72,16 @@ NULL
 #' @export
 aggregate_xts <- function(x,
                           agg_period,
-                          agg_scale = c("days", "hours", "weeks", "quarters", "years"),
+                          agg_scale = c('days', 'mins', 'hours', 'weeks', 'months', 'years'),
                           agg_fun = 'sum',
-                          timescale = c("days", "hours", "weeks", "quarters", "years"),
+                          timescale = c('days', 'mins', 'hours', 'weeks', 'months', 'years'),
                           na_thres = 10) {
   agg_scale <- match.arg(agg_scale)
   timescale <- match.arg(timescale)
   x_agg <- sapply(zoo::index(x), aggregate_xts_1, x, agg_period, agg_scale, agg_fun, timescale, na_thres)
   x_agg <- xts::xts(x_agg, order.by = zoo::index(x))
   xts::xtsAttributes(x_agg) <- xts::xtsAttributes(x)
-  xts::xtsAttributes(x_agg)$agg_length <- as.difftime(agg_period, units = agg_scale)
+  xts::xtsAttributes(x_agg)$agg_length <- paste(agg_period, agg_scale)
   return(x_agg)
 }
 
@@ -94,10 +93,13 @@ aggregate_xts_1 <- function(date,
                             fun = 'sum',
                             timescale,
                             na_thres = 10) {
-  from <- date - as.difftime(len, units = scale) + as.difftime(1, units = timescale)
+
+  by <- paste0("-", len, " ", scale)
+  from <- seq(date, length = 2, by = by)[2]
+  from <- seq(from, length = 2, by = paste("+1", timescale))[2]
   to <- date
-  data <- data[paste(from, to, sep = '/')]
-  dates <- seq(from = from, to = to, by = as.difftime(1, units = timescale))
+  data <- data[paste(format(from, "%Y-%m-%d %H:%M:%S"), format(to, "%Y-%m-%d %H:%M:%S"), sep = '/')]
+  dates <- seq(from = from, to = to, by = paste("1", timescale))
   x <- c(zoo::coredata(merge(xts::xts(order.by = dates), data, join = 'left')))
 
   if (length(x) != 0) {

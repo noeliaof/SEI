@@ -28,8 +28,7 @@ std_index(
 
 \item{x_ref}{vector or time series containing reference data to use when calculating the standardised indices.}
 
-\item{timescale}{timescale of the data; one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"},
-\code{"quarters"}, and \code{"years"}.}
+\item{timescale}{timescale of the data; \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{dist}{character string specifying the distribution to be fit to the data;
 one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
@@ -48,10 +47,10 @@ or \code{"prob11"} (see details).}
 \item{agg_period}{length of the aggregation period.}
 
 \item{agg_scale}{timescale of \code{agg_period};
-one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, and \code{"years"}.}
+one of \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{agg_fun}{string specifying the function used to aggregate the data over the
-aggregation period, default is \code{"sum"}.}
+aggregation period, default is \code{'sum'}.}
 
 \item{rescale}{the timescale that the time series should be rescaled to;
 one of \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, and \code{"years"}.}
