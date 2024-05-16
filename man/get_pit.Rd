@@ -6,7 +6,7 @@
 \usage{
 get_pit(
   ref_data,
-  new_data,
+  new_data = NULL,
   dist = "empirical",
   return_fit = FALSE,
   n_thres = 20

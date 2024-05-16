@@ -70,8 +70,8 @@ fit_dist <- function(data, dist, n_thres = 20){
   check_distribution(inputs)
 
   # initialise data properties and goodness-of-fit statistics
-  fit_props <- rep(NA, 5)
-  names(fit_props) <- c("n_obs", "n_na", "pct_na", "aic", "ks_pval")
+  fit_props <- rep(NA, 6)
+  names(fit_props) <- c("n_obs", "n_na", "pct_na", "aic", "ks_pval", "sw_pval")
 
   fit_props['n_obs'] <- as.integer(length(data))
   fit_props['n_na'] <- sum(is.na(data))
@@ -105,14 +105,17 @@ fit_dist <- function(data, dist, n_thres = 20){
       params <- fit$estimate # parameters
       F_x <- function(x, params) do.call(paste0("p", dist), c(list(q = x), as.list(params))) # cdf
       fit_props['aic'] <- fit$aic # aic
-      fit_props['ks_pval'] <- do.call('ks.test', c(list(x = data, y = paste0('p', dist)), as.list(params)))$p.value # ks p-value
     } else {
       warning("distribution fitting failed")
       return(list(F_x = function(x, params) NA, params = NULL, fit_props = fit_props))
     }
   }
 
-  return(list(F_x = F_x, params = params, fit_props = fit_props))
+  pit <- F_x(data, params)
+  fit_props['ks_pval'] <- ks.test(pit, "punif")$p.value # ks p-value
+  fit_props['sw_pval'] <- shapiro.test(qnorm(pit))$p.value # sw p-value
+
+  return(list(F_x = F_x, params = params, fit = fit_props, pit = pit))
 }
 
 

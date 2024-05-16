@@ -79,13 +79,14 @@ NULL
 #' @rdname get_pit
 #' @export
 get_pit <- function(ref_data,
-                    new_data,
+                    new_data = NULL,
                     dist = "empirical",
                     return_fit = FALSE,
                     n_thres = 20) {
 
   fit <- fit_dist(as.vector(ref_data), dist, n_thres)
-  fit$pit <- fit$F_x(as.vector(new_data), fit$params)
+
+  if (!is.null(new_data)) fit$pit <- fit$F_x(as.vector(new_data), fit$params)
 
   if (return_fit) {
     return(fit)
