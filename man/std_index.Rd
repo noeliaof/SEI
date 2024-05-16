@@ -20,7 +20,10 @@ std_index(
   rescale_fun = "sum",
   ignore_na = FALSE,
   n_thres = 20,
-  na_thres = 10
+  na_thres = 10,
+  lower = -Inf,
+  upper = Inf,
+  x_cen = index_type
 )
 }
 \arguments{
@@ -64,6 +67,12 @@ default is 20.}
 
 \item{na_thres}{threshold for the percentage of NA values allowed in the
 aggregation period; default is 10.}
+
+\item{lower, upper}{numeric values specifying the lower and upper bounds at which censoring
+is to be performed.}
+
+\item{x_cen}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
+corresponding to common choices, or a custom numeric vector of length two.}
 }
 \value{
 Time series of standardised indices.

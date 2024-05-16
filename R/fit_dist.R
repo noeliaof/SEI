@@ -115,7 +115,7 @@ fit_dist <- function(data, dist, n_thres = 20){
   fit_props['ks_pval'] <- ks.test(pit, "punif")$p.value # ks p-value
   fit_props['sw_pval'] <- shapiro.test(qnorm(pit))$p.value # sw p-value
 
-  return(list(F_x = F_x, params = params, fit = fit_props, pit = pit))
+  return(list(F_x = F_x, params = params, fit = fit_props))
 }
 
 

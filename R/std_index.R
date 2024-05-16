@@ -166,7 +166,10 @@ std_index <- function(x_new,
                       rescale_fun = "sum",
                       ignore_na = FALSE,
                       n_thres = 20,
-                      na_thres = 10) {
+                      na_thres = 10,
+                      lower = -Inf,
+                      upper = Inf,
+                      x_cen = index_type) {
 
   # check inputs
   inputs <- as.list(environment())
@@ -216,6 +219,7 @@ std_index <- function(x_new,
                            timescale = timescale, na_thres = na_thres)
   }
 
+  if (x_cen %in% c("prob01", "prob11")) x_cen <- "prob"
   # calculate pit values
   if (is.null(moving_window)) {
     fit <- get_pit(x_ref, x_new, dist = dist, return_fit = return_fit, n_thres = n_thres)

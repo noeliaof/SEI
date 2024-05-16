@@ -9,6 +9,9 @@ get_pit(
   new_data = NULL,
   dist = "empirical",
   return_fit = FALSE,
+  lower = -Inf,
+  upper = Inf,
+  x_cen = "normal",
   n_thres = 20
 )
 }
@@ -23,6 +26,12 @@ one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"l
 
 \item{return_fit}{logical specifying whether to return parameters and goodness-of-fit
 statistics for the distribution fit.}
+
+\item{lower, upper}{numeric values specifying the lower and upper bounds at which censoring
+is to be performed.}
+
+\item{x_cen}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
+corresponding to common choices, or a custom numeric vector of length two.}
 
 \item{n_thres}{minimum number of data points required to estimate the distribution;
 default is 20.}
@@ -91,6 +100,19 @@ hist(pit$pit)
 
 hist(x_ref, breaks = 30, probability = TRUE)
 lines(seq(0, 10, 0.01), dexp(seq(0, 10, 0.01), pit$params[1]), col = "blue")
+
+
+# gamma distribution with censoring
+x_ref <- c(x_ref, numeric(N))
+pit <- get_pit(x_ref, dist = "gamma", lower = 0, x_cen = "prob")
+hist(pit)
+mean(pit) # = 1/2
+mean(qnorm(pit)) # != 0
+
+pit <- get_pit(x_ref, dist = "gamma", lower = 0, x_cen = "normal")
+hist(qnorm(pit))
+mean(pit) # != 1/2
+mean(qnorm(pit)) # = 0
 
 
 }
