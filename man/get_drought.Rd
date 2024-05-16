@@ -4,7 +4,13 @@
 \alias{get_drought}
 \title{Get drought characteristics}
 \usage{
-get_drought(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag = FALSE)
+get_drought(
+  x,
+  thresholds = c(1.28, 1.64, 1.96),
+  exceed = TRUE,
+  lag = FALSE,
+  cluster = NULL
+)
 }
 \arguments{
 \item{x}{vector or xts object.}
@@ -14,6 +20,8 @@ get_drought(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag = FALSE)
 \item{exceed}{logical; TRUE if a drought is defined when \code{x} is above the thresholds, FALSE otherwise.}
 
 \item{lag}{logical; TRUE if the drought should end when the value changes sign.}
+
+\item{cluster}{integer specifying the number of timesteps over which droughts should be clustered.}
 }
 \value{
 A data frame containing the original values \code{x} and the corresponding drought characteristics.

@@ -8,6 +8,7 @@
 #' @param thresholds numeric vector containing thresholds to use when defining droughts.
 #' @param exceed logical; TRUE if a drought is defined when \code{x} is above the thresholds, FALSE otherwise.
 #' @param lag logical; TRUE if the drought should end when the value changes sign.
+#' @param cluster integer specifying the number of timesteps over which droughts should be clustered.
 #'
 #' @details
 #' A drought is assumed to be defined as an instance when the vector \code{x} exceeds
@@ -74,7 +75,8 @@ NULL
 
 #' @rdname get_drought
 #' @export
-get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag = FALSE){
+get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96),
+                        exceed = TRUE, lag = FALSE, cluster = NULL){
 
   if (xts::is.xts(x)) {
     x <- unname(x)
@@ -83,7 +85,7 @@ get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag 
     df <- data.frame(x = x)
   }
 
-  # intensity
+  # intensity & occurrence
   if (exceed) {
     if (length(thresholds) == 1) {
       df$occ <- as.numeric(df$x >= thresholds)
@@ -100,13 +102,23 @@ get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag 
     }
   }
 
-  # occurrence
+  # lag
   if (lag) {
-    for (i in 2:nrow(df)){
-      if (df$occ[i] == 0 & df$occ[i-1] == 1 & sign(df$x[i]) == sign(df$x[i - 1])) {
+    for (i in 2:nrow(df)) {
+      if (df$occ[i] == 0 & df$occ[i - 1] == 1 & sign(df$x[i]) == sign(df$x[i - 1])) {
         df$occ[i] <- 1
       }
     }
+  }
+
+  # cluster droughts
+  if (!is.null(cluster)) {
+    ind <- which(df$occ == 1)
+    dif <- c(diff(ind), 0)
+    cl <- (dif > 1) & (dif <= cluster + 1)
+    ind <- ind[cl]
+    dif <- dif[cl]
+    for (i in seq_along(ind)) df$occ[ind[i]:(ind[i] + dif[i])] <- 1
   }
 
   # duration and magnitude
