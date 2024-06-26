@@ -1,0 +1,233 @@
+\begin{thebibliography}{29}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{Allen and Otero(2023)}]{AllenOtero2023}
+Allen S, Otero N (2023).
+\newblock \enquote{Standardised Indices to Monitor Energy Droughts.}
+\newblock \emph{Renewable Energy}, \textbf{217}, 119206.
+\newblock \doi{10.1016/j.renene.2023.119206}.
+
+\bibitem[{Ayala-Bizarro and Z{\'u}{\~n}iga-Mendoza(2016)}]{SPIGA}
+Ayala-Bizarro I, Z{\'u}{\~n}iga-Mendoza J (2016).
+\newblock \emph{\pkg{SPIGA}: Compute SPI Index Using the Methods Genetic
+  Algorithm and Maximum Likelihood}.
+\newblock \proglang{R}~package version~1.0.0,
+  \urlprefix\url{https://CRAN.R-project.org/package=SPIGA}.
+
+\bibitem[{Beguer{\'\i}a \emph{et~al.}(2014)Beguer{\'\i}a, Vicente-Serrano,
+  Reig, and Latorre}]{BegueriaEtAl2014}
+Beguer{\'\i}a S, Vicente-Serrano SM, Reig F, Latorre B (2014).
+\newblock \enquote{Standardized Precipitation Evapotranspiration Index {(SPEI)}
+  Revisited: Parameter Fitting, Evapotranspiration Models, Tools, Datasets and
+  Drought Monitoring.}
+\newblock \emph{International Journal of Climatology}, \textbf{34}, 3001--3023.
+\newblock \doi{10.1002/joc.3887}.
+
+\bibitem[{Beguería and Vicente-Serrano(2023)}]{SPEI-R}
+Beguería S, Vicente-Serrano SM (2023).
+\newblock \emph{\pkg{SPEI}: Calculation of the Standardized
+  Precipitation-Evapotranspiration Index}.
+\newblock \proglang{R}~package version~1.8.1,
+  \urlprefix\url{https://CRAN.R-project.org/package=SPEI}.
+
+\bibitem[{Bloomfield \emph{et~al.}(2020)Bloomfield, Brayshaw, and
+  Charlton-Perez}]{BloomfieldEtAl2020}
+Bloomfield H, Brayshaw D, Charlton-Perez A (2020).
+\newblock \enquote{{ERA5} Derived Time Series of European Country-Aggregate
+  Electricity Demand, Wind Power Generation and Solar Power Generation: Hourly
+  Data From 1979-2019.}
+\newblock \doi{10.17864/1947.272}.
+
+\bibitem[{Bloomfield and Marchant(2013)}]{BloomfieldMarchant2013}
+Bloomfield J, Marchant B (2013).
+\newblock \enquote{Analysis of Groundwater Drought Building on the Standardised
+  Precipitation Index Approach.}
+\newblock \emph{Hydrology and Earth System Sciences}, \textbf{17}, 4769--4787.
+\newblock \doi{10.5194/hess-17-4769-2013}.
+
+\bibitem[{Erhardt and Czado(2018)}]{ErhardtCzado2018}
+Erhardt TM, Czado C (2018).
+\newblock \enquote{Standardized Drought Indices: A Novel Univariate and
+  Multivariate Approach.}
+\newblock \emph{Journal of the Royal Statistical Society Series C},
+  \textbf{67}, 643--664.
+\newblock \doi{10.1111/rssc.12242}.
+
+\bibitem[{Gudmundsson and Stagge(2016)}]{SCI}
+Gudmundsson L, Stagge JH (2016).
+\newblock \emph{\pkg{SCI}: Standardized Climate Indices such as SPI, SRI or
+  SPEI}.
+\newblock \proglang{R}~package version~1.0-2,
+  \urlprefix\url{https://CRAN.R-project.org/package=SCI}.
+
+\bibitem[{Guttman(1999)}]{Guttman1999}
+Guttman NB (1999).
+\newblock \enquote{Accepting the Standardized Precipitation Index: A
+  Calculation Algorithm.}
+\newblock \emph{Journal of the American Water Resources Association},
+  \textbf{35}, 311--322.
+\newblock \doi{10.1111/j.1752-1688.1999.tb03592.x}.
+
+\bibitem[{Hao \emph{et~al.}(2019)Hao, Hao, Singh, and Zhang}]{HaoEtAl2019}
+Hao Z, Hao F, Singh VP, Zhang X (2019).
+\newblock \enquote{Statistical Prediction of the Severity of Compound Dry-hot
+  Events Based On {El Ni{\~n}o-Southern Oscillation}.}
+\newblock \emph{Journal of Hydrology}, \textbf{572}, 243--250.
+\newblock \doi{10.1016/j.jhydrol.2019.03.001}.
+
+\bibitem[{Hersbach \emph{et~al.}(2023)Hersbach, Bell, Berrisford, Biavati,
+  Hor{\'a}nyi, Mu{\~n}oz~Sabater, Nicolas, Peubey, Radu, Schepers, Simmons,
+  Soci, Dee, and Th{\'e}paut}]{HersbachEtAl2023}
+Hersbach H, Bell B, Berrisford P, Biavati G, Hor{\'a}nyi A, Mu{\~n}oz~Sabater
+  J, Nicolas J, Peubey C, Radu Rand~Rozum I, Schepers D, Simmons A, Soci C, Dee
+  D, Th{\'e}paut JN (2023).
+\newblock \enquote{ERA5 Hourly Data on Single Levels From 1940 to Present.
+  Copernicus Climate Change Service (C3S) Climate Data Store (CDS).}
+\newblock
+  \url{https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview}.
+\newblock Accessed: 01-09-2022.
+
+\bibitem[{Li \emph{et~al.}(2015)Li, Wang, Li, and Hu}]{LiEtAl2015}
+Li J, Wang Y, Li S, Hu R (2015).
+\newblock \enquote{A Nonstationary Standardized Precipitation Index
+  Incorporating Climate Indices as Covariates.}
+\newblock \emph{Journal of Geophysical Research: Atmospheres}, \textbf{120},
+  12--082.
+\newblock \doi{10.1002/2015JD023920}.
+
+\bibitem[{Li \emph{et~al.}(2021)Li, Wang, Wu, Zscheischler, Guo, and
+  Chen}]{LiEtAl2021}
+Li J, Wang Z, Wu X, Zscheischler J, Guo S, Chen X (2021).
+\newblock \enquote{A Standardized Index for Assessing Sub-Monthly Compound Dry
+  and Hot Conditions With Application in {China}.}
+\newblock \emph{Hydrology and Earth System Sciences}, \textbf{25}, 1587--1601.
+\newblock \doi{10.5194/hess-25-1587-2021}.
+
+\bibitem[{Maetens(2019)}]{standaRdized}
+Maetens W (2019).
+\newblock \emph{\pkg{standaRdized}}.
+\newblock GitHub repository release~v.1.0,
+  \urlprefix\url{https://github.com/WillemMaetens/standaRdized}.
+
+\bibitem[{Massey~Jr(1951)}]{Massey1951}
+Massey~Jr FJ (1951).
+\newblock \enquote{The {Kolmogorov-Smirnov} Test for Goodness of Fit.}
+\newblock \emph{Journal of the American Statistical Association}, \textbf{46},
+  68--78.
+\newblock \doi{doi.org/10.1080/01621459.1951.10500769}.
+
+\bibitem[{McKee \emph{et~al.}(1993)McKee, Doesken, and Kleist}]{McKeeEtAl1993}
+McKee TB, Doesken NJ, Kleist J (1993).
+\newblock \enquote{The Relationship of Drought Frequency and Duration to Time
+  Scales.}
+\newblock In \emph{Proceedings of the 8th Conference on Applied Climatology},
+  volume~17, pp. 179--183. Boston, MA, USA.
+
+\bibitem[{Nussbaumer(2021)}]{standard-precip}
+Nussbaumer E (2021).
+\newblock \emph{\pkg{standard-precip}: Functions to Calculate SPI and SPEI}.
+\newblock \proglang{Python}~package version~1.0,
+  \urlprefix\url{https://pypi.org/project/standard-precip/}.
+
+\bibitem[{Otero \emph{et~al.}(2022)Otero, Martius, Allen, Bloomfield, and
+  Schaefli}]{OteroEtAl2022b}
+Otero N, Martius O, Allen S, Bloomfield H, Schaefli B (2022).
+\newblock \enquote{Characterizing Renewable Energy Compound Events Across
+  Europe Using a Logistic Regression-based Approach.}
+\newblock \emph{Meteorological Applications}, \textbf{29}, e2089.
+\newblock \doi{https://doi.org/10.1002/met.2089}.
+
+\bibitem[{{\proglang{Python} Software Foundation}(2017)}]{python}
+{\proglang{Python} Software Foundation} (2017).
+\newblock \emph{\proglang{Python} Software, Version~3.6.4}.
+\newblock Beaverton, OR.
+\newblock \urlprefix\url{https://www.python.org/}.
+
+\bibitem[{{\proglang{R} Core Team}(2017)}]{R}
+{\proglang{R} Core Team} (2017).
+\newblock \emph{\proglang{R}: A Language and Environment for Statistical
+  Computing}.
+\newblock \proglang{R} Foundation for Statistical Computing, Vienna, Austria.
+\newblock \urlprefix\url{https://www.R-project.org/}.
+
+\bibitem[{Russo \emph{et~al.}(2013)Russo, Dosio, Sterl, Barbosa, and
+  Vogt}]{RussoEtAl2013}
+Russo S, Dosio A, Sterl A, Barbosa P, Vogt J (2013).
+\newblock \enquote{Projection of Occurrence of Extreme Dry-wet Years and
+  Seasons in Europe with Stationary and Nonstationary Standardized
+  Precipitation Indices.}
+\newblock \emph{Journal of Geophysical Research: Atmospheres}, \textbf{118},
+  7628--7639.
+\newblock \doi{10.1002/jgrd.50571}.
+
+\bibitem[{Shukla and Wood(2008)}]{ShuklaWood2008}
+Shukla S, Wood AW (2008).
+\newblock \enquote{Use of a Standardized Runoff Index for Characterizing
+  Hydrologic Drought.}
+\newblock \emph{Geophysical Research Letters}, \textbf{35}, L02405.
+\newblock \doi{10.1029/2007GL032487}.
+
+\bibitem[{Silverman(2018)}]{Silverman2018}
+Silverman BW (2018).
+\newblock \emph{Density Estimation for Statistics and Data Analysis}.
+\newblock Routledge, New York.
+\newblock \doi{10.1201/9781315140919}.
+
+\bibitem[{Stagge \emph{et~al.}(2015)Stagge, Tallaksen, Gudmundsson, Van~Loon,
+  and Stahl}]{StaggeEtAl2015}
+Stagge JH, Tallaksen LM, Gudmundsson L, Van~Loon AF, Stahl K (2015).
+\newblock \enquote{Candidate Distributions for Climatological Drought Indices
+  {(SPI and SPEI)}.}
+\newblock \emph{International Journal of Climatology}, \textbf{35}, 4027--4040.
+\newblock \doi{10.1002/joc.4267}.
+
+\bibitem[{Vicente-Serrano \emph{et~al.}(2010)Vicente-Serrano, Beguer{\'\i}a,
+  and L{\'o}pez-Moreno}]{VicenteEtAl2010}
+Vicente-Serrano SM, Beguer{\'\i}a S, L{\'o}pez-Moreno JI (2010).
+\newblock \enquote{A Multiscalar Drought Index Sensitive to Global Warming: The
+  Standardized Precipitation Evapotranspiration Index.}
+\newblock \emph{Journal of Climate}, \textbf{23}, 1696--1718.
+\newblock \doi{10.1175/2009JCLI2909.1}.
+
+\bibitem[{Vicente-Serrano \emph{et~al.}(2012)Vicente-Serrano, L{\'o}pez-Moreno,
+  Beguer{\'\i}a, Lorenzo-Lacruz, Azorin-Molina, and
+  Mor{\'a}n-Tejeda}]{VicenteEtAl2012}
+Vicente-Serrano SM, L{\'o}pez-Moreno JI, Beguer{\'\i}a S, Lorenzo-Lacruz J,
+  Azorin-Molina C, Mor{\'a}n-Tejeda E (2012).
+\newblock \enquote{Accurate Computation of a Streamflow Drought Index.}
+\newblock \emph{Journal of Hydrologic Engineering}, \textbf{17}, 318--332.
+\newblock \doi{10.1061/(ASCE)HE.1943-5584.0000433}.
+
+\bibitem[{Vonk(2017)}]{spei-python}
+Vonk M (2017).
+\newblock \emph{\pkg{spei}: A Simple \proglang{Python} Package to Calculate
+  Drought Indices for Time Series such as the SPI, SPEI and SGI}.
+\newblock \proglang{Python}~package version~2.0.0,
+  \urlprefix\url{https://pypi.org/project/spei/}.
+
+\bibitem[{Zargar \emph{et~al.}(2011)Zargar, Sadiq, Naser, and
+  Khan}]{ZargarEtAl2011}
+Zargar A, Sadiq R, Naser B, Khan FI (2011).
+\newblock \enquote{A Review of Drought Indices.}
+\newblock \emph{Environmental Reviews}, \textbf{19}, 333--349.
+\newblock \doi{10.1139/a11-013}.
+
+\bibitem[{Zscheischler \emph{et~al.}(2014)Zscheischler, Michalak, Schwalm,
+  Mahecha, Huntzinger, Reichstein, Berthier, Ciais, Cook, El-Masri
+  \emph{et~al.}}]{ZscheischlerEtAl2014}
+Zscheischler J, Michalak AM, Schwalm C, Mahecha MD, Huntzinger DN, Reichstein
+  M, Berthier G, Ciais P, Cook RB, El-Masri B, \emph{et~al.} (2014).
+\newblock \enquote{Impact of Large-Scale Climate Extremes on Biospheric Carbon
+  Fluxes: An Intercomparison Based on {MsTMIP} Data.}
+\newblock \emph{Global Biogeochemical Cycles}, \textbf{28}, 585--600.
+\newblock \doi{10.1002/2014GB004826}.
+
+\end{thebibliography}
