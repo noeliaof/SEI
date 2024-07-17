@@ -9,8 +9,11 @@ std_index(
   x_ref = x_new,
   timescale = NULL,
   dist = "empirical",
+  method = "mle",
   return_fit = FALSE,
   index_type = "normal",
+  gr_new = NULL,
+  gr_ref = gr_new,
   moving_window = NULL,
   window_scale = NULL,
   agg_period = NULL,
@@ -37,11 +40,20 @@ std_index(
 one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
 \code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
 
+\item{method}{A character string coding for the fitting method: 
+    \code{"mle"} for 'maximum likelihood estimation', \code{"mme"} for 'moment matching estimation', 
+    \code{"qme"} for 'quantile matching estimation', \code{"mge"} for 'maximum goodness-of-fit estimation'
+    and \code{"mse"} for 'maximum spacing estimation'.}
+
 \item{return_fit}{logical specifying whether to return parameters and goodness-of-fit
 statistics for the distribution fit.}
 
 \item{index_type}{the type of standardised index: \code{"normal"} (default), \code{"prob01"},
 or \code{"prob11"} (see details).}
+
+\item{gr_new}{vector of factors for which separate distributions should be applied to \code{x_new}.}
+
+\item{gr_ref}{vector of factors for which separate distributions should be fit to \code{x_ref}.}
 
 \item{moving_window}{length of moving window on which to calculate the indices.}
 
@@ -192,6 +204,15 @@ supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks",
 
 # we could also use kernel density estimation, which is a flexible compromise between the two
 supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "kde")
+
+
+# calculate separate indices for each quarter of 2019
+season <- ceiling(lubridate::month(zoo::index(supply_de)) / 3)
+season <- c("Q1", "Q2", "Q3", "Q4")[season]
+supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+                           gr_new = season, dist = "kde", return_fit = TRUE)
+
+
 
 }
 \references{

@@ -6,6 +6,8 @@
 #'
 #' @param x_new vector or time series to be converted to standardised indices.
 #' @param x_ref vector or time series containing reference data to use when calculating the standardised indices.
+#' @param gr_new vector of factors for which separate distributions should be applied to \code{x_new}.
+#' @param gr_ref vector of factors for which separate distributions should be fit to \code{x_ref}.
 #' @param moving_window length of moving window on which to calculate the indices.
 #' @param window_scale timescale of \code{moving_window}; default is the timescale of the data.
 #' @param rescale the timescale that the time series should be rescaled to;
@@ -145,6 +147,15 @@
 #' # we could also use kernel density estimation, which is a flexible compromise between the two
 #' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", dist = "kde")
 #'
+#'
+#' # calculate separate indices for each quarter of 2019
+#' season <- ceiling(lubridate::month(zoo::index(supply_de)) / 3)
+#' season <- c("Q1", "Q2", "Q3", "Q4")[season]
+#' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
+#'                            gr_new = season, dist = "kde", return_fit = TRUE)
+#'
+#'
+#'
 #' @name std_index
 #' @importFrom stats qnorm
 NULL
@@ -155,8 +166,11 @@ std_index <- function(x_new,
                       x_ref = x_new,
                       timescale = NULL,
                       dist = "empirical",
+                      method = "mle",
                       return_fit = FALSE,
                       index_type = "normal",
+                      gr_new = NULL,
+                      gr_ref = gr_new,
                       moving_window = NULL,
                       window_scale = NULL,
                       agg_period = NULL,
@@ -174,6 +188,29 @@ std_index <- function(x_new,
   # check inputs
   inputs <- as.list(environment())
   check_inputs(inputs)
+
+  # group data
+  if (!is.null(gr_new)) {
+    gr_out <- lapply(unique(gr_new), function(i) {
+      ind <- gr_new == i
+      ind_ref <- gr_ref == i
+      std_index(x_new[ind], x_ref[ind], timescale = timescale, dist = dist, return_fit = return_fit,
+                index_type = index_type, agg_period = agg_period, agg_scale = agg_scale,
+                agg_fun = agg_fun, rescale = rescale, ignore_na = ignore_na, na_thres = na_thres,
+                lower = lower, upper = upper, x_cen = x_cen)
+    })
+    if (return_fit) {
+      params <- lapply(seq_along(gr_out), function(i) gr_out[[i]]$params)
+      fit <- lapply(seq_along(gr_out), function(i) gr_out[[i]]$fit)
+      si <- lapply(seq_along(gr_out), function(i) gr_out[[i]]$si)
+      si <- do.call(rbind, si)
+      names(params) <- names(fit) <- unique(gr_new)
+      return(list(params = params, fit = fit, si = si))
+    } else {
+      si <- do.call(rbind, gr_out)
+      return(si)
+    }
+  }
 
   # get timescale (if not given)
   if (!(is.null(rescale) | is.null(agg_period) | is.null(moving_window)) & is.null(timescale)) {
@@ -219,10 +256,11 @@ std_index <- function(x_new,
                            timescale = timescale, na_thres = na_thres)
   }
 
-  if (x_cen %in% c("prob01", "prob11")) x_cen <- "prob"
   # calculate pit values
+  if (x_cen %in% c("prob01", "prob11")) x_cen <- "prob"
   if (is.null(moving_window)) {
-    fit <- get_pit(x_ref, x_new, dist = dist, return_fit = return_fit, n_thres = n_thres)
+    fit <- get_pit(x_ref, x_new, dist = dist, method = method, return_fit = return_fit,
+                   lower = lower, upper = upper, x_cen = x_cen, n_thres = n_thres)
   } else {
     if (is.null(window_scale)) window_scale <- timescale
     fit <- lapply(zoo::index(x_new), function(date) {
@@ -238,7 +276,6 @@ std_index <- function(x_new,
     } else {
       fit <- unlist(fit)
     }
-
   }
 
   # convert to index
@@ -247,7 +284,6 @@ std_index <- function(x_new,
   } else {
     pit <- fit
   }
-
   if (index_type == "normal") {
     si <- qnorm(pit)
   } else if (index_type == "prob11") {
@@ -255,12 +291,10 @@ std_index <- function(x_new,
   } else if (index_type == "prob01") {
     si <- pit
   }
-
   if (xts::is.xts(x_new)) {
     si <- xts::xts(si, order.by = zoo::index(x_new))
     xts::xtsAttributes(si) <- xts::xtsAttributes(x_new)
   }
-
 
   # return indices
   if (return_fit) {
