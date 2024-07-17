@@ -98,6 +98,7 @@ NULL
 get_pit <- function(ref_data,
                     new_data = NULL,
                     dist = "empirical",
+                    method = "mle",
                     return_fit = FALSE,
                     lower = -Inf,
                     upper = Inf,
@@ -110,7 +111,7 @@ get_pit <- function(ref_data,
   n <- length(ref_data)
 
   cen_ind <- (ref_data <= lower) | (ref_data >= upper)
-  fit <- fit_dist(ref_data[!cen_ind], dist, n_thres)
+  fit <- fit_dist(ref_data[!cen_ind], dist, method = method, n_thres = n_thres)
 
   pit <- rep(NA, n)
   low_ind <- (new_data <= lower)

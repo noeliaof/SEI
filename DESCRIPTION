@@ -15,7 +15,8 @@ Imports:
     ggplot2,
     xts,
     zoo,
-    fitdistrplus
+    fitdistrplus,
+    flexsurv
 Suggests: 
     knitr,
     lubridate,

@@ -8,6 +8,7 @@ get_pit(
   ref_data,
   new_data = NULL,
   dist = "empirical",
+  method = "mle",
   return_fit = FALSE,
   lower = -Inf,
   upper = Inf,
@@ -23,6 +24,11 @@ get_pit(
 \item{dist}{character string specifying the distribution to be fit to the data;
 one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
 \code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
+
+\item{method}{A character string coding for the fitting method: 
+    \code{"mle"} for 'maximum likelihood estimation', \code{"mme"} for 'moment matching estimation', 
+    \code{"qme"} for 'quantile matching estimation', \code{"mge"} for 'maximum goodness-of-fit estimation'
+    and \code{"mse"} for 'maximum spacing estimation'.}
 
 \item{return_fit}{logical specifying whether to return parameters and goodness-of-fit
 statistics for the distribution fit.}
