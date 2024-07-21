@@ -16,7 +16,9 @@ Imports:
     xts,
     zoo,
     fitdistrplus,
-    flexsurv
+    flexsurv,
+    gamlss,
+    gamlss.dist
 Suggests: 
     knitr,
     lubridate,

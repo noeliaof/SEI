@@ -4,14 +4,14 @@
 \alias{fit_dist}
 \title{Fit a distribution to data}
 \usage{
-fit_dist(data, dist, method = "mle", n_thres = 20, ...)
+fit_dist(data, dist, method = "mle", preds = NULL, n_thres = 20, ...)
 }
 \arguments{
 \item{data}{A numeric vector.}
 
 \item{dist}{character string specifying the distribution to be fit to the data;
-one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
-\code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
+one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
+\code{'exp'}, \code{'gamma'}, and \code{'weibull'}.}
 
 \item{method}{A character string coding for the fitting method: 
     \code{"mle"} for 'maximum likelihood estimation', \code{"mme"} for 'moment matching estimation', 
@@ -67,6 +67,7 @@ N <- 1000
 shape <- 3
 rate <- 2
 
+x <- seq(0, 10, 0.01)
 
 ### gamma distribution
 
@@ -74,17 +75,17 @@ rate <- 2
 data <- rgamma(N, shape, rate)
 out <- fit_dist(data, dist = "gamma")
 hist(data, breaks = 30, probability = TRUE)
-lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+lines(x, dgamma(x, out$params[1], out$params[2]), col = "blue")
 
 # method of moments
 out <- fit_dist(data, dist = "gamma", method = "mme")
 hist(data, breaks = 30, probability = TRUE)
-lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+lines(x, dgamma(x, out$params[1], out$params[2]), col = "blue")
 
 # method of l-moments
 out <- fit_dist(data, dist = "gamma", method = "lmme")
 hist(data, breaks = 30, probability = TRUE)
-lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+lines(x, dgamma(x, out$params[1], out$params[2]), col = "blue")
 
 
 ## weibull distribution
@@ -93,12 +94,12 @@ lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), 
 data <- rweibull(N, shape, 1/rate)
 out <- fit_dist(data, dist = "weibull")
 hist(data, breaks = 30, probability = TRUE)
-lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+lines(x, dweibull(x, out$params[1], out$params[2]), col = "blue")
 
 # method of l-moments
 out <- fit_dist(data, dist = "weibull", method = "lmme")
 hist(data, breaks = 30, probability = TRUE)
-lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+lines(x, dweibull(x, out$params[1], out$params[2]), col = "blue")
 
 
 ## exponential distribution
@@ -106,16 +107,48 @@ lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2])
 # method of moments
 out <- fit_dist(data, dist = "exp", method = "mme")
 hist(data, breaks = 30, probability = TRUE)
-lines(seq(0, 10, 0.01), dexp(seq(0, 10, 0.01), out$params), col = "blue")
+lines(x, dexp(x, out$params), col = "blue")
 
 
 ## logistic distribution
+
+x <- seq(-10, 20, 0.01)
 
 # maximum likelihood
 data <- rlogis(N, shape, rate)
 out <- fit_dist(data, dist = "logis")
 hist(data, breaks = 30, probability = TRUE)
-lines(seq(-10, 20, 0.01), dlogis(seq(-10, 20, 0.01), out$params[1], out$params[2]), col = "blue")
+lines(x, dlogis(x, out$params[1], out$params[2]), col = "blue")
+
+
+
+##### non-stationary estimation using gamlss
+
+## normal distribution
+data <- rnorm(N, x[1:N] + shape, exp(x/10))
+plot(data)
+preds <- data.frame(t = x[1:N])
+
+out_st <- fit_dist(data, dist = "norm")
+out_nst <- fit_dist(data, dist = "norm", preds = preds)
+out_nst2 <- fit_dist(data, dist = "norm", preds = preds, sigma.formula = ~ .)
+
+pit_st <- out_st$F_x(data, out_st$params) # pit values without trend
+hist(pit_st)
+pit_nst <- out_nst$F_x(data, out_nst$params, preds) # pit values with trend in mean
+hist(pit_nst)
+pit_nst2 <- out_nst2$F_x(data, out_nst2$params, preds) # pit values with trend in mean and sd
+hist(pit_nst2)
+
+## log normal distribution
+x <- seq(0.01, 10, length.out = N)
+data <- rlnorm(N, (x + shape)/3, 1/rate)
+plot(data)
+preds <- data.frame(t = x)
+
+out <- fit_dist(data, dist = "lnorm", preds = preds)
+pit <- out$F_x(data, out$params, preds)
+hist(pit)
 
 
 }

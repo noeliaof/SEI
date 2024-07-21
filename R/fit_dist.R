@@ -4,8 +4,8 @@
 #' Returns the estimated distribution and relevant goodness-of-fit statistics.
 #'
 #' @param dist character string specifying the distribution to be fit to the data;
-#'  one of `"empirical"`, `"kde"`, `"norm"`, `"lnorm"`, `"logis"`, `"llogis"`,
-#'  `"exp"`, `"gamma"`, and `"weibull"`.
+#'  one of `'empirical'`, `'kde'`, `'norm'`, `'lnorm'`, `'logis'`, `'llogis'`,
+#'  `'exp'`, `'gamma'`, and `'weibull'`.
 #' @inheritParams fitdistrplus::fitdist
 #' @param n_thres minimum number of data points required to estimate the distribution;
 #'  default is 20.
@@ -54,6 +54,7 @@
 #' shape <- 3
 #' rate <- 2
 #'
+#' x <- seq(0, 10, 0.01)
 #'
 #' ### gamma distribution
 #'
@@ -61,17 +62,17 @@
 #' data <- rgamma(N, shape, rate)
 #' out <- fit_dist(data, dist = "gamma")
 #' hist(data, breaks = 30, probability = TRUE)
-#' lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+#' lines(x, dgamma(x, out$params[1], out$params[2]), col = "blue")
 #'
 #' # method of moments
 #' out <- fit_dist(data, dist = "gamma", method = "mme")
 #' hist(data, breaks = 30, probability = TRUE)
-#' lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+#' lines(x, dgamma(x, out$params[1], out$params[2]), col = "blue")
 #'
 #' # method of l-moments
 #' out <- fit_dist(data, dist = "gamma", method = "lmme")
 #' hist(data, breaks = 30, probability = TRUE)
-#' lines(seq(0, 10, 0.01), dgamma(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+#' lines(x, dgamma(x, out$params[1], out$params[2]), col = "blue")
 #'
 #'
 #' ## weibull distribution
@@ -80,12 +81,12 @@
 #' data <- rweibull(N, shape, 1/rate)
 #' out <- fit_dist(data, dist = "weibull")
 #' hist(data, breaks = 30, probability = TRUE)
-#' lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+#' lines(x, dweibull(x, out$params[1], out$params[2]), col = "blue")
 #'
 #' # method of l-moments
 #' out <- fit_dist(data, dist = "weibull", method = "lmme")
 #' hist(data, breaks = 30, probability = TRUE)
-#' lines(seq(0, 10, 0.01), dweibull(seq(0, 10, 0.01), out$params[1], out$params[2]), col = "blue")
+#' lines(x, dweibull(x, out$params[1], out$params[2]), col = "blue")
 #'
 #'
 #' ## exponential distribution
@@ -93,16 +94,48 @@
 #' # method of moments
 #' out <- fit_dist(data, dist = "exp", method = "mme")
 #' hist(data, breaks = 30, probability = TRUE)
-#' lines(seq(0, 10, 0.01), dexp(seq(0, 10, 0.01), out$params), col = "blue")
+#' lines(x, dexp(x, out$params), col = "blue")
 #'
 #'
 #' ## logistic distribution
+#'
+#' x <- seq(-10, 20, 0.01)
 #'
 #' # maximum likelihood
 #' data <- rlogis(N, shape, rate)
 #' out <- fit_dist(data, dist = "logis")
 #' hist(data, breaks = 30, probability = TRUE)
-#' lines(seq(-10, 20, 0.01), dlogis(seq(-10, 20, 0.01), out$params[1], out$params[2]), col = "blue")
+#' lines(x, dlogis(x, out$params[1], out$params[2]), col = "blue")
+#'
+#'
+#'
+#' ##### non-stationary estimation using gamlss
+#'
+#' ## normal distribution
+#' data <- rnorm(N, x[1:N] + shape, exp(x/10))
+#' plot(data)
+#' preds <- data.frame(t = x[1:N])
+#'
+#' out_st <- fit_dist(data, dist = "norm")
+#' out_nst <- fit_dist(data, dist = "norm", preds = preds)
+#' out_nst2 <- fit_dist(data, dist = "norm", preds = preds, sigma.formula = ~ .)
+#'
+#' pit_st <- out_st$F_x(data, out_st$params) # pit values without trend
+#' hist(pit_st)
+#' pit_nst <- out_nst$F_x(data, out_nst$params, preds) # pit values with trend in mean
+#' hist(pit_nst)
+#' pit_nst2 <- out_nst2$F_x(data, out_nst2$params, preds) # pit values with trend in mean and sd
+#' hist(pit_nst2)
+#'
+#' ## log normal distribution
+#' x <- seq(0.01, 10, length.out = N)
+#' data <- rlnorm(N, (x + shape)/3, 1/rate)
+#' plot(data)
+#' preds <- data.frame(t = x)
+#'
+#' out <- fit_dist(data, dist = "lnorm", preds = preds)
+#' pit <- out$F_x(data, out$params, preds)
+#' hist(pit)
 #'
 #'
 #' @name fit_dist
@@ -112,7 +145,7 @@ NULL
 
 #' @rdname fit_dist
 #' @export
-fit_dist <- function(data, dist, method = "mle", n_thres = 20, ...){
+fit_dist <- function(data, dist, method = "mle", preds = NULL, n_thres = 20, ...) {
 
   # check inputs
   inputs <- as.list(environment())
@@ -148,58 +181,124 @@ fit_dist <- function(data, dist, method = "mle", n_thres = 20, ...){
         mean(pnorm(x, mean = params$data, sd = params$bw))
       }
     }
-  } else {
-    if (method == "lmme") {
-
-      samp_mom <- lmom::samlmu(data)
-      if (dist == "norm") {
-        params <- lmom::pelnor(samp_mom)
-        names(params) <- c("mean", "sd")
-      } else if (dist == "lnorm") {
-        params <- lmom::pelln3(samp_mom, bound = 0)
-        params <- params[2:3]
-        names(params) <- c("meanlog", "sdlog")
-      } else if (dist == "logis") {
-        params <- samp_mom[1:2]
-        names(params) <- c("location", "scale")
-      } else if (dist == "llogis") {
-        stop("method 'lmme' is not available for the log-logistic distribution")
-      } else if (dist == "exp") {
-        params <- 1/samp_mom[1]
-        names(params) <- "rate"
-      } else if (dist == "gamma") {
-        params <- lmom::pelgam(samp_mom)
-        params[2] <- 1/params[2]
-        names(params) <- c("shape", "rate")
-      } else if (dist == "weibull") {
-        params <- lmom::pelwei(samp_mom, bound = 0)
-        params <- params[3:2]
-        names(params) <- c("shape", "scale")
-      }
+  } else if (method == "lmme") {
+      params <- fit_dist_lmme(data = data, dist = dist)
       F_x <- function(x, params) do.call(paste0("p", dist), c(list(q = x), as.list(params))) # cdf
       f_x <- function(x, params) do.call(paste0("d", dist), c(list(x = x), as.list(params))) # pdf
       fit_props['aic'] <- 2*length(params) - 2*sum(log(f_x(data, params)))
-
+  } else if (!is.null(preds)) {
+    fit <- try(fit_dist_gamlss(data = data, preds = preds, dist = dist, ...))
+    if (!inherits(fit, "try-error")){
+      params <- fit$params # parameters
+      F_x <- fit$F_x # cdf
+      fit_props['aic'] <- fit$aic # aic
     } else {
-      fit <- try(fitdistrplus::fitdist(data = data, distr = dist, method = method, ...))
-      if (!inherits(fit, "try-error")){
-        params <- fit$estimate # parameters
-        F_x <- function(x, params) do.call(paste0("p", dist), c(list(q = x), as.list(params))) # cdf
-        fit_props['aic'] <- fit$aic # aic
-      } else {
-        warning("distribution fitting failed")
-        return(list(F_x = function(x, params) NA, params = NULL, fit_props = fit_props))
-      }
+      warning("distribution fitting failed")
+      return(list(F_x = function(x, params) NA, params = NULL, fit_props = fit_props))
+    }
+  } else {
+    fit <- try(fitdistrplus::fitdist(data = data, distr = dist, method = method, ...))
+    if (!inherits(fit, "try-error")){
+      params <- fit$estimate # parameters
+      F_x <- function(x, params) do.call(paste0("p", dist), c(list(q = x), as.list(params))) # cdf
+      fit_props['aic'] <- fit$aic # aic
+    } else {
+      warning("distribution fitting failed")
+      return(list(F_x = function(x, params) NA, params = NULL, fit_props = fit_props))
     }
   }
 
-  pit <- F_x(data, params)
+  if (is.null(preds)) {
+    pit <- F_x(data, params)
+  } else {
+    pit <- F_x(data, params, preds)
+  }
   fit_props['ks_pval'] <- ks.test(pit, "punif")$p.value # ks p-value
 
   return(list(F_x = F_x, params = params, fit = fit_props))
 }
 
 
+# estimate distribution parameters using l-moment matching
+fit_dist_lmme <- function(data, dist) {
+  samp_mom <- lmom::samlmu(data)
+  if (dist == "norm") {
+    params <- lmom::pelnor(samp_mom)
+    names(params) <- c("mean", "sd")
+  } else if (dist == "lnorm") {
+    params <- lmom::pelln3(samp_mom, bound = 0)
+    params <- params[2:3]
+    names(params) <- c("meanlog", "sdlog")
+  } else if (dist == "logis") {
+    params <- samp_mom[1:2]
+    names(params) <- c("location", "scale")
+  } else if (dist == "llogis") {
+    stop("method 'lmme' is not available for the log-logistic distribution")
+  } else if (dist == "exp") {
+    params <- 1/samp_mom[1]
+    names(params) <- "rate"
+  } else if (dist == "gamma") {
+    params <- lmom::pelgam(samp_mom)
+    params[2] <- 1/params[2]
+    names(params) <- c("shape", "rate")
+  } else if (dist == "weibull") {
+    params <- lmom::pelwei(samp_mom, bound = 0)
+    params <- params[3:2]
+    names(params) <- c("shape", "scale")
+  }
+  return(params)
+}
+
+
+# estimate non-stationary distributions using gamlss
+fit_dist_gamlss <- function(data, preds, dist, ...) {
+  data_df <- data.frame(obs = data, preds)
+  if (dist == "norm") {
+    fit <- gamlss::gamlss(obs ~ ., data = data_df, ...)
+    F_x <- function(x, params, z) {
+      mu <- predict(params, new.data = z, what = "mu", type = "response")
+      sig <- predict(params, new.data = z, what = "sigma", type = "response")
+      gamlss.dist::pNO(x, mu = mu, sigma = sig)
+    }
+  } else if (dist == "lnorm") {
+    fit <- gamlss::gamlss(obs ~ ., data = data_df, family = LOGNO(), ...)
+    F_x <- function(x, params, z) {
+      mu <- predict(params, new.data = z, what = "mu", type = "response")
+      sig <- predict(params, new.data = z, what = "sigma", type = "response")
+      gamlss.dist::pLOGNO(x, mu = mu, sigma = sig)
+    }
+  } else if (dist == "logis") {
+    fit <- gamlss::gamlss(obs ~ ., data = data_df, family = LO(), ...)
+  } else if (dist == "llogis") {
+    stop("non-stationary estimation is not available for the log-logistic distribution")
+  } else if (dist == "exp") {
+    fit <- gamlss::gamlss(obs ~ ., data = data_df, family = EXP(), ...)
+    F_x <- function(x, params, z) {
+      mu <- predict(params, new.data = z, what = "mu", type = "response")
+      gamlss.dist::pEXP(x, mu = mu)
+    }
+  } else if (dist == "gamma") {
+    fit <- gamlss::gamlss(obs ~ ., data = data_df, family = GA(), ...)
+    F_x <- function(x, params, z) {
+      mu <- predict(params, new.data = z, what = "mu", type = "response")
+      sig <- predict(params, new.data = z, what = "sigma", type = "response")
+      gamlss.dist::pGA(x, mu = mu, sigma = sig)
+    }
+  } else if (dist == "weibull") {
+    fit <- gamlss::gamlss(obs ~ ., data = data_df, family = WEI(), ...)
+    F_x <- function(x, params, z) {
+      mu <- predict(params, new.data = z, what = "mu", type = "response")
+      sig <- predict(params, new.data = z, what = "sigma", type = "response")
+      gamlss.dist::pWEI(x, mu = mu, sigma = sig)
+    }
+  }
+  aic <- fit$aic
+  out <- list(params = fit, F_x = F_x, aic = aic)
+  return(out)
+}
+
+
+# check the inputs of fit_dist
 check_distribution <- function(inputs) {
 
   data <- inputs$data[!is.na(inputs$data)]
@@ -230,5 +329,4 @@ check_distribution <- function(inputs) {
   }
 
 }
-
 
