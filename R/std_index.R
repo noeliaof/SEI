@@ -169,6 +169,8 @@ std_index <- function(x_new,
                       method = "mle",
                       return_fit = FALSE,
                       index_type = "normal",
+                      preds_new = NULL,
+                      preds_ref = preds_new,
                       gr_new = NULL,
                       gr_ref = gr_new,
                       moving_window = NULL,
@@ -183,7 +185,8 @@ std_index <- function(x_new,
                       na_thres = 10,
                       lower = -Inf,
                       upper = Inf,
-                      x_cen = index_type) {
+                      cens = index_type,
+                      ...) {
 
   # check inputs
   inputs <- as.list(environment())
@@ -197,7 +200,7 @@ std_index <- function(x_new,
       std_index(x_new[ind], x_ref[ind], timescale = timescale, dist = dist, return_fit = return_fit,
                 index_type = index_type, agg_period = agg_period, agg_scale = agg_scale,
                 agg_fun = agg_fun, rescale = rescale, ignore_na = ignore_na, na_thres = na_thres,
-                lower = lower, upper = upper, x_cen = x_cen)
+                lower = lower, upper = upper, cens = cens)
     })
     if (return_fit) {
       params <- lapply(seq_along(gr_out), function(i) gr_out[[i]]$params)
@@ -257,26 +260,55 @@ std_index <- function(x_new,
   }
 
   # calculate pit values
-  if (x_cen %in% c("prob01", "prob11")) x_cen <- "prob"
-  if (is.null(moving_window)) {
-    fit <- get_pit(x_ref, x_new, dist = dist, method = method, return_fit = return_fit,
-                   lower = lower, upper = upper, x_cen = x_cen, n_thres = n_thres)
-  } else {
-    if (is.null(window_scale)) window_scale <- timescale
-    fit <- lapply(zoo::index(x_new), function(date) {
-      from <- date - as.difftime(moving_window, units = window_scale)
-      to <- date - as.difftime(1, units = timescale)
-      data <- x_ref[paste(from, to, sep = "/")]
-      get_pit(data, x_new[date], dist = dist, return_fit = return_fit, n_thres = n_thres)
-    })
-    if (return_fit) {
-      fit_names <- names(fit[[1]])
-      fit <- lapply(fit_names, function(x) sapply(fit, function(z) z[[x]]))
-      names(fit) <- fit_names
+  if (cens %in% c("prob01", "prob11")) cens <- "prob"
+  if (is.null(preds)) { # stationary distribution estimation
+    if (is.null(moving_window)) {
+      fit <- get_pit(x_ref, x_new, dist = dist, method = method, return_fit = return_fit,
+                     lower = lower, upper = upper, cens = cens, n_thres = n_thres, ...)
     } else {
-      fit <- unlist(fit)
+      if (is.null(window_scale)) window_scale <- timescale
+      fit <- lapply(zoo::index(x_new), function(date) {
+        from <- date - as.difftime(moving_window, units = window_scale)
+        to <- date - as.difftime(1, units = timescale)
+        data <- x_ref[paste(from, to, sep = "/")]
+        get_pit(data, x_new[date], dist = dist, return_fit = return_fit, n_thres = n_thres, ...)
+      })
+      if (return_fit) {
+        fit_names <- names(fit[[1]])
+        fit <- lapply(fit_names, function(x) sapply(fit, function(z) z[[x]]))
+        names(fit) <- fit_names
+      } else {
+        fit <- unlist(fit)
+      }
+    }
+  } else { # non-stationary distribution estimation with gamlss
+    if (is.null(moving_window)) {
+      fit <- get_pit(x_ref, x_new, preds_new = preds_new, preds_ref = preds_ref,
+                     dist = dist, method = method, return_fit = return_fit,
+                     lower = lower, upper = upper, cens = cens, n_thres = n_thres, ...)
+    } else {
+      if (is.null(window_scale)) window_scale <- timescale
+      fit <- lapply(zoo::index(x_new), function(date) {
+        from <- date - as.difftime(moving_window, units = window_scale)
+        to <- date - as.difftime(1, units = timescale)
+        data <- x_ref[paste(from, to, sep = "/")]
+        ind <- x_ref %in% data
+        ref_preds <- preds_ref[ind, , drop = FALSE]
+        ind <- x_ref %in% x_new[date]
+        new_preds <- preds_new[ind, , drop = FALSE]
+        get_pit(data, x_new[date], ref_preds = ref_preds, new_preds = new_preds,
+                dist = dist, return_fit = return_fit, n_thres = n_thres, ...)
+      })
+      if (return_fit) {
+        fit_names <- names(fit[[1]])
+        fit <- lapply(fit_names, function(x) sapply(fit, function(z) z[[x]]))
+        names(fit) <- fit_names
+      } else {
+        fit <- unlist(fit)
+      }
     }
   }
+
 
   # convert to index
   if (return_fit) {

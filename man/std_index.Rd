@@ -12,6 +12,8 @@ std_index(
   method = "mle",
   return_fit = FALSE,
   index_type = "normal",
+  preds_new = NULL,
+  preds_ref = preds_new,
   gr_new = NULL,
   gr_ref = gr_new,
   moving_window = NULL,
@@ -26,7 +28,8 @@ std_index(
   na_thres = 10,
   lower = -Inf,
   upper = Inf,
-  x_cen = index_type
+  cens = index_type,
+  ...
 )
 }
 \arguments{
@@ -37,8 +40,8 @@ std_index(
 \item{timescale}{timescale of the data; \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{dist}{character string specifying the distribution to be fit to the data;
-one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
-\code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
+one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
+\code{'exp'}, \code{'gamma'}, and \code{'weibull'}.}
 
 \item{method}{A character string coding for the fitting method: 
     \code{"mle"} for 'maximum likelihood estimation', \code{"mme"} for 'moment matching estimation', 
@@ -83,8 +86,10 @@ aggregation period; default is 10.}
 \item{lower, upper}{numeric values specifying the lower and upper bounds at which censoring
 is to be performed.}
 
-\item{x_cen}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
+\item{cens}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
 corresponding to common choices, or a custom numeric vector of length two.}
+
+\item{...}{additional arguments to be passed to \code{\link{fitdistrplus::fitdist}}}
 }
 \value{
 Time series of standardised indices.
