@@ -7,13 +7,16 @@
 get_pit(
   ref_data,
   new_data = NULL,
+  ref_preds = NULL,
+  new_preds = NULL,
   dist = "empirical",
   method = "mle",
   return_fit = FALSE,
   lower = -Inf,
   upper = Inf,
-  x_cen = "normal",
-  n_thres = 20
+  cens = NULL,
+  n_thres = 20,
+  ...
 )
 }
 \arguments{
@@ -22,8 +25,8 @@ get_pit(
 \item{new_data}{numeric vector from which to calculate the PIT values.}
 
 \item{dist}{character string specifying the distribution to be fit to the data;
-one of \code{"empirical"}, \code{"kde"}, \code{"norm"}, \code{"lnorm"}, \code{"logis"}, \code{"llogis"},
-\code{"exp"}, \code{"gamma"}, and \code{"weibull"}.}
+one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
+\code{'exp'}, \code{'gamma'}, and \code{'weibull'}.}
 
 \item{method}{A character string coding for the fitting method: 
     \code{"mle"} for 'maximum likelihood estimation', \code{"mme"} for 'moment matching estimation', 
@@ -36,11 +39,13 @@ statistics for the distribution fit.}
 \item{lower, upper}{numeric values specifying the lower and upper bounds at which censoring
 is to be performed.}
 
-\item{x_cen}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
+\item{cens}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
 corresponding to common choices, or a custom numeric vector of length two.}
 
 \item{n_thres}{minimum number of data points required to estimate the distribution;
 default is 20.}
+
+\item{...}{additional arguments to be passed to \code{\link{fitdistrplus::fitdist}}}
 }
 \value{
 A vector of PIT values if return_fit = F, or, if return_fit = T, a list containing
@@ -110,15 +115,33 @@ lines(seq(0, 10, 0.01), dexp(seq(0, 10, 0.01), pit$params[1]), col = "blue")
 
 # gamma distribution with censoring
 x_ref <- c(x_ref, numeric(N))
-pit <- get_pit(x_ref, dist = "gamma", lower = 0, x_cen = "prob")
+pit <- get_pit(x_ref, dist = "gamma", lower = 0, cens = "prob")
 hist(pit)
 mean(pit) # = 1/2
 mean(qnorm(pit)) # != 0
 
-pit <- get_pit(x_ref, dist = "gamma", lower = 0, x_cen = "normal")
+pit <- get_pit(x_ref, dist = "gamma", lower = 0, cens = "normal")
 hist(qnorm(pit))
 mean(pit) # != 1/2
 mean(qnorm(pit)) # = 0
+
+
+## normal distribution with trend in mean
+x <- seq(-10, 20, length.out = N)
+x_ref <- rnorm(N, x + shape, 2)
+plot(x_ref)
+preds <- data.frame(t = x)
+
+pit <- get_pit(x_ref, ref_preds = preds, dist = "norm")
+hist(pit)
+
+## normal distribution with trend in mean and standard deviation
+x_ref <- rnorm(N, x + shape, exp(x/10))
+plot(x_ref)
+preds <- data.frame(t = x)
+
+pit <- get_pit(x_ref, ref_preds = preds, dist = "norm", sigma.formula = ~ .)
+hist(pit)
 
 
 }

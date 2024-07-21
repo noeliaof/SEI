@@ -10,7 +10,7 @@
 #'  statistics for the distribution fit.
 #' @param lower,upper numeric values specifying the lower and upper bounds at which censoring
 #'  is to be performed.
-#' @param x_cen values to assign to censored values; either a string (`'normal'` or `'prob'`),
+#' @param cens values to assign to censored values; either a string (`'normal'` or `'prob'`),
 #'  corresponding to common choices, or a custom numeric vector of length two.
 #' @inheritParams fit_dist
 #'
@@ -79,15 +79,33 @@
 #'
 #' # gamma distribution with censoring
 #' x_ref <- c(x_ref, numeric(N))
-#' pit <- get_pit(x_ref, dist = "gamma", lower = 0, x_cen = "prob")
+#' pit <- get_pit(x_ref, dist = "gamma", lower = 0, cens = "prob")
 #' hist(pit)
 #' mean(pit) # = 1/2
 #' mean(qnorm(pit)) # != 0
 #'
-#' pit <- get_pit(x_ref, dist = "gamma", lower = 0, x_cen = "normal")
+#' pit <- get_pit(x_ref, dist = "gamma", lower = 0, cens = "normal")
 #' hist(qnorm(pit))
 #' mean(pit) # != 1/2
 #' mean(qnorm(pit)) # = 0
+#'
+#'
+#' ## normal distribution with trend in mean
+#' x <- seq(-10, 20, length.out = N)
+#' x_ref <- rnorm(N, x + shape, 2)
+#' plot(x_ref)
+#' preds <- data.frame(t = x)
+#'
+#' pit <- get_pit(x_ref, ref_preds = preds, dist = "norm")
+#' hist(pit)
+#'
+#' ## normal distribution with trend in mean and standard deviation
+#' x_ref <- rnorm(N, x + shape, exp(x/10))
+#' plot(x_ref)
+#' preds <- data.frame(t = x)
+#'
+#' pit <- get_pit(x_ref, ref_preds = preds, dist = "norm", sigma.formula = ~ .)
+#' hist(pit)
 #'
 #'
 #' @name get_pit
@@ -97,55 +115,42 @@ NULL
 #' @export
 get_pit <- function(ref_data,
                     new_data = NULL,
+                    ref_preds = NULL,
+                    new_preds = NULL,
                     dist = "empirical",
                     method = "mle",
                     return_fit = FALSE,
                     lower = -Inf,
                     upper = Inf,
-                    x_cen = "normal",
-                    n_thres = 20) {
+                    cens = NULL,
+                    n_thres = 20,
+                    ...) {
 
   if (is.null(new_data)) new_data <- ref_data
   ref_data <- as.vector(ref_data)
   new_data <- as.vector(new_data)
   n <- length(ref_data)
 
-  cen_ind <- (ref_data <= lower) | (ref_data >= upper)
-  fit <- fit_dist(ref_data[!cen_ind], dist, method = method, n_thres = n_thres)
+  # find indices where data is censored
+  ref_cind <- (ref_data <= lower) | (ref_data >= upper)
+  new_cind <- (new_data <= lower) | (new_data >= upper)
 
+  if (!is.null(ref_preds)) ref_preds <- ref_preds[!ref_cind, , drop = FALSE]
+  if (!is.null(new_preds)) new_preds <- new_preds[!new_cind, , drop = FALSE]
+
+  # fit distribution to uncensored data
   pit <- rep(NA, n)
-  low_ind <- (new_data <= lower)
-  upp_ind <- (new_data >= upper)
-  cen_ind <-  low_ind | upp_ind
+  fit <- fit_dist(ref_data[!ref_cind], dist, method = method, preds = ref_preds, n_thres = n_thres, ...)
 
-  pit[!cen_ind] <- fit$F_x(new_data[!cen_ind], fit$params)
-
-  if (sum(cen_ind) > 0) {
-
-    p_l <- mean(ref_data <= lower)
-    p_u <- mean(ref_data >= upper)
-    pit[!cen_ind] <- p_l + (1 - p_l - p_u)*pit[!cen_ind]
-
-    if (lower != -Inf && upper != Inf) {
-      if (is.numeric(x_cen)) {
-        x_l <- x_cen[1]
-        x_u <- x_cen[2]
-      } else {
-        stop("if the distribution is censored above and below, 'x_cen' must contain
-             the two censoring points")
-      }
-    } else {
-      if (x_cen == "normal") {
-        x_l <- pnorm( - dnorm( qnorm(p_l) ) / p_l)
-        x_u <- pnorm( dnorm( qnorm(1 - p_u) ) / p_u)
-      } else if (x_cen == "prob") {
-        x_l <- p_l/2
-        x_u <- 1 - p_u/2
-      }
-    }
-    pit[low_ind] <- x_l
-    pit[upp_ind] <- x_u
+  # get pit values
+  if (is.null(ref_preds)) {
+    pit[!new_cind] <- fit$F_x(new_data[!new_cind], fit$params)
+  } else {
+    pit[!new_cind] <- fit$F_x(new_data[!new_cind], fit$params, new_preds)
   }
+
+  # censoring
+  if (any(ref_cind)) pit <- pit_cens(pit, ref_data, new_data, lower, upper, cens)
   fit$pit <- pit
 
   if (return_fit) {
@@ -155,4 +160,37 @@ get_pit <- function(ref_data,
   }
 }
 
+
+pit_cens <- function(pit, ref_data, new_data, lower, upper, cens) {
+
+  low_ind <- (new_data <= lower)
+  upp_ind <- (new_data >= upper)
+  cen_ind <- low_ind | upp_ind
+
+  p_l <- mean(ref_data <= lower)
+  p_u <- mean(ref_data >= upper)
+  pit[!cen_ind] <- p_l + (1 - p_l - p_u)*pit[!cen_ind]
+
+  if (lower != -Inf && upper != Inf) {
+    if (is.numeric(cens)) {
+      x_l <- cens[1]
+      x_u <- cens[2]
+    } else {
+      stop("if the distribution is censored above and below, 'cens' must be a
+              numeric vector containing the two censoring points")
+    }
+  } else {
+    if (cens == "normal") {
+      x_l <- pnorm( - dnorm( qnorm(p_l) ) / p_l)
+      x_u <- pnorm( dnorm( qnorm(1 - p_u) ) / p_u)
+    } else if (cens == "prob") {
+      x_l <- p_l/2
+      x_u <- 1 - p_u/2
+    }
+  }
+  pit[low_ind] <- x_l
+  pit[upp_ind] <- x_u
+
+  return(pit)
+}
 
