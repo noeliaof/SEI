@@ -50,13 +50,16 @@ transform (PIT) values.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_pit</span><span class="op">(</span></span>
 <span>  <span class="va">ref_data</span>,</span>
 <span>  new_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ref_preds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  new_preds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"empirical"</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"mle"</span>,</span>
 <span>  return_fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lower <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>,</span>
 <span>  upper <span class="op">=</span> <span class="cn">Inf</span>,</span>
-<span>  x_cen <span class="op">=</span> <span class="st">"normal"</span>,</span>
-<span>  n_thres <span class="op">=</span> <span class="fl">20</span></span>
+<span>  cens <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  n_thres <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -74,8 +77,8 @@ transform (PIT) values.</p>
 
 <dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
 <dd><p>character string specifying the distribution to be fit to the data;
-one of <code>"empirical"</code>, <code>"kde"</code>, <code>"norm"</code>, <code>"lnorm"</code>, <code>"logis"</code>, <code>"llogis"</code>,
-<code>"exp"</code>, <code>"gamma"</code>, and <code>"weibull"</code>.</p></dd>
+one of <code>'empirical'</code>, <code>'kde'</code>, <code>'norm'</code>, <code>'lnorm'</code>, <code>'logis'</code>, <code>'llogis'</code>,
+<code>'exp'</code>, <code>'gamma'</code>, and <code>'weibull'</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -95,7 +98,7 @@ statistics for the distribution fit.</p></dd>
 is to be performed.</p></dd>
 
 
-<dt id="arg-x-cen">x_cen<a class="anchor" aria-label="anchor" href="#arg-x-cen"></a></dt>
+<dt id="arg-cens">cens<a class="anchor" aria-label="anchor" href="#arg-cens"></a></dt>
 <dd><p>values to assign to censored values; either a string (<code>'normal'</code> or <code>'prob'</code>),
 corresponding to common choices, or a custom numeric vector of length two.</p></dd>
 
@@ -103,6 +106,10 @@ corresponding to common choices, or a custom numeric vector of length two.</p></
 <dt id="arg-n-thres">n_thres<a class="anchor" aria-label="anchor" href="#arg-n-thres"></a></dt>
 <dd><p>minimum number of data points required to estimate the distribution;
 default is 20.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdistrplus::fitdist</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -180,21 +187,48 @@ For the parametric distributions, parameters are estimated using maximum likelih
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># gamma distribution with censoring</span></span></span>
 <span class="r-in"><span><span class="va">x_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">x_ref</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, dist <span class="op">=</span> <span class="st">"gamma"</span>, lower <span class="op">=</span> <span class="fl">0</span>, x_cen <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, dist <span class="op">=</span> <span class="st">"gamma"</span>, lower <span class="op">=</span> <span class="fl">0</span>, cens <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="get_pit-8.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span> <span class="co"># = 1/2</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5010113</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.500608</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span><span class="op">)</span> <span class="co"># != 0</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.0626213</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.06237125</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, dist <span class="op">=</span> <span class="st">"gamma"</span>, lower <span class="op">=</span> <span class="fl">0</span>, x_cen <span class="op">=</span> <span class="st">"normal"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, dist <span class="op">=</span> <span class="st">"gamma"</span>, lower <span class="op">=</span> <span class="fl">0</span>, cens <span class="op">=</span> <span class="st">"normal"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="get_pit-9.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span> <span class="co"># != 1/2</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.4822456</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.4818424</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span><span class="op">)</span> <span class="co"># = 0</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.0009238997</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.0006738413</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## normal distribution with trend in mean</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">10</span>, <span class="fl">20</span>, length.out <span class="op">=</span> <span class="va">N</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">x</span> <span class="op">+</span> <span class="va">shape</span>, <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x_ref</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="get_pit-10.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, ref_preds <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 4204.338 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 4204.338 </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="get_pit-11.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## normal distribution with trend in mean and standard deviation</span></span></span>
+<span class="r-in"><span><span class="va">x_ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">x</span> <span class="op">+</span> <span class="va">shape</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">/</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x_ref</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="get_pit-12.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, ref_preds <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, sigma.formula <span class="op">=</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 3833.889 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 3829.376 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 3829.376 </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="get_pit-13.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

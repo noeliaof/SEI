@@ -134,16 +134,12 @@ If <code>thresholds</code> is a vector, the intensity or level of the drought is
 <span class="r-in"><span><span class="va">supply_de</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">data_supply</span>, <span class="va">country</span> <span class="op">==</span> <span class="st">"Germany"</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"date"</span>, <span class="st">"PWS"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">supply_de</span> <span class="op">&lt;-</span> <span class="fu">xts</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/xts/man/xts.html" class="external-link">xts</a></span><span class="op">(</span><span class="va">supply_de</span><span class="op">$</span><span class="va">PWS</span>, order.by <span class="op">=</span> <span class="va">supply_de</span><span class="op">$</span><span class="va">date</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu"><a href="std_index.html">std_index</a></span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours"):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">drought_df</span> <span class="op">&lt;-</span> <span class="fu">get_drought</span><span class="op">(</span><span class="va">supply_de_std</span>, thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="op">-</span><span class="fl">2</span><span class="op">)</span>, exceed <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'supply_de_std' not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">drought_df</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 Index         x ins occ dur mag</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2019-01-01 00:00:00 0.6483216   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2019-01-01 01:00:00 0.7609253   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2019-01-01 02:00:00 0.9119604   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2019-01-01 03:00:00 1.0273229   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 2019-01-01 04:00:00 1.1438592   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 2019-01-01 05:00:00 1.2060405   0   0   0   0</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'drought_df' not found</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

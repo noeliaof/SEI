@@ -55,6 +55,8 @@ Indices can be calculated on any timescale.</p>
 <span>  method <span class="op">=</span> <span class="st">"mle"</span>,</span>
 <span>  return_fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  index_type <span class="op">=</span> <span class="st">"normal"</span>,</span>
+<span>  preds_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  preds_ref <span class="op">=</span> <span class="va">preds_new</span>,</span>
 <span>  gr_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  gr_ref <span class="op">=</span> <span class="va">gr_new</span>,</span>
 <span>  moving_window <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -69,7 +71,8 @@ Indices can be calculated on any timescale.</p>
 <span>  na_thres <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  lower <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>,</span>
 <span>  upper <span class="op">=</span> <span class="cn">Inf</span>,</span>
-<span>  x_cen <span class="op">=</span> <span class="va">index_type</span></span>
+<span>  cens <span class="op">=</span> <span class="va">index_type</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -91,8 +94,8 @@ Indices can be calculated on any timescale.</p>
 
 <dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
 <dd><p>character string specifying the distribution to be fit to the data;
-one of <code>"empirical"</code>, <code>"kde"</code>, <code>"norm"</code>, <code>"lnorm"</code>, <code>"logis"</code>, <code>"llogis"</code>,
-<code>"exp"</code>, <code>"gamma"</code>, and <code>"weibull"</code>.</p></dd>
+one of <code>'empirical'</code>, <code>'kde'</code>, <code>'norm'</code>, <code>'lnorm'</code>, <code>'logis'</code>, <code>'llogis'</code>,
+<code>'exp'</code>, <code>'gamma'</code>, and <code>'weibull'</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -170,9 +173,13 @@ aggregation period; default is 10.</p></dd>
 is to be performed.</p></dd>
 
 
-<dt id="arg-x-cen">x_cen<a class="anchor" aria-label="anchor" href="#arg-x-cen"></a></dt>
+<dt id="arg-cens">cens<a class="anchor" aria-label="anchor" href="#arg-cens"></a></dt>
 <dd><p>values to assign to censored values; either a string (<code>'normal'</code> or <code>'prob'</code>),
 corresponding to common choices, or a custom numeric vector of length two.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdistrplus::fitdist</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -259,13 +266,15 @@ The index type can be chosen using <code>index_type</code>, which must be one of
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># convert to hourly standardised indices</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours"):</span> object 'preds' not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">supply_de</span>, main <span class="op">=</span> <span class="st">"Raw values"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="std_index-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">supply_de_std</span>, main <span class="op">=</span> <span class="st">"Standardised values"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="std_index-2.png" alt="" width="700" height="433"></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'supply_de_std' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># convert to daily or weekly standardised indices</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"days"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours", rescale = "days"):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># convert to weekly standardised indices calculated on each day</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"days"</span>,</span></span>
@@ -276,38 +285,41 @@ The index type can be chosen using <code>index_type</code>, which must be one of
 <span class="r-in"><span><span class="va">dec</span> <span class="op">&lt;-</span> <span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html" class="external-link">index</a></span><span class="op">(</span><span class="va">supply_de</span><span class="op">)</span> <span class="op">&gt;</span> <span class="st">"2019-12-01 UTC"</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std_dec</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span>x_new <span class="op">=</span> <span class="va">supply_de</span><span class="op">[</span><span class="va">dec</span><span class="op">]</span>, x_ref <span class="op">=</span> <span class="va">supply_de</span><span class="op">[</span><span class="op">!</span><span class="va">dec</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span>                               timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>number of items to replace is not a multiple of replacement length</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in xts::xts(si, order.by = zoo::index(x_new)):</span> NROW(x) must match length(order.by)</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(x_new = supply_de[dec], x_ref = supply_de[!dec], timescale = "hours"):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># calculate standardised indices using a 100 day moving window</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std_dec</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span><span class="op">[</span><span class="va">dec</span><span class="op">]</span>, <span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>,</span></span>
 <span class="r-in"><span>                               rescale <span class="op">=</span> <span class="st">"days"</span>, moving_window <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in xts::xts(si, order.by = zoo::index(x_new)):</span> NROW(x) must match length(order.by)</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de[dec], supply_de, timescale = "hours", rescale = "days",     moving_window = 100):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># suppose we are interested in the daily maximum rather than the daily total</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"days"</span>,</span></span>
 <span class="r-in"><span>                           rescale_fun <span class="op">=</span> <span class="st">"max"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "max"):</span> object 'preds' not found</span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"days"</span>,</span></span>
 <span class="r-in"><span>                           rescale_fun <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span> <span class="co"># or average</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours", rescale = "days", rescale_fun = "mean"):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># the default uses the empirical distribution, but this requires more data than</span></span></span>
 <span class="r-in"><span><span class="co"># parametric distributions, meaning it is not ideal when data is short, e.g. in weekly case</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"weeks"</span><span class="op">)</span> <span class="co"># warning</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>using the empirical distribution is only recommended when at least</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>               100 values are available when fitting the distribution</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours", rescale = "weeks"):</span> object 'preds' not found</span>
 <span class="r-in"><span><span class="co"># instead, we can use a parametric distribution, e.g. a gamma distribution</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"weeks"</span>, dist <span class="op">=</span> <span class="st">"gamma"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours", rescale = "weeks",     dist = "gamma"):</span> object 'preds' not found</span>
 <span class="r-in"><span><span class="co"># we can check the fit by checking whether the indices resemble a standard normal distribution</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">supply_de</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="std_index-3.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="std_index-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">supply_de_std</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="std_index-4.png" alt="" width="700" height="433"></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'supply_de_std' not found</span>
 <span class="r-in"><span><span class="co"># we can also look at the properties of the fit</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"weeks"</span>,</span></span>
 <span class="r-in"><span>                           dist <span class="op">=</span> <span class="st">"gamma"</span>, return_fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours", rescale = "weeks",     dist = "gamma", return_fit = TRUE):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># we could also use kernel density estimation, which is a flexible compromise between the two</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"weeks"</span>, dist <span class="op">=</span> <span class="st">"kde"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(supply_de, timescale = "hours", rescale = "weeks",     dist = "kde"):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># calculate separate indices for each quarter of 2019</span></span></span>
@@ -315,6 +327,7 @@ The index type can be chosen using <code>index_type</code>, which must be one of
 <span class="r-in"><span><span class="va">season</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q1"</span>, <span class="st">"Q2"</span>, <span class="st">"Q3"</span>, <span class="st">"Q4"</span><span class="op">)</span><span class="op">[</span><span class="va">season</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"days"</span>,</span></span>
 <span class="r-in"><span>                           gr_new <span class="op">=</span> <span class="va">season</span>, dist <span class="op">=</span> <span class="st">"kde"</span>, return_fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in std_index(x_new[ind], x_ref[ind], timescale = timescale, dist = dist,     return_fit = return_fit, index_type = index_type, agg_period = agg_period,     agg_scale = agg_scale, agg_fun = agg_fun, rescale = rescale,     ignore_na = ignore_na, na_thres = na_thres, lower = lower,     upper = upper, cens = cens):</span> object 'preds' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
