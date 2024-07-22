@@ -3,13 +3,17 @@
 #' @description Function to fit a specified distribution to a vector of data.
 #' Returns the estimated distribution and relevant goodness-of-fit statistics.
 #'
+#'
 #' @param dist character string specifying the distribution to be fit to the data;
 #'  one of `'empirical'`, `'kde'`, `'norm'`, `'lnorm'`, `'logis'`, `'llogis'`,
 #'  `'exp'`, `'gamma'`, and `'weibull'`.
+#' @param preds data frame of predictor variables if a non-stationary distribution is
+#'  to be estimated.
 #' @inheritParams fitdistrplus::fitdist
 #' @param n_thres minimum number of data points required to estimate the distribution;
 #'  default is 20.
-#' @param ... additional arguments to be passed to \code{\link{fitdistrplus::fitdist}}
+#' @param ... additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}}
+#'
 #'
 #' @details
 #' This has been adapted from code available at
@@ -47,7 +51,9 @@
 #' A list containing the estimated distribution function, its parameters,
 #' and Kolmogorov-Smirnov goodness-of-fit statistics.
 #'
-#' @seealso \code{\link[fitdistrplus]{fitdist}}
+#'
+#' @seealso \code{\link[fitdistrplus]{fitdist}} \code{\link{gamlss}}
+#'
 #'
 #' @examples
 #' N <- 1000
@@ -139,8 +145,9 @@
 #'
 #'
 #' @name fit_dist
-#' @importFrom stats bw.nrd ecdf pnorm qnorm shapiro.test ks.test
+#' @importFrom stats bw.nrd ecdf pnorm qnorm predict ks.test
 #' @importFrom flexsurv pllogis dllogis
+#' @importFrom gamlss.dist NO LOGNO LO EXP GA WEI pNO pLOGNO pLO pEXP pGA pWEI
 NULL
 
 #' @rdname fit_dist
@@ -258,14 +265,14 @@ fit_dist_gamlss <- function(data, preds, dist, ...) {
     F_x <- function(x, params, z) {
       mu <- predict(params, new.data = z, what = "mu", type = "response")
       sig <- predict(params, new.data = z, what = "sigma", type = "response")
-      gamlss.dist::pNO(x, mu = mu, sigma = sig)
+      pNO(x, mu = mu, sigma = sig)
     }
   } else if (dist == "lnorm") {
     fit <- gamlss::gamlss(obs ~ ., data = data_df, family = LOGNO(), ...)
     F_x <- function(x, params, z) {
       mu <- predict(params, new.data = z, what = "mu", type = "response")
       sig <- predict(params, new.data = z, what = "sigma", type = "response")
-      gamlss.dist::pLOGNO(x, mu = mu, sigma = sig)
+      pLOGNO(x, mu = mu, sigma = sig)
     }
   } else if (dist == "logis") {
     fit <- gamlss::gamlss(obs ~ ., data = data_df, family = LO(), ...)
@@ -275,21 +282,21 @@ fit_dist_gamlss <- function(data, preds, dist, ...) {
     fit <- gamlss::gamlss(obs ~ ., data = data_df, family = EXP(), ...)
     F_x <- function(x, params, z) {
       mu <- predict(params, new.data = z, what = "mu", type = "response")
-      gamlss.dist::pEXP(x, mu = mu)
+      pEXP(x, mu = mu)
     }
   } else if (dist == "gamma") {
     fit <- gamlss::gamlss(obs ~ ., data = data_df, family = GA(), ...)
     F_x <- function(x, params, z) {
       mu <- predict(params, new.data = z, what = "mu", type = "response")
       sig <- predict(params, new.data = z, what = "sigma", type = "response")
-      gamlss.dist::pGA(x, mu = mu, sigma = sig)
+      pGA(x, mu = mu, sigma = sig)
     }
   } else if (dist == "weibull") {
     fit <- gamlss::gamlss(obs ~ ., data = data_df, family = WEI(), ...)
     F_x <- function(x, params, z) {
       mu <- predict(params, new.data = z, what = "mu", type = "response")
       sig <- predict(params, new.data = z, what = "sigma", type = "response")
-      gamlss.dist::pWEI(x, mu = mu, sigma = sig)
+      pWEI(x, mu = mu, sigma = sig)
     }
   }
   aic <- fit$aic

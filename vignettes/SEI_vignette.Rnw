@@ -415,10 +415,10 @@ grid.arrange(plot_raw, plot_ind, nrow = 1)
 
 \begin{figure}
 <<plot_dist_unif, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
-srepi_d_prob <- std_index(de_supply_d, index_type = "probability")
+srepi_d_prob <- std_index(de_supply_d, index_type = "prob01")
 plot_prob <- plot_sei(srepi_d_prob, type = "hist", lab = "SREPI",
                       ylims = c(0, 2), title = "Probability")
-srepi_d_bnd <- std_index(de_supply_d, index_type = "bounded")
+srepi_d_bnd <- std_index(de_supply_d, index_type = "prob11")
 plot_bnd <- plot_sei(srepi_d_bnd, type = "hist", lab = "SREPI",
                      ylims = c(0, 1), title = "Bounded")
 grid.arrange(plot_prob, plot_bnd, nrow = 1)
@@ -500,9 +500,9 @@ out_weibull <- fit_dist(data_wind_de$wsmean, dist = "weibull")
 The three distributions can be compared with respect to their AIC, which is output from \code{fit_dist()}.
 
 <<aic>>=
-aic_vec <- c(out_gamma$fit_props['aic'],
-             out_lnorm$fit_props['aic'],
-             out_weibull$fit_props['aic'])
+aic_vec <- c(out_gamma$fit['aic'],
+             out_lnorm$fit['aic'],
+             out_weibull$fit['aic'])
 names(aic_vec) <- c("Gamma", "Log-normal", "Weibull")
 print(aic_vec)
 @
@@ -512,9 +512,9 @@ The AIC provides a measure of distributional fit whilst also accounting for mode
 This can be verified by looking at p-values corresponding to the Kolmogorov-Smirnov test.
 
 <<ksp>>=
-ksp_vec <- c(out_gamma$fit_props['ks_pval'],
-             out_lnorm$fit_props['ks_pval'],
-             out_weibull$fit_props['ks_pval'])
+ksp_vec <- c(out_gamma$fit['ks_pval'],
+             out_lnorm$fit['ks_pval'],
+             out_weibull$fit['ks_pval'])
 names(ksp_vec) <- c("Gamma", "Log-normal", "Weibull")
 print(round(ksp_vec, 4))
 @

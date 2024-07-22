@@ -18,10 +18,13 @@ one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'l
     \code{"qme"} for 'quantile matching estimation', \code{"mge"} for 'maximum goodness-of-fit estimation'
     and \code{"mse"} for 'maximum spacing estimation'.}
 
+\item{preds}{data frame of predictor variables if a non-stationary distribution is
+to be estimated.}
+
 \item{n_thres}{minimum number of data points required to estimate the distribution;
 default is 20.}
 
-\item{...}{additional arguments to be passed to \code{\link{fitdistrplus::fitdist}}}
+\item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}}}
 }
 \value{
 A list containing the estimated distribution function, its parameters,
@@ -153,5 +156,5 @@ hist(pit)
 
 }
 \seealso{
-\code{\link[fitdistrplus]{fitdist}}
+\code{\link[fitdistrplus]{fitdist}} \code{\link{gamlss}}
 }

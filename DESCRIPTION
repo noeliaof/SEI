@@ -18,7 +18,8 @@ Imports:
     fitdistrplus,
     flexsurv,
     gamlss,
-    gamlss.dist
+    gamlss.dist,
+    lmom
 Suggests: 
     knitr,
     lubridate,

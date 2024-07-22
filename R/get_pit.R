@@ -4,8 +4,13 @@
 #' from a set of observations, and return the corresponding probability integral
 #' transform (PIT) values.
 #'
-#' @param ref_data numeric vector from which to estimate the CDF.
-#' @param new_data numeric vector from which to calculate the PIT values.
+#'
+#' @param x_ref numeric vector from which to estimate the CDF.
+#' @param x_new numeric vector from which to calculate the PIT values.
+#' @param preds_ref data frame of predictor variables if a non-stationary distribution is
+#'  to be estimated, corresponding to the reference observations \code{x_ref}.
+#' @param preds_new data frame of predictor variables if a non-stationary distribution is
+#'  modelled, corresponding to the new observations \code{x_new}.
 #' @param return_fit logical specifying whether to return parameters and goodness-of-fit
 #'  statistics for the distribution fit.
 #' @param lower,upper numeric values specifying the lower and upper bounds at which censoring
@@ -14,11 +19,12 @@
 #'  corresponding to common choices, or a custom numeric vector of length two.
 #' @inheritParams fit_dist
 #'
+#'
 #' @details
 #' \code{dist} specifies the distribution used to estimate the cumulative distribution
 #' function of the observations. By default, \code{dist = "empirical"}, in which case
-#' the CDF is estimated empirically from the values \code{ref_data}. This is only
-#' recommended if there are at least 100 values in \code{ref_data}, and a warning
+#' the CDF is estimated empirically from the values \code{x_ref}. This is only
+#' recommended if there are at least 100 values in \code{x_ref}, and a warning
 #' message is returned otherwise.
 #'
 #' Parametric distributions are more appropriate when there is relatively little data,
@@ -34,12 +40,15 @@
 #' 'kde' (kernel density estimation), norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
 #' For the parametric distributions, parameters are estimated using maximum likelihood estimation.
 #'
+#'
 #' @return
 #' A vector of PIT values if return_fit = F, or, if return_fit = T, a list containing
 #' the estimated CDF (\code{F_x}), the corresponding parameters (\code{params}), and
 #' properties of the fit (\code{fit_props}).
 #'
+#'
 #' @author Sam Allen, Noelia Otero
+#'
 #'
 #' @examples
 #' N <- 1000
@@ -96,7 +105,7 @@
 #' plot(x_ref)
 #' preds <- data.frame(t = x)
 #'
-#' pit <- get_pit(x_ref, ref_preds = preds, dist = "norm")
+#' pit <- get_pit(x_ref, preds_ref = preds, dist = "norm")
 #' hist(pit)
 #'
 #' ## normal distribution with trend in mean and standard deviation
@@ -104,19 +113,20 @@
 #' plot(x_ref)
 #' preds <- data.frame(t = x)
 #'
-#' pit <- get_pit(x_ref, ref_preds = preds, dist = "norm", sigma.formula = ~ .)
+#' pit <- get_pit(x_ref, preds_ref = preds, dist = "norm", sigma.formula = ~ .)
 #' hist(pit)
 #'
 #'
 #' @name get_pit
+#' @importFrom stats dnorm pnorm qnorm na.omit
 NULL
 
 #' @rdname get_pit
 #' @export
-get_pit <- function(ref_data,
-                    new_data = NULL,
-                    ref_preds = NULL,
-                    new_preds = NULL,
+get_pit <- function(x_ref,
+                    x_new = NULL,
+                    preds_ref = NULL,
+                    preds_new = NULL,
                     dist = "empirical",
                     method = "mle",
                     return_fit = FALSE,
@@ -126,32 +136,41 @@ get_pit <- function(ref_data,
                     n_thres = 20,
                     ...) {
 
-  if (is.null(new_data)) new_data <- ref_data
-  ref_data <- as.vector(ref_data)
-  new_data <- as.vector(new_data)
-  n <- length(ref_data)
+  if (is.null(x_new)) x_new <- x_ref
+  x_ref <- as.vector(x_ref)
+  x_new <- as.vector(x_new)
+  pit_na <- rep(NA, length(x_new))
+
+  # remove na's
+  x_ref <- na.omit(x_ref)
+  na_ind <- is.na(x_new)
+  x_new <- na.omit(x_new)
+  pit <- rep(NA, length(x_new))
 
   # find indices where data is censored
-  ref_cind <- (ref_data <= lower) | (ref_data >= upper)
-  new_cind <- (new_data <= lower) | (new_data >= upper)
+  ref_cind <- (x_ref <= lower) | (x_ref >= upper)
+  new_cind <- (x_new <= lower) | (x_new >= upper)
 
-  if (!is.null(ref_preds)) ref_preds <- ref_preds[!ref_cind, , drop = FALSE]
-  if (!is.null(new_preds)) new_preds <- new_preds[!new_cind, , drop = FALSE]
+  if (!is.null(preds_ref)) preds_ref <- preds_ref[!ref_cind, , drop = FALSE]
+  if (!is.null(preds_new)) preds_new <- preds_new[!new_cind, , drop = FALSE]
 
   # fit distribution to uncensored data
-  pit <- rep(NA, n)
-  fit <- fit_dist(ref_data[!ref_cind], dist, method = method, preds = ref_preds, n_thres = n_thres, ...)
+
+  fit <- fit_dist(x_ref[!ref_cind], dist, method = method, preds = preds_ref, n_thres = n_thres, ...)
 
   # get pit values
-  if (is.null(ref_preds)) {
-    pit[!new_cind] <- fit$F_x(new_data[!new_cind], fit$params)
+  if (is.null(preds_ref)) {
+    pit[!new_cind] <- fit$F_x(x_new[!new_cind], fit$params)
   } else {
-    pit[!new_cind] <- fit$F_x(new_data[!new_cind], fit$params, new_preds)
+    pit[!new_cind] <- fit$F_x(x_new[!new_cind], fit$params, preds_new)
   }
 
   # censoring
-  if (any(ref_cind)) pit <- pit_cens(pit, ref_data, new_data, lower, upper, cens)
-  fit$pit <- pit
+  if (any(ref_cind)) pit <- pit_cens(pit, x_ref, x_new, lower, upper, cens)
+
+  # reinsert NAs for missing values
+  pit_na[!na_ind] <- pit
+  fit$pit <- pit_na
 
   if (return_fit) {
     return(fit)
@@ -161,14 +180,14 @@ get_pit <- function(ref_data,
 }
 
 
-pit_cens <- function(pit, ref_data, new_data, lower, upper, cens) {
+pit_cens <- function(pit, x_ref, x_new, lower, upper, cens) {
 
-  low_ind <- (new_data <= lower)
-  upp_ind <- (new_data >= upper)
+  low_ind <- (x_new <= lower)
+  upp_ind <- (x_new >= upper)
   cen_ind <- low_ind | upp_ind
 
-  p_l <- mean(ref_data <= lower)
-  p_u <- mean(ref_data >= upper)
+  p_l <- mean(x_ref <= lower)
+  p_u <- mean(x_ref >= upper)
   pit[!cen_ind] <- p_l + (1 - p_l - p_u)*pit[!cen_ind]
 
   if (lower != -Inf && upper != Inf) {
@@ -180,7 +199,10 @@ pit_cens <- function(pit, ref_data, new_data, lower, upper, cens) {
               numeric vector containing the two censoring points")
     }
   } else {
-    if (cens == "normal") {
+    if (is.null(cens)) {
+      x_l <- p_l
+      x_u <- p_u
+    } else if (cens == "normal") {
       x_l <- pnorm( - dnorm( qnorm(p_l) ) / p_l)
       x_u <- pnorm( dnorm( qnorm(1 - p_u) ) / p_u)
     } else if (cens == "prob") {

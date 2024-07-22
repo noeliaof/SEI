@@ -5,10 +5,10 @@
 \title{Calculate probability integral transform values}
 \usage{
 get_pit(
-  ref_data,
-  new_data = NULL,
-  ref_preds = NULL,
-  new_preds = NULL,
+  x_ref,
+  x_new = NULL,
+  preds_ref = NULL,
+  preds_new = NULL,
   dist = "empirical",
   method = "mle",
   return_fit = FALSE,
@@ -20,9 +20,15 @@ get_pit(
 )
 }
 \arguments{
-\item{ref_data}{numeric vector from which to estimate the CDF.}
+\item{x_ref}{numeric vector from which to estimate the CDF.}
 
-\item{new_data}{numeric vector from which to calculate the PIT values.}
+\item{x_new}{numeric vector from which to calculate the PIT values.}
+
+\item{preds_ref}{data frame of predictor variables if a non-stationary distribution is
+to be estimated, corresponding to the reference observations \code{x_ref}.}
+
+\item{preds_new}{data frame of predictor variables if a non-stationary distribution is
+modelled, corresponding to the new observations \code{x_new}.}
 
 \item{dist}{character string specifying the distribution to be fit to the data;
 one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
@@ -45,7 +51,7 @@ corresponding to common choices, or a custom numeric vector of length two.}
 \item{n_thres}{minimum number of data points required to estimate the distribution;
 default is 20.}
 
-\item{...}{additional arguments to be passed to \code{\link{fitdistrplus::fitdist}}}
+\item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}}}
 }
 \value{
 A vector of PIT values if return_fit = F, or, if return_fit = T, a list containing
@@ -60,8 +66,8 @@ transform (PIT) values.
 \details{
 \code{dist} specifies the distribution used to estimate the cumulative distribution
 function of the observations. By default, \code{dist = "empirical"}, in which case
-the CDF is estimated empirically from the values \code{ref_data}. This is only
-recommended if there are at least 100 values in \code{ref_data}, and a warning
+the CDF is estimated empirically from the values \code{x_ref}. This is only
+recommended if there are at least 100 values in \code{x_ref}, and a warning
 message is returned otherwise.
 
 Parametric distributions are more appropriate when there is relatively little data,
@@ -132,7 +138,7 @@ x_ref <- rnorm(N, x + shape, 2)
 plot(x_ref)
 preds <- data.frame(t = x)
 
-pit <- get_pit(x_ref, ref_preds = preds, dist = "norm")
+pit <- get_pit(x_ref, preds_ref = preds, dist = "norm")
 hist(pit)
 
 ## normal distribution with trend in mean and standard deviation
@@ -140,7 +146,7 @@ x_ref <- rnorm(N, x + shape, exp(x/10))
 plot(x_ref)
 preds <- data.frame(t = x)
 
-pit <- get_pit(x_ref, ref_preds = preds, dist = "norm", sigma.formula = ~ .)
+pit <- get_pit(x_ref, preds_ref = preds, dist = "norm", sigma.formula = ~ .)
 hist(pit)
 
 

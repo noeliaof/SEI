@@ -54,6 +54,12 @@ statistics for the distribution fit.}
 \item{index_type}{the type of standardised index: \code{"normal"} (default), \code{"prob01"},
 or \code{"prob11"} (see details).}
 
+\item{preds_new}{data frame of predictor variables if a non-stationary distribution is
+modelled, corresponding to the new observations \code{x_new}.}
+
+\item{preds_ref}{data frame of predictor variables if a non-stationary distribution is
+to be estimated, corresponding to the reference observations \code{x_ref}.}
+
 \item{gr_new}{vector of factors for which separate distributions should be applied to \code{x_new}.}
 
 \item{gr_ref}{vector of factors for which separate distributions should be fit to \code{x_ref}.}
@@ -89,7 +95,7 @@ is to be performed.}
 \item{cens}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
 corresponding to common choices, or a custom numeric vector of length two.}
 
-\item{...}{additional arguments to be passed to \code{\link{fitdistrplus::fitdist}}}
+\item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}}}
 }
 \value{
 Time series of standardised indices.
@@ -217,6 +223,24 @@ season <- c("Q1", "Q2", "Q3", "Q4")[season]
 supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
                            gr_new = season, dist = "kde", return_fit = TRUE)
 
+
+# non-stationary distribution estimation using gamlss
+
+N <- 1000
+x <- seq(-10, 20, length.out = N)
+data <- rnorm(N, x, exp(x/10)) # non-stationary mean and standard deviation
+plot(data)
+preds <- data.frame(t = x)
+
+# standardised indices without trend
+si_st <- std_index(data, dist = "norm")
+plot.ts(si_st)
+# standardised indices with trend in mean
+si_nst <- std_index(data, dist = "norm", preds_new = preds)
+plot.ts(si_nst)
+# standardised indices with trend in mean and sd
+si_nst2 <- std_index(data, dist = "norm", preds_new = preds, sigma.formula = ~ .)
+plot.ts(si_nst2)
 
 
 }

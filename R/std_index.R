@@ -155,6 +155,24 @@
 #'                            gr_new = season, dist = "kde", return_fit = TRUE)
 #'
 #'
+#' # non-stationary distribution estimation using gamlss
+#'
+#' N <- 1000
+#' x <- seq(-10, 20, length.out = N)
+#' data <- rnorm(N, x, exp(x/10)) # non-stationary mean and standard deviation
+#' plot(data)
+#' preds <- data.frame(t = x)
+#'
+#' # standardised indices without trend
+#' si_st <- std_index(data, dist = "norm")
+#' plot.ts(si_st)
+#' # standardised indices with trend in mean
+#' si_nst <- std_index(data, dist = "norm", preds_new = preds)
+#' plot.ts(si_nst)
+#' # standardised indices with trend in mean and sd
+#' si_nst2 <- std_index(data, dist = "norm", preds_new = preds, sigma.formula = ~ .)
+#' plot.ts(si_nst2)
+#'
 #'
 #' @name std_index
 #' @importFrom stats qnorm
@@ -253,15 +271,15 @@ std_index <- function(x_new,
   # aggregate data
   if (!is.null(agg_period)) {
     if (is.null(agg_scale)) agg_scale <- timescale
-    x_new <- aggregate_xts(x_new, len = agg_period, scale = agg_scale, fun = agg_fun,
-                           timescale = timescale, na_thres = na_thres)
-    x_ref <- aggregate_xts(x_ref, len = agg_period, scale = agg_scale, fun = agg_fun,
-                           timescale = timescale, na_thres = na_thres)
+    x_new <- aggregate_xts(x_new, agg_period = agg_period, agg_scale = agg_scale,
+                           agg_fun = agg_fun, timescale = timescale, na_thres = na_thres)
+    x_ref <- aggregate_xts(x_ref, agg_period = agg_period, agg_scale = agg_scale,
+                           agg_fun = agg_fun, timescale = timescale, na_thres = na_thres)
   }
 
   # calculate pit values
   if (cens %in% c("prob01", "prob11")) cens <- "prob"
-  if (is.null(preds)) { # stationary distribution estimation
+  if (is.null(preds_ref)) { # stationary distribution estimation
     if (is.null(moving_window)) {
       fit <- get_pit(x_ref, x_new, dist = dist, method = method, return_fit = return_fit,
                      lower = lower, upper = upper, cens = cens, n_thres = n_thres, ...)
@@ -271,7 +289,8 @@ std_index <- function(x_new,
         from <- date - as.difftime(moving_window, units = window_scale)
         to <- date - as.difftime(1, units = timescale)
         data <- x_ref[paste(from, to, sep = "/")]
-        get_pit(data, x_new[date], dist = dist, return_fit = return_fit, n_thres = n_thres, ...)
+        get_pit(data, x_new[date], dist = dist, method = method, return_fit = return_fit,
+                lower = lower, upper = upper, cens = cens, n_thres = n_thres, ...)
       })
       if (return_fit) {
         fit_names <- names(fit[[1]])
@@ -283,7 +302,7 @@ std_index <- function(x_new,
     }
   } else { # non-stationary distribution estimation with gamlss
     if (is.null(moving_window)) {
-      fit <- get_pit(x_ref, x_new, preds_new = preds_new, preds_ref = preds_ref,
+      fit <- get_pit(x_ref, x_new, preds_ref = preds_ref, preds_new = preds_new,
                      dist = dist, method = method, return_fit = return_fit,
                      lower = lower, upper = upper, cens = cens, n_thres = n_thres, ...)
     } else {
@@ -296,8 +315,9 @@ std_index <- function(x_new,
         ref_preds <- preds_ref[ind, , drop = FALSE]
         ind <- x_ref %in% x_new[date]
         new_preds <- preds_new[ind, , drop = FALSE]
-        get_pit(data, x_new[date], ref_preds = ref_preds, new_preds = new_preds,
-                dist = dist, return_fit = return_fit, n_thres = n_thres, ...)
+        get_pit(data, x_new[date], preds_ref = ref_preds, preds_new = new_preds,
+                dist = dist, method = method, return_fit = return_fit,
+                lower = lower, upper = upper, cens = cens, n_thres = n_thres, ...)
       })
       if (return_fit) {
         fit_names <- names(fit[[1]])

@@ -3,6 +3,7 @@
 #' @description Inputs an xts time series and outputs an xts time series whose
 #' values have been aggregated over a moving window of a user-specified length.
 #'
+#'
 #' @param x xts object to be aggregated.
 #' @param agg_period length of the aggregation period.
 #' @param agg_scale timescale of \code{agg_period};
@@ -12,6 +13,7 @@
 #' @param timescale timescale of the data; `'mins'`, `'hours'`, `'days'`, `'weeks'`, `'months'`, `'years'`.
 #' @param na_thres threshold for the percentage of NA values allowed in the
 #'  aggregation period; default is 10.
+#'
 #'
 #' @details
 #' This has been adapted from code available at
@@ -39,10 +41,13 @@
 #' before a NA value is returned. i.e. the proportion of values that are allowed to be missing.
 #' The default is \code{na_thres = 10}.
 #'
+#'
 #' @return
 #' An xts time series with aggregated values.
 #'
+#'
 #' @author Sam Allen, Noelia Otero
+#'
 #'
 #' @examples
 #' \donttest{
