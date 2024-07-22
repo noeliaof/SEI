@@ -48,10 +48,10 @@ transform (PIT) values.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_pit</span><span class="op">(</span></span>
-<span>  <span class="va">ref_data</span>,</span>
-<span>  new_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ref_preds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  new_preds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">x_ref</span>,</span>
+<span>  x_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  preds_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  preds_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"empirical"</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"mle"</span>,</span>
 <span>  return_fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -67,12 +67,22 @@ transform (PIT) values.</p>
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-ref-data">ref_data<a class="anchor" aria-label="anchor" href="#arg-ref-data"></a></dt>
+<dl><dt id="arg-x-ref">x_ref<a class="anchor" aria-label="anchor" href="#arg-x-ref"></a></dt>
 <dd><p>numeric vector from which to estimate the CDF.</p></dd>
 
 
-<dt id="arg-new-data">new_data<a class="anchor" aria-label="anchor" href="#arg-new-data"></a></dt>
+<dt id="arg-x-new">x_new<a class="anchor" aria-label="anchor" href="#arg-x-new"></a></dt>
 <dd><p>numeric vector from which to calculate the PIT values.</p></dd>
+
+
+<dt id="arg-preds-ref">preds_ref<a class="anchor" aria-label="anchor" href="#arg-preds-ref"></a></dt>
+<dd><p>data frame of predictor variables if a non-stationary distribution is
+to be estimated, corresponding to the reference observations <code>x_ref</code>.</p></dd>
+
+
+<dt id="arg-preds-new">preds_new<a class="anchor" aria-label="anchor" href="#arg-preds-new"></a></dt>
+<dd><p>data frame of predictor variables if a non-stationary distribution is
+modelled, corresponding to the new observations <code>x_new</code>.</p></dd>
 
 
 <dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
@@ -109,7 +119,7 @@ default is 20.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdistrplus::fitdist</a></code></p></dd>
+<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -122,8 +132,8 @@ properties of the fit (<code>fit_props</code>).</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>dist</code> specifies the distribution used to estimate the cumulative distribution
 function of the observations. By default, <code>dist = "empirical"</code>, in which case
-the CDF is estimated empirically from the values <code>ref_data</code>. This is only
-recommended if there are at least 100 values in <code>ref_data</code>, and a warning
+the CDF is estimated empirically from the values <code>x_ref</code>. This is only
+recommended if there are at least 100 values in <code>x_ref</code>, and a warning
 message is returned otherwise.</p>
 <p>Parametric distributions are more appropriate when there is relatively little data,
 and good reason to expect that the data follows a particular distribution. To
@@ -211,7 +221,7 @@ For the parametric distributions, parameters are estimated using maximum likelih
 <span class="r-plt img"><img src="get_pit-10.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, ref_preds <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, preds_ref <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 4204.338 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 4204.338 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
@@ -223,7 +233,7 @@ For the parametric distributions, parameters are estimated using maximum likelih
 <span class="r-plt img"><img src="get_pit-12.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, ref_preds <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, sigma.formula <span class="op">=</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, preds_ref <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, sigma.formula <span class="op">=</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 3833.889 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 3829.376 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 3829.376 </span>
