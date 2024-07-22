@@ -38,8 +38,7 @@ jobs:
           needs: website
 
       - name: Run tests
-        run: |
-          Rscript -e "testthat::test_dir('tests/testthat')"
+        run: testthat::test_dir('test/testthat') 
         shell: Rscript {0}
 
       - name: Build site
