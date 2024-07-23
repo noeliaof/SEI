@@ -4,9 +4,8 @@ template:
 home:
   title: SEI
   tagline: |
-    SEI is an R package to calculate standardised indices. Standardised indices are frequently used to convert measurements to a common scale with a meaningful probabilistic interpretation. Well-known examples include the Standardised Precipitation Index (SPI) and Standardised Precipitation Evapotranspiration Index (SPEI), which are used to monitor hydrological droughts. Standardised indices have also recently been proposed to monitor energy droughts, including the Standardised Residual Load Index (SRLI), and the Standardised Renewable Energy Production Index (SREPI).
-    These standardised energy indices are discussed in Allen, S. and Otero, N (2023). Standardised indices to monitor energy droughts. Renewable Energy. https://doi.org/10.1016/j.renene.2023.119206
-    This package facilitates the implementation of standardised indices in practice. The SEI package includes: - A range of distributions from which to calculate standardised indices (including flexible non- and semi-parametric methods), - Diagnostic checks to ensure the chosen distribution is valid for the input data, - The ability to compute indices from a rolling window of values, - The ability to compute indices on any timescale, - Several notions of standardised indices.
+    SEI is an R package to calculate standardised indices. Standardised indices are frequently used to convert measurements to a common scale with a meaningful probabilistic interpretation. Well-known examples include the Standardised Precipitation Index (SPI) and Standardised Precipitation Evapotranspiration Index (SPEI), which are used to monitor hydrological droughts, and the Standardised Residual Load Index (SRLI), and the Standardised Renewable Energy Production Index (SREPI), which have been proposed to monitor energy droughts.
+    This package facilitates the implementation of standardised indices in practice. It includes a range of distributions from which to calculate standardised indices, including flexible non-parametric methods and non-stationary distributions via the GAMLSS framework; diagnostic checks to ensure the chosen distribution is valid for the input data; the ability to compute indices from a rolling window of values; the ability to compute indices on any timescale; and several useful notions of standardised indices.
 navbar:
   structure:
     left:
@@ -21,9 +20,9 @@ navbar:
     articles:
       text: Articles
       menu:
-      - text: Standardised Indices-SEI
+      - text: Calculating standardised indices using SEI
         href: https://doi.org/10.31223/X5GM4G
-      - text: Energy droughts
+      - text: Standardised indices to monitor energy droughts
         href: https://doi.org/10.1016/j.renene.2023.119206
 footer:
   left:
@@ -33,6 +32,7 @@ footer:
     url: https://github.com/cran/SEI
   right:
   - text: Contact Us
-    url: mailto:sam.allen@unibe.ch
+    url: mailto:sam.allen@stat.math.ethz.ch
 url: https://noeliaof.github.io/SEI/
+mathjax: true
 
