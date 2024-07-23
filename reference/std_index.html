@@ -281,8 +281,8 @@ there would be no data from which to estimate the distribution for this group. A
 is returned in this case.
 Since the distribution of the values in <code>x_ref</code> could change for different groupings,
 the argument <code>dist</code> can be a vector of strings of the same length as the number of
-unique values in <code>unique(gr_new)</code>. In this case, the first element of <code>dist</code>
-should correspond to the first element in <code>unique(gr_new)</code> and so on.
+factor levels in <code>gr_new</code>. In this case, the first element of <code>dist</code>
+should correspond to the first element of <code>levels(gr_new)</code> and so on.
 If <code>dist</code> is a single string, then the same distribution is used for each grouping.</p>
     </div>
     <div class="section level2">
@@ -367,7 +367,7 @@ If <code>dist</code> is a single string, then the same distribution is used for 
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># calculate separate indices for each quarter of 2019</span></span></span>
 <span class="r-in"><span><span class="va">season</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/month.html" class="external-link">month</a></span><span class="op">(</span><span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html" class="external-link">index</a></span><span class="op">(</span><span class="va">supply_de</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">season</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q1"</span>, <span class="st">"Q2"</span>, <span class="st">"Q3"</span>, <span class="st">"Q4"</span><span class="op">)</span><span class="op">[</span><span class="va">season</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">season</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q1"</span>, <span class="st">"Q2"</span>, <span class="st">"Q3"</span>, <span class="st">"Q4"</span><span class="op">)</span><span class="op">[</span><span class="va">season</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span>, rescale <span class="op">=</span> <span class="st">"days"</span>,</span></span>
 <span class="r-in"><span>                           gr_new <span class="op">=</span> <span class="va">season</span>, dist <span class="op">=</span> <span class="st">"kde"</span>, return_fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
