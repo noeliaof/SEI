@@ -7,26 +7,23 @@ SEI is an R package to calculate standardised indices. Standardised indices are 
 This package facilitates the implementation of standardised indices in practice. It's main features include:
   - A range of distributions from which to calculate standardised indices (including flexible non- and semi-parametric methods),
   - Non-stationary parametric distribution estimation via the GAMLSS framework,
-  - Several methods to estimate distribution parameters, such as maximum likelihood, method of moments, and method of L-moments,
+  - Estimation of distribution parameters using several methods, including maximum likelihood, method of moments, and method of L-moments,
   - Diagnostic checks to ensure the distributional assumptions are valid for the input data,
-  - Functions to rescale and aggregate values in a time series,
-  - The ability to compute indices from a rolling window of values,
-  - The ability to compute indices on any timescale,
-  - Several relevant notions of standardised indices,
+  - The ability to compute indices on any timescale, and from a rolling window of values,
+  - Three relevant notions of standardised indices,
   - Functions to visualise the calculated standardised indices.
 
-The functionality and usage of the SEI package is discussed in detail in the corresponding [https://eartharxiv.org/repository/view/6290/](vignette). The vignette also lists several possible extensions that could be implemented. Additional comments, suggestions, and input are more than welcome.
+The functionality and usage of the SEI package is discussed in detail in the corresponding [vignette](https://eartharxiv.org/repository/view/6290/). The vignette also lists several possible extensions that could be implemented. Additional comments, suggestions, and input are more than welcome - please feel free to create an issue or get in touch with the authors.
 
 
 ## Installation
 
-The SEI package is available on [https://CRAN.R-project.org/package=SEI](CRAN):
+The SEI package is available on [CRAN](https://CRAN.R-project.org/package=SEI):
 ```r
 install.packages("SEI")
-library(SEI)
 ```
 
-The developmental version on GitHub can be installed using devtools:
+and the developmental version on GitHub can be installed using devtools:
 ```r
 # install.packages("devtools")
 library(devtools)
@@ -45,7 +42,7 @@ The general approach to compute the indices is to estimate the cumulative distri
 
 The main challenge when calculating standardised indices is estimating the cumulative distribution function $F$ of the measurements. This can be achieved by assuming some parametric distribution: the SPI, for example, typically assumes precipitation follows a gamma distribution. Alternatively, we can use kernel density estimation or the empirical distribution function to get a more flexible estimate. Non-stationary distributions that depend on predictor variables can also be employed if the standardised indices should account for trends in the data, for example. In any case, it is important to check that the estimated distribution is valid. 
 
-The SEI package offers a wide range of distributions, and additionally provides diagnostic tools to check that the chosen distribution adequately fits the input data. Further details regarding the theory underlying standardised indices, and the functionality of the SEI package, are provided in the package [https://eartharxiv.org/repository/view/6290/](vignette).
+The SEI package offers a wide range of distributions, and additionally provides diagnostic tools to check that the chosen distribution adequately fits the input data. Further details regarding the theory underlying standardised indices, and the functionality of the SEI package, are provided in the package [vignette](https://eartharxiv.org/repository/view/6290/).
 
 
 ## Citation
