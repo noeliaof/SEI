@@ -48,8 +48,8 @@ include the occurrence, intensity, magnitude, and duration of the drought.</p>
 <span>  <span class="va">x</span>,</span>
 <span>  thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.28</span>, <span class="fl">1.64</span>, <span class="fl">1.96</span><span class="op">)</span>,</span>
 <span>  exceed <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  lag <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  cluster <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  cluster <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  lag <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -58,7 +58,7 @@ include the occurrence, intensity, magnitude, and duration of the drought.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>vector or xts object.</p></dd>
+<dd><p>vector or xts object from which droughts are defined.</p></dd>
 
 
 <dt id="arg-thresholds">thresholds<a class="anchor" aria-label="anchor" href="#arg-thresholds"></a></dt>
@@ -66,15 +66,15 @@ include the occurrence, intensity, magnitude, and duration of the drought.</p>
 
 
 <dt id="arg-exceed">exceed<a class="anchor" aria-label="anchor" href="#arg-exceed"></a></dt>
-<dd><p>logical; TRUE if a drought is defined when <code>x</code> is above the thresholds, FALSE otherwise.</p></dd>
-
-
-<dt id="arg-lag">lag<a class="anchor" aria-label="anchor" href="#arg-lag"></a></dt>
-<dd><p>logical; TRUE if the drought should end when the value changes sign.</p></dd>
+<dd><p>logical; <code>TRUE</code> if a drought is defined when <code>x</code> is above the thresholds, <code>FALSE</code> otherwise.</p></dd>
 
 
 <dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
-<dd><p>integer specifying the number of timesteps over which droughts should be clustered.</p></dd>
+<dd><p>integer specifying the number of time steps over which droughts should be clustered.</p></dd>
+
+
+<dt id="arg-lag">lag<a class="anchor" aria-label="anchor" href="#arg-lag"></a></dt>
+<dd><p>numeric specifying the value at which the drought should end.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -88,39 +88,63 @@ include the occurrence, intensity, magnitude, and duration of the drought.</p>
 thresholds in <code>thresholds</code>.</p>
 <p><code>thresholds</code> can be a single value, or a vector of values. In the latter case,
 each threshold is assumed to be a different level or intensity of the drought.
+If <code>exceed = TRUE</code> then a higher threshold corresponds to a higher intensity,
+and if <code>exceed = FALSE</code> then a lower threshold corresponds to a higher intensity.
 For example, if <code>thresholds = c(1, 1.5, 2)</code>, then a level 1 drought occurs
 whenever <code>x</code> exceeds 1 but is lower than 1.5, a level 2 drought occurs
 whenever <code>x</code> exceeds 1.5 but is lower than 2, and a level 3 drought occurs
 whenever <code>x</code> exceeds 2.</p>
-<p>By default, <code>thresholds = c(1.28, 1.64, 1.96)</code>, which correspond to the
-90th, 95th, and 97.5th percentiles of the standard normal distribution.</p>
-<p>In meteorology, droughts are typically defined in terms of
-standardised indices, such as the standardised precipitation index (SPI).
-It is sometimes the case that a drought event ends not when the variable of
-interest no longer exceeds (or falls below) the relevant thresholds, but rather
-when the index changes sign. This can help to account for fluctuations around
-the threshold values, classing it as one long drought rather than several shorter
-droughts. This definition can be used by specifying <code>lag = TRUE</code>.</p>
+<p>By default, <code>thresholds = c(1.28, 1.64, 1.96)</code>, which corresponds to the
+90th, 95th, and 97.5th percentiles of the standard normal distribution. These
+thresholds are often used alongside standardised indices to define hydrometeorological
+droughts; see references.</p>
+<p><code>cluster</code> represents the number
+of time steps between different drought events that should be attributed to the same drought.
+For example, suppose \(x_{i} \geq t, x_{i + 1} &lt; t, x_{i + 2} \geq t\),
+where \(x_{i}\) represents the \(i\)-th value in <code>x</code>, and \(t\) is the
+lowest threshold in <code>thresholds</code>. In this case, one drought event will finish
+at time point \(i\) and a new drought event will begin at time point \(i + 2\);
+no drought will occur at time point \(i + 1\) because the value \(x_{i + 1}\) is
+below the threshold defining a drought. Since both \(x_{i}\) and \(x_{i + 2}\)
+are classed as drought events, it may be desirable to ignore the fluctuation, and
+assume that the drought persists through \(x_{i + 1}\) despite its value. This can
+be achieved by setting <code>cluster = 1</code>. If there were two time points separating
+different drought events, these can be clustered together by setting <code>cluster = 2</code>,
+and so on. The default is that no clustering should be implemented, i.e. <code>cluster = 0</code>.</p>
+<p>Alternatively, we may wish to assume that the drought persists until <code>x</code> falls below
+a value that is not necessarily equal to the threshold defining a drought. For example,
+hydrometeorological droughts based on standardised indices, such as the Standardised
+Precipitation Index (SPI), are often defined to persist until the standardised index changes
+sign, i.e. falls below zero. This can be achieved by setting <code>lag = 0</code>. More generally,
+<code>lag</code> can be any numerical value. If <code>exceed = TRUE</code>, a warning is issued if
+<code>lag</code> is above the lowest threshold, and if <code>exceed = FALSE</code>, a warning is
+issued if <code>lag</code> is below the highest threshold. If <code>lag</code> is <code>NULL</code>
+(the default), then no lagging is performed.</p>
 <p><code>get_drought()</code> currently does not use the time series information in
 the xts input, thereby assuming that the time series is complete, without missing
 time periods. If <code>x</code> is a vector, rather than an xts object, then this
 is also implicitly assumed.</p>
 <p>The output is a dataframe containing the vector <code>x</code>, a logical vector
 specifying whether each value of <code>x</code> corresponds to a drought event,
-and the magnitude of the drought. The magnitude of the drought is only shown
+and the magnitude of the drought, defined as the sum of the values of <code>x</code> during
+the drought; see references. The magnitude of the drought is only shown
 on the last day of the drought. This makes it easier to compute statistics about
 the drought magnitude, such as the average drought magnitude.
 If <code>thresholds</code> is a vector, the intensity or level of the drought is also returned.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Allen, S. and N. Otero (2023):
-`Standardised indices to monitor energy droughts',
-<em>Renewable Energy</em>
-<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">doi:10.1016/j.renene.2023.119206</a></p>
-<p>McKee, T. B., Doesken, N. J., &amp; Kleist, J. (1993):
+    <p>McKee, T. B., Doesken, N. J., &amp; Kleist, J. (1993):
 `The relationship of drought frequency and duration to time scales',
 <em>In Proceedings of the 8th Conference on Applied Climatology</em> 17, 179-183.</p>
+<p>Vicente-Serrano, S. M., Beguería, S., &amp; López-Moreno, J. I. (2010):
+`A multiscalar drought index sensitive to global warming: the standardized precipitation evapotranspiration index',
+<em>Journal of Climate</em> 23, 1696-1718.
+<a href="https://doi.org/10.1175/2009JCLI2909.1" class="external-link">https://doi.org/10.1175/2009JCLI2909.1</a></p>
+<p>Allen, S. &amp; N. Otero (2023):
+`Standardised indices to monitor energy droughts',
+<em>Renewable Energy</em> 217, 119206.
+<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">https://doi.org/10.1016/j.renene.2023.119206</a></p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -129,21 +153,39 @@ If <code>thresholds</code> is a vector, the intensity or level of the drought is
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">data_supply</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># consider hourly German energy supply data in 2019</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">data_supply</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># consider daily German energy supply data in 2019</span></span></span>
 <span class="r-in"><span><span class="va">supply_de</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">data_supply</span>, <span class="va">country</span> <span class="op">==</span> <span class="st">"Germany"</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"date"</span>, <span class="st">"PWS"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">supply_de</span> <span class="op">&lt;-</span> <span class="fu">xts</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/xts/man/xts.html" class="external-link">xts</a></span><span class="op">(</span><span class="va">supply_de</span><span class="op">$</span><span class="va">PWS</span>, order.by <span class="op">=</span> <span class="va">supply_de</span><span class="op">$</span><span class="va">date</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu"><a href="std_index.html">std_index</a></span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">supply_de_std</span> <span class="op">&lt;-</span> <span class="fu"><a href="std_index.html">std_index</a></span><span class="op">(</span><span class="va">supply_de</span>, rescale <span class="op">=</span> <span class="st">"days"</span>, timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">drought_df</span> <span class="op">&lt;-</span> <span class="fu">get_drought</span><span class="op">(</span><span class="va">supply_de_std</span>, thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="op">-</span><span class="fl">2</span><span class="op">)</span>, exceed <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># a drought may correspond to when energy supply is low</span></span></span>
+<span class="r-in"><span><span class="va">drought_df</span> <span class="op">&lt;-</span> <span class="fu">get_drought</span><span class="op">(</span><span class="va">supply_de_std</span>, thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1.28</span>, <span class="op">-</span><span class="fl">1.64</span>, <span class="op">-</span><span class="fl">1.96</span><span class="op">)</span>, exceed <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">drought_df</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                 Index         x ins occ dur mag</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2019-01-01 00:00:00 0.6483216   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2019-01-01 01:00:00 0.7609253   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2019-01-01 02:00:00 0.9119604   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2019-01-01 03:00:00 1.0273229   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 2019-01-01 04:00:00 1.1438592   0   0   0   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 2019-01-01 05:00:00 1.2060405   0   0   0   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 Index          x ins occ dur mag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2019-01-01 23:00:00  1.6279182   0   0   0   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2019-01-02 23:00:00  1.1486964   0   0   0   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2019-01-03 23:00:00 -0.6468776   0   0   0   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2019-01-04 23:00:00  0.6809347   0   0   0   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 2019-01-05 23:00:00  0.8261494   0   0   0   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 2019-01-06 23:00:00 -1.2466276   0   0   0   0</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">drought_df</span><span class="op">$</span><span class="va">occ</span><span class="op">)</span> <span class="co"># droughts occur on roughly 10% of time steps</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.09589041</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># cluster droughts two time steps apart</span></span></span>
+<span class="r-in"><span><span class="va">drought_df</span> <span class="op">&lt;-</span> <span class="fu">get_drought</span><span class="op">(</span><span class="va">supply_de_std</span>, thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1.28</span>, <span class="op">-</span><span class="fl">1.64</span>, <span class="op">-</span><span class="fl">1.96</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                          cluster <span class="op">=</span> <span class="fl">2</span>, exceed <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">drought_df</span><span class="op">$</span><span class="va">occ</span><span class="op">)</span> <span class="co"># droughts occur on roughly 11% of time steps</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.109589</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># let droughts persist until the standardised index changes sign</span></span></span>
+<span class="r-in"><span><span class="va">drought_df</span> <span class="op">&lt;-</span> <span class="fu">get_drought</span><span class="op">(</span><span class="va">supply_de_std</span>, thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1.28</span>, <span class="op">-</span><span class="fl">1.64</span>, <span class="op">-</span><span class="fl">1.96</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                          lag <span class="op">=</span> <span class="fl">0</span>, exceed <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">drought_df</span><span class="op">$</span><span class="va">occ</span><span class="op">)</span> <span class="co"># droughts occur on roughly 17% of time steps</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1671233</span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

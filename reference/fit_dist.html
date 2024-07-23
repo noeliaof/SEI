@@ -44,7 +44,7 @@ Returns the estimated distribution and relevant goodness-of-fit statistics.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, <span class="va">dist</span>, method <span class="op">=</span> <span class="st">"mle"</span>, preds <span class="op">=</span> <span class="cn">NULL</span>, n_thres <span class="op">=</span> <span class="fl">20</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, <span class="va">dist</span>, method <span class="op">=</span> <span class="st">"mle"</span>, preds <span class="op">=</span> <span class="cn">NULL</span>, n_thres <span class="op">=</span> <span class="fl">10</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -69,23 +69,27 @@ one of <code>'empirical'</code>, <code>'kde'</code>, <code>'norm'</code>, <code>
 
 
 <dt id="arg-preds">preds<a class="anchor" aria-label="anchor" href="#arg-preds"></a></dt>
-<dd><p>data frame of predictor variables if a non-stationary distribution is
-to be estimated.</p></dd>
+<dd><p>data frame of predictor variables on which the estimated distribution
+should depend.</p></dd>
 
 
 <dt id="arg-n-thres">n_thres<a class="anchor" aria-label="anchor" href="#arg-n-thres"></a></dt>
 <dd><p>minimum number of data points required to estimate the distribution;
-default is 20.</p></dd>
+default is 10.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code></p></dd>
+<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> or
+<code><a href="https://rdrr.io/pkg/gamlss/man/gamlss.html" class="external-link">gamlss</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list containing the estimated distribution function, its parameters,
-and Kolmogorov-Smirnov goodness-of-fit statistics.</p>
+    <p>A list containing the estimated distribution function (<code>F_x</code>), its parameters
+(<code>params</code>), and properties of the fit such as the AIC and
+Kolmogorov-Smirnov goodness-of-fit statistic (<code>fit</code>). If the estimated distribution
+function depends on covariates, then the <code>gamlss</code> model fit is returned as the
+parameters.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -93,30 +97,69 @@ and Kolmogorov-Smirnov goodness-of-fit statistics.</p>
 <a href="https://github.com/WillemMaetens/standaRdized" class="external-link">https://github.com/WillemMaetens/standaRdized</a>.</p>
 <p><code>data</code> is a numeric vector of data from which the distribution is to be estimated.</p>
 <p><code>dist</code> is the specified distribution to be fit to <code>data</code>. This must be one of
-'empirical', 'kde', 'norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
-'empirical' returns the empirical distribution function of <code>data</code>, 'kde' applies
-(normal) kernel density estimation to <code>data</code>, while 'norm', 'lnorm', 'logis',
-'llogis', 'exp', 'gamma', and 'weibull' correspond to the normal, log-normal, logistic,
-log-logistic, exponential, gamma, and Weibull distributions, respectively.</p>
+<code>'empirical'</code>, <code>'kde'</code>, <code>'norm'</code>, <code>'lnorm'</code>, <code>'logis'</code>, <code>'llogis'</code>,
+<code>'exp'</code>, <code>'gamma'</code>, and <code>'weibull'</code>. These correspond to the following
+distributions: <code>'empirical'</code> returns the empirical distribution function of <code>data</code>,
+<code>'kde'</code> applies (normal) kernel density estimation to <code>data</code>, while <code>'norm'</code>,
+<code>'lnorm'</code>, <code>'logis'</code>, <code>'llogis'</code>, <code>'exp'</code>, <code>'gamma'</code>, and
+<code>'weibull'</code> correspond to the normal, log-normal, logistic, log-logistic, exponential,
+gamma, and Weibull distributions, respectively.</p>
 <p>By default, <code>dist = 'empirical'</code>, in which case the distribution is estimated
 empirically from <code>data</code>. This is only recommended if there are at least 100 values
-in <code>data</code>, and a warning message is returned otherwise.</p>
+in <code>data</code>, and a warning message is returned otherwise. Parametric distributions
+are more appropriate when there is relatively little data,
+or good reason to expect that the data follows a particular distribution.
+Kernel density estimation <code>dist = 'kde'</code> provides a flexible compromise between
+using empirical methods and parametric distributions.</p>
 <p><code>n_thres</code> is the minimum number of observations required to fit the distribution.
-The default is <code>n_thres = 20</code>. If the number of values in <code>data</code> is
+The default is <code>n_thres = 10</code>. If the number of values in <code>data</code> is
 smaller than <code>na_thres</code>, an error is returned. This guards against over-fitting,
 which can result in distributions that do not generalise well out-of-sample.</p>
-<p><code>method</code> determines the method used to estimate the distribution parameters.
+<p><code>method</code> specifies the method used to estimate the distribution parameters.
 This argument is redundant if <code>dist = 'empirical'</code> or <code>dist = 'kde'</code>.
-Otherwise, <code>fit_dist</code> essentially provides a wrapper for <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code>,
-and further details can be found in the corresponding documentation. Additional arguments
-to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> can also be specified via <code>...</code>.
-Where relevant, the default is to estimate parameters using maximum likelihood estimation.
-Parameter estimation is also possible using L-moment matching (<code>method = 'lmme'</code>),
-for all distribution choices except the log-logistic distribution.</p>
+Otherwise, <code>fit_dist</code> essentially provides a wrapper for
+<code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code>, and further details can be found in the corresponding
+documentation. Additional arguments to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code>
+can also be specified via <code>...</code>.
+Where relevant, the default is to estimate parameters using maximum likelihood estimation,
+<code>method = "mle"</code>, though several alternative methods are also available; see
+<code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code>. Parameter estimation is also possible using L-moment
+matching (<code>method = 'lmme'</code>), for all distribution choices except the log-logistic
+distribution. In this case, <code>fit_dist</code> is essentially a wrapper for the <code>lmom</code>
+package.</p>
+<p>The distribution can also be non-stationary, by depending on some predictor variables or covariates.
+These predictors can be included via the argument <code>preds</code>, which should be a data frame
+with a separate column for each predictor, and with a number of rows equal to the length of
+<code>data</code>. In this case, a Generalized Additive Model for
+Location, Scale, and Shape (GAMLSS) is fit to <code>data</code> using the predictors in <code>preds</code>.
+It is assumed that the mean of the distribution depends linearly on all of the predictors.
+Variable arguments in <code>...</code> can also be used to specify relationships between the
+scale and shape parameters of the distribution and the predictors; see examples below.
+In this case, <code>fit_dist</code> is essentially a wrapper for <code><a href="https://rdrr.io/pkg/gamlss/man/gamlss.html" class="external-link">gamlss</a></code>,
+and users are referred to the corresponding documentation for further implementation details.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Rigby, R. A., &amp; Stasinopoulos, D. M. (2005):
+`Generalized additive models for location, scale and shape',
+<em>Journal of the Royal Statistical Society Series C: Applied Statistics</em> 54, 507-554.
+<a href="https://doi.org/10.1111/j.1467-9876.2005.00510.x" class="external-link">https://doi.org/10.1111/j.1467-9876.2005.00510.x</a></p>
+<p>Delignette-Muller, M. L., &amp; Dutang, C. (2015):
+`fitdistrplus: An R package for fitting distributions',
+<em>Journal of Statistical Software</em> 64, 1-34.
+<a href="https://doi.org/10.18637/jss.v064.i04" class="external-link">https://doi.org/10.18637/jss.v064.i04</a></p>
+<p>Allen, S. &amp; N. Otero (2023):
+`Standardised indices to monitor energy droughts',
+<em>Renewable Energy</em> 217, 119206.
+<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">https://doi.org/10.1016/j.renene.2023.119206</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> <code>gamlss</code></p></div>
+    <div class="dont-index"><p><code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> <code>gamlss</code> <code>lmom</code></p></div>
+    </div>
+    <div class="section level2">
+    <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
+    <p>Sam Allen, Noelia Otero</p>
     </div>
 
     <div class="section level2">
@@ -190,29 +233,37 @@ for all distribution choices except the log-logistic distribution.</p>
 <span class="r-in"><span><span class="co">##### non-stationary estimation using gamlss</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## normal distribution</span></span></span>
-<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">N</span><span class="op">]</span> <span class="op">+</span> <span class="va">shape</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">/</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">10</span>, <span class="fl">20</span>, length.out <span class="op">=</span> <span class="va">N</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">x</span> <span class="op">+</span> <span class="va">shape</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">/</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="fit_dist-8.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">N</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">out_st</span> <span class="op">&lt;-</span> <span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">out_nst</span> <span class="op">&lt;-</span> <span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, preds <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 1950.554 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 1950.554 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 5035.731 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 5035.731 </span>
 <span class="r-in"><span><span class="va">out_nst2</span> <span class="op">&lt;-</span> <span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, preds <span class="op">=</span> <span class="va">preds</span>, sigma.formula <span class="op">=</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 1778.167 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 1778.157 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 1778.157 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 3787.776 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 3779.806 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 3779.806 </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">pit_st</span> <span class="op">&lt;-</span> <span class="va">out_st</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out_st</span><span class="op">$</span><span class="va">params</span><span class="op">)</span> <span class="co"># pit values without trend</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit_st</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># pit values without trend</span></span></span>
+<span class="r-in"><span><span class="va">pit_st</span> <span class="op">&lt;-</span> <span class="va">out_st</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out_st</span><span class="op">$</span><span class="va">params</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit_st</span>, breaks <span class="op">=</span> <span class="fl">30</span>, probability <span class="op">=</span> <span class="cn">TRUE</span>, main <span class="op">=</span> <span class="st">"No trend"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="st">"dotted"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="fit_dist-9.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="va">pit_nst</span> <span class="op">&lt;-</span> <span class="va">out_nst</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out_nst</span><span class="op">$</span><span class="va">params</span>, <span class="va">preds</span><span class="op">)</span> <span class="co"># pit values with trend in mean</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit_nst</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># pit values with trend in mean</span></span></span>
+<span class="r-in"><span><span class="va">pit_nst</span> <span class="op">&lt;-</span> <span class="va">out_nst</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out_nst</span><span class="op">$</span><span class="va">params</span>, <span class="va">preds</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit_nst</span>, breaks <span class="op">=</span> <span class="fl">30</span>, probability <span class="op">=</span> <span class="cn">TRUE</span>, main <span class="op">=</span> <span class="st">"Trend in mean"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="st">"dotted"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="fit_dist-10.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="va">pit_nst2</span> <span class="op">&lt;-</span> <span class="va">out_nst2</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out_nst2</span><span class="op">$</span><span class="va">params</span>, <span class="va">preds</span><span class="op">)</span> <span class="co"># pit values with trend in mean and sd</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit_nst2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># pit values with trend in mean and sd</span></span></span>
+<span class="r-in"><span><span class="va">pit_nst2</span> <span class="op">&lt;-</span> <span class="va">out_nst2</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out_nst2</span><span class="op">$</span><span class="va">params</span>, <span class="va">preds</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit_nst2</span>, breaks <span class="op">=</span> <span class="fl">30</span>, probability <span class="op">=</span> <span class="cn">TRUE</span>, main <span class="op">=</span> <span class="st">"Trend in mean and standard deviation"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="st">"dotted"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="fit_dist-11.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## log normal distribution</span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">10</span>, length.out <span class="op">=</span> <span class="va">N</span><span class="op">)</span></span></span>
@@ -225,7 +276,8 @@ for all distribution choices except the log-logistic distribution.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 6776.554 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 6776.554 </span>
 <span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="va">out</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out</span><span class="op">$</span><span class="va">params</span>, <span class="va">preds</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span>, breaks <span class="op">=</span> <span class="fl">30</span>, probability <span class="op">=</span> <span class="cn">TRUE</span>, main <span class="op">=</span> <span class="st">"PIT values for non-stationary fit"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="st">"dotted"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="fit_dist-13.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>

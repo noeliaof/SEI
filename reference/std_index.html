@@ -52,11 +52,11 @@ Indices can be calculated on any timescale.</p>
 <span>  x_ref <span class="op">=</span> <span class="va">x_new</span>,</span>
 <span>  timescale <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"empirical"</span>,</span>
+<span>  preds_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  preds_ref <span class="op">=</span> <span class="va">preds_new</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"mle"</span>,</span>
 <span>  return_fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  index_type <span class="op">=</span> <span class="st">"normal"</span>,</span>
-<span>  preds_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  preds_ref <span class="op">=</span> <span class="va">preds_new</span>,</span>
 <span>  gr_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  gr_ref <span class="op">=</span> <span class="va">gr_new</span>,</span>
 <span>  moving_window <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -89,13 +89,23 @@ Indices can be calculated on any timescale.</p>
 
 
 <dt id="arg-timescale">timescale<a class="anchor" aria-label="anchor" href="#arg-timescale"></a></dt>
-<dd><p>timescale of the data; <code>'mins'</code>, <code>'hours'</code>, <code>'days'</code>, <code>'weeks'</code>, <code>'months'</code>, <code>'years'</code>.</p></dd>
+<dd><p>timescale of the data; one of <code>'mins'</code>, <code>'hours'</code>, <code>'days'</code>, <code>'weeks'</code>, <code>'months'</code>, <code>'years'</code>.</p></dd>
 
 
 <dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
 <dd><p>character string specifying the distribution to be fit to the data;
 one of <code>'empirical'</code>, <code>'kde'</code>, <code>'norm'</code>, <code>'lnorm'</code>, <code>'logis'</code>, <code>'llogis'</code>,
 <code>'exp'</code>, <code>'gamma'</code>, and <code>'weibull'</code>.</p></dd>
+
+
+<dt id="arg-preds-new">preds_new<a class="anchor" aria-label="anchor" href="#arg-preds-new"></a></dt>
+<dd><p>data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the new observations <code>x_new</code>.</p></dd>
+
+
+<dt id="arg-preds-ref">preds_ref<a class="anchor" aria-label="anchor" href="#arg-preds-ref"></a></dt>
+<dd><p>data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the reference observations <code>x_ref</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -113,16 +123,6 @@ statistics for the distribution fit.</p></dd>
 <dt id="arg-index-type">index_type<a class="anchor" aria-label="anchor" href="#arg-index-type"></a></dt>
 <dd><p>the type of standardised index: <code>"normal"</code> (default), <code>"prob01"</code>,
 or <code>"prob11"</code> (see details).</p></dd>
-
-
-<dt id="arg-preds-new">preds_new<a class="anchor" aria-label="anchor" href="#arg-preds-new"></a></dt>
-<dd><p>data frame of predictor variables if a non-stationary distribution is
-modelled, corresponding to the new observations <code>x_new</code>.</p></dd>
-
-
-<dt id="arg-preds-ref">preds_ref<a class="anchor" aria-label="anchor" href="#arg-preds-ref"></a></dt>
-<dd><p>data frame of predictor variables if a non-stationary distribution is
-to be estimated, corresponding to the reference observations <code>x_ref</code>.</p></dd>
 
 
 <dt id="arg-gr-new">gr_new<a class="anchor" aria-label="anchor" href="#arg-gr-new"></a></dt>
@@ -170,96 +170,138 @@ one of <code>"days"</code>, <code>"weeks"</code>, <code>"months"</code>, <code>"
 
 <dt id="arg-n-thres">n_thres<a class="anchor" aria-label="anchor" href="#arg-n-thres"></a></dt>
 <dd><p>minimum number of data points required to estimate the distribution;
-default is 20.</p></dd>
+default is 10.</p></dd>
 
 
 <dt id="arg-na-thres">na_thres<a class="anchor" aria-label="anchor" href="#arg-na-thres"></a></dt>
 <dd><p>threshold for the percentage of NA values allowed in the
-aggregation period; default is 10.</p></dd>
+aggregation period; default is 10%.</p></dd>
 
 
 <dt id="arg-lower-upper">lower, upper<a class="anchor" aria-label="anchor" href="#arg-lower-upper"></a></dt>
-<dd><p>numeric values specifying the lower and upper bounds at which censoring
-is to be performed.</p></dd>
+<dd><p>numeric values specifying the lower and upper bounds at which the
+values in <code>x_ref</code> and <code>x_new</code> are censored.</p></dd>
 
 
 <dt id="arg-cens">cens<a class="anchor" aria-label="anchor" href="#arg-cens"></a></dt>
-<dd><p>values to assign to censored values; either a string (<code>'normal'</code> or <code>'prob'</code>),
-corresponding to common choices, or a custom numeric vector of length two.</p></dd>
+<dd><p>method used to deal with censoring of the PIT values; either a string
+(<code>'normal'</code> or <code>'prob'</code>), corresponding to common choices, or a custom numeric value.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code></p></dd>
+<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> or
+<code><a href="https://rdrr.io/pkg/gamlss/man/gamlss.html" class="external-link">gamlss</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Time series of standardised indices.</p>
+    <p>Time series of standardised indices. If <code>return_fit = TRUE</code>, then a list is returned
+that contains the time series of standardised indices, as well as information about the
+fit of the distribution to the data. If <code>gr_new</code> is specified, then <code>std_index</code>
+returns a list of time series of standardised indices, with an element corresponding to
+each factor in <code>gr_new</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Standardised indices are calculated by estimating the cumulative distribution function (CDF)
+    <p><strong>Standardised indices</strong></p>
+<p>Standardised indices are calculated by estimating the cumulative distribution function (CDF)
 of the variable of interest, and using this to transform the measurements to
-a standardised scale.</p>
-<p><code>std_index()</code> estimates the CDF using a time series of reference data <code>x_ref</code>,
+a standardised scale. <code>std_index</code> is a wrapper for <code><a href="get_pit.html">get_pit</a></code> and
+<code><a href="fit_dist.html">fit_dist</a></code> that additionally allows for aggregation, rescaling, and grouping
+of the time series. Further details can be found in the help pages of <code><a href="get_pit.html">get_pit</a></code>
+and <code><a href="fit_dist.html">fit_dist</a></code>.</p>
+<p><code>std_index</code> estimates the CDF using a time series of reference data <code>x_ref</code>,
 and applies the resulting transformation to the time series <code>x_new</code>. The result is
 a time series of standardised <code>x_new</code> values. These standardised indices quantify
 how extreme the <code>x_new</code> values are in reference to <code>x_ref</code>.
 <code>x_new</code> and <code>x_ref</code> should therefore contain values of the same variable.
-If <code>x_ref</code> is not specified, then <code>x_new</code> is also used to estimate the CDF.</p>
-<p><code>x_new</code> and <code>x_ref</code> can either be provided as vectors or xts time series.
+If <code>x_ref</code> is not specified, then it is set equal to <code>x_new</code>, so that the
+standardised indices are calculated in-sample.</p>
+<p>The function returns a vector or time series (depending on the format of <code>x_new</code>)
+containing the standardised indices corresponding to <code>x_new</code>. Three different
+types of indices are available, which are explained in detail in the vignette.
+The index type can be chosen using <code>index_type</code>, which must be one of
+<code>"normal"</code> (default), <code>"prob01"</code>, and <code>"prob11"</code>.</p>
+<p><strong>Time series manipulations</strong></p>
+<p><code>x_new</code> and <code>x_ref</code> can either be provided as vectors or <code>xts</code> time series.
 In the latter case, the time series can be aggregated across timescales or rescaled.
 This is useful, for example, if <code>x_new</code> contains hourly data, but interest is
 on daily accumulations or averages of the hourly data.</p>
 <p>The argument <code>rescale</code> converts the data to a different timescale. The original
 timescale of the data can be manually specified using the argument <code>timescale</code>.
 <code>timescale</code> is required if the time series is to be aggregated or rescaled.
-Otherwise, the function will try to automatically determine the timescale of the data.
+Otherwise, <code>std_index</code> will try to automatically determine the timescale of the data.
 Manually specifying the timescale of the data is generally more robust. The rescaling
-is performed using the function <code>rescale_fun</code>. By default, this is assumed to be
+is performed using the function <code>rescale_fun</code>. By default,
 <code>rescale_fun = "sum"</code>, so that values are added across the timescale of interest.
 This can be changed to any user-specified function.</p>
 <p>The argument <code>agg_period</code> aggregates the data across the timescale of interest.
+The aggregation is performed using <code><a href="aggregate_xts.html">aggregate_xts</a></code>.
 This differs from <code>rescale</code> in that the resolution of the data remains the same.
 <code>agg_period</code> is a number specifying how long the data should be aggregated across.
 By default, it is assumed that <code>agg_period</code> is on the same timescale as <code>x_new</code>
 and <code>x_ref</code>. For example, if the data is hourly and <code>agg_period = 24</code>, then
 this assumes the data is to be aggregated over the past 24 hours. The scale of the
 aggregation period can also be specified manually using <code>agg_scale</code>. For example,
-one could also specify <code>agg_period = 1</code> and <code>agg_scale = "days"</code>, and this
+specifying <code>agg_period = 1</code> and <code>agg_scale = "days"</code>
 would also aggregate the data over the past day. <code>agg_fun</code> specifies how the
 data is to be aggregated, the default is <code>agg_fun = "sum"</code>.</p>
+<p><strong>Distribution estimation</strong></p>
 <p><code>dist</code> is the distribution used to estimate the CDF from <code>x_ref</code>.
 Currently, functionality is available to fit one of the following distributions to the data:
-Normal ('norm'), Log-normal ('lnorm'), Logistic ('logis'), Log-logistic ('llogis'),
-Exponential ('exp'), Gamma ('gamma'), and Weibull ('weibull').
+Normal (<code>"norm"</code>), Log-normal (<code>"lnorm"</code>), Logistic (<code>"logis"</code>),
+Log-logistic (<code>"llogis"</code>), Exponential (<code>"exp"</code>), Gamma (<code>"gamma"</code>),
+and Weibull (<code>"weibull"</code>).
 Alternatively, the CDF can be estimated empirically (<code>dist = "empirical"</code>)
 based on the values in <code>x_ref</code>, or using kernel density estimation (<code>dist = "kde"</code>).</p>
 <p>If <code>dist</code> is a parametric family of distributions, then parameters of the
-distribution are estimated using maximum likelihood estimation from <code>x_ref</code>.
+distribution are estimated from <code>x_ref</code>. <code>method</code> specifies how the parameters
+are estimated; see <code><a href="fit_dist.html">fit_dist</a></code> for details.
 The resulting parameters and corresponding goodness-of-fit statistics can be
 returned by specifying <code>return_fit = TRUE</code>.</p>
 <p>By default, the distribution is estimated over all values in <code>x_ref</code>. Alternatively,
-if <code>x_new</code> is an xts object, parameters can be estimated sequentially using a
+if <code>x_new</code> is an <code>xts</code> object, parameters can be estimated sequentially using a
 moving window of values. <code>moving_window</code> determines the length of the moving window.
 This is a single value, assumed to be on the same timescale as <code>x_new</code>.
-This can also be specified manually using <code>window_scale</code>. <code>window_scale</code>
-must also be one of "days", "weeks", "months", "quarters", and "years".</p>
-<p>The function returns a vector of time series (depending on the format of <code>x_new</code>)
-containing the standardised indices corresponding to <code>x_new</code>. Three different
-types of indices are available, which are explained in detail in the vignette.
-The index type can be chosen using <code>index_type</code>, which must be one of
-"normal" (default), "prob01", and "prob11".</p>
+The timsscale of the moving window can also be specified manually using <code>window_scale</code>.
+<code>window_scale</code> must also be one of <code>"days"</code>, <code>"weeks"</code>, <code>"months"</code>,
+<code>"quarters"</code>, and <code>"years"</code>.</p>
+<p>The estimated distribution can also be non-stationary, by depending on some predictors
+or covariates. These predictors can be stored in data frames and input to <code>std_index</code>
+via the arguments <code>preds_new</code> and <code>preds_ref</code>; see <code><a href="fit_dist.html">fit_dist</a></code> for
+details. Predictors cannot be used if the data is to be rescaled, since this would also
+require rescaling the predictors; in this case, an error is returned.</p>
+<p><strong>Grouping</strong></p>
+<p>By default, one distribution is fit to all values in <code>x_ref</code>. Separate distributions
+can be fit to different subsets of the data by specifying <code>gr_ref</code> and <code>gr_new</code>.
+These should be factor vectors, where each factor corresponds to a different grouping or
+subset of the data.
+No factor should appear in <code>gr_new</code> that does not appear in <code>gr_ref</code>, since
+there would be no data from which to estimate the distribution for this group. An error
+is returned in this case.
+Since the distribution of the values in <code>x_ref</code> could change for different groupings,
+the argument <code>dist</code> can be a vector of strings of the same length as the number of
+unique values in <code>unique(gr_new)</code>. In this case, the first element of <code>dist</code>
+should correspond to the first element in <code>unique(gr_new)</code> and so on.
+If <code>dist</code> is a single string, then the same distribution is used for each grouping.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Allen, S. and N. Otero (2023):
-`Standardised indices to monitor energy droughts',
-<em>Renewable Energy</em> 217, 119206
-<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">doi:10.1016/j.renene.2023.119206</a></p>
-<p>McKee, T. B., Doesken, N. J., &amp; Kleist, J. (1993):
+    <p>McKee, T. B., Doesken, N. J., &amp; Kleist, J. (1993):
 `The relationship of drought frequency and duration to time scales',
 <em>In Proceedings of the 8th Conference on Applied Climatology</em> 17, 179-183.</p>
+<p>Vicente-Serrano, S. M., Beguería, S., &amp; López-Moreno, J. I. (2010):
+`A multiscalar drought index sensitive to global warming: the standardized precipitation evapotranspiration index',
+<em>Journal of Climate</em> 23, 1696-1718.
+<a href="https://doi.org/10.1175/2009JCLI2909.1" class="external-link">https://doi.org/10.1175/2009JCLI2909.1</a></p>
+<p>Allen, S. &amp; N. Otero (2023):
+`Standardised indices to monitor energy droughts',
+<em>Renewable Energy</em> 217, 119206.
+<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">https://doi.org/10.1016/j.renene.2023.119206</a></p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code>xts</code> <code><a href="aggregate_xts.html">aggregate_xts</a></code> <code><a href="get_pit.html">get_pit</a></code> <code><a href="fit_dist.html">fit_dist</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

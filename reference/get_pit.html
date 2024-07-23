@@ -49,16 +49,16 @@ transform (PIT) values.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_pit</span><span class="op">(</span></span>
 <span>  <span class="va">x_ref</span>,</span>
-<span>  x_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  preds_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  preds_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  x_new <span class="op">=</span> <span class="va">x_ref</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"empirical"</span>,</span>
+<span>  preds_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  preds_new <span class="op">=</span> <span class="va">preds_ref</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"mle"</span>,</span>
 <span>  return_fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lower <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>,</span>
 <span>  upper <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>  cens <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  n_thres <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  n_thres <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -75,20 +75,20 @@ transform (PIT) values.</p>
 <dd><p>numeric vector from which to calculate the PIT values.</p></dd>
 
 
-<dt id="arg-preds-ref">preds_ref<a class="anchor" aria-label="anchor" href="#arg-preds-ref"></a></dt>
-<dd><p>data frame of predictor variables if a non-stationary distribution is
-to be estimated, corresponding to the reference observations <code>x_ref</code>.</p></dd>
-
-
-<dt id="arg-preds-new">preds_new<a class="anchor" aria-label="anchor" href="#arg-preds-new"></a></dt>
-<dd><p>data frame of predictor variables if a non-stationary distribution is
-modelled, corresponding to the new observations <code>x_new</code>.</p></dd>
-
-
 <dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
 <dd><p>character string specifying the distribution to be fit to the data;
 one of <code>'empirical'</code>, <code>'kde'</code>, <code>'norm'</code>, <code>'lnorm'</code>, <code>'logis'</code>, <code>'llogis'</code>,
 <code>'exp'</code>, <code>'gamma'</code>, and <code>'weibull'</code>.</p></dd>
+
+
+<dt id="arg-preds-ref">preds_ref<a class="anchor" aria-label="anchor" href="#arg-preds-ref"></a></dt>
+<dd><p>data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the reference observations <code>x_ref</code>.</p></dd>
+
+
+<dt id="arg-preds-new">preds_new<a class="anchor" aria-label="anchor" href="#arg-preds-new"></a></dt>
+<dd><p>data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the new observations <code>x_new</code>.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -104,47 +104,120 @@ statistics for the distribution fit.</p></dd>
 
 
 <dt id="arg-lower-upper">lower, upper<a class="anchor" aria-label="anchor" href="#arg-lower-upper"></a></dt>
-<dd><p>numeric values specifying the lower and upper bounds at which censoring
-is to be performed.</p></dd>
+<dd><p>numeric values specifying the lower and upper bounds at which the
+values in <code>x_ref</code> and <code>x_new</code> are censored.</p></dd>
 
 
 <dt id="arg-cens">cens<a class="anchor" aria-label="anchor" href="#arg-cens"></a></dt>
-<dd><p>values to assign to censored values; either a string (<code>'normal'</code> or <code>'prob'</code>),
-corresponding to common choices, or a custom numeric vector of length two.</p></dd>
+<dd><p>method used to deal with censoring of the PIT values; either a string
+(<code>'normal'</code> or <code>'prob'</code>), corresponding to common choices, or a custom numeric value.</p></dd>
 
 
 <dt id="arg-n-thres">n_thres<a class="anchor" aria-label="anchor" href="#arg-n-thres"></a></dt>
 <dd><p>minimum number of data points required to estimate the distribution;
-default is 20.</p></dd>
+default is 10.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code></p></dd>
+<dd><p>additional arguments to be passed to <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> or
+<code><a href="https://rdrr.io/pkg/gamlss/man/gamlss.html" class="external-link">gamlss</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A vector of PIT values if return_fit = F, or, if return_fit = T, a list containing
-the estimated CDF (<code>F_x</code>), the corresponding parameters (<code>params</code>), and
-properties of the fit (<code>fit_props</code>).</p>
+    <p>A vector of PIT values if <code>return_fit = FALSE</code>, or, if <code>return_fit = TRUE</code>,
+a list containing the estimated distribution function (<code>F_x</code>), its parameters
+(<code>params</code>), and properties of the fit such as the AIC and
+Kolmogorov-Smirnov goodness-of-fit statistic (<code>fit</code>). If the estimated distribution
+function depends on covariates, then the <code>gamlss</code> model fit is returned as the
+parameters.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>dist</code> specifies the distribution used to estimate the cumulative distribution
-function of the observations. By default, <code>dist = "empirical"</code>, in which case
-the CDF is estimated empirically from the values <code>x_ref</code>. This is only
-recommended if there are at least 100 values in <code>x_ref</code>, and a warning
-message is returned otherwise.</p>
-<p>Parametric distributions are more appropriate when there is relatively little data,
-and good reason to expect that the data follows a particular distribution. To
-check that the chosen parametric distribution is appropriate, the argument
-<code>return_fit</code> can be used to return the estimated parameters of the
-distribution, as well as Kolmogorov-Smirnov goodness-of-fit test statistics.</p>
-<p>A flexible compromise between using empirical methods and parametric distributions is to
-use kernel density estimation, <code>dist = "kde"</code>.</p>
-<p><code>dist</code> must be one of: 'empirical' (the empirical distribution given <code>data</code>),
-'kde' (kernel density estimation), norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
-For the parametric distributions, parameters are estimated using maximum likelihood estimation.</p>
+    <p><strong>Continuous data</strong></p>
+<p>If \(X\) is a continuous random variable with cumulative distribution function (CDF)
+\(F\), then the probability integral transform (PIT) \(F(X)\) is uniformly distributed
+between 0 and 1. Given a vector \(x_{1}, \dots, x_{n}\) of realisations of \(X\),
+<code>get_pit</code> produces an estimate \(\hat{F}\) of the CDF \(F\), and returns a
+vector of PIT values corresponding to another set of realisations \(z_{1}, \dots, z_{N}\),
+$$\hat{F}(z_{1}), \dots, \hat{F}(z_{n}).$$</p>
+<p><code>x_ref</code> contains the values \(x_{1}, \dots, x_{n}\) from which the CDF estimate
+\(\hat{F}\) is obtained. <code>x_new</code> contains the values \(z_{1}, \dots, z_{n}\)
+from which the PIT values \(\hat{F}(z_{1}), \dots, \hat{F}(z_{n})\) are calculated.
+By default, <code>x_ref</code> and <code>x_new</code> are the same, so that the PIT values are
+calculated in-sample.</p>
+<p>To estimate the distribution, <code>get_pit</code> calls <code><a href="fit_dist.html">fit_dist</a></code>. The arguments
+<code>dist</code>, <code>method</code> and <code>n_thres</code> are
+documented in detail in the corresponding help page.</p>
+<p>To check that the chosen distribution adequately fits the data, the argument
+<code>return_fit = TRUE</code> can be used to return the estimated parameters of the
+distribution, as well as properties of the fit such as the AIC and a p-value
+for the Kolmogorov-Smirnov goodness-of-fit test.</p>
+<p><strong>Non-stationary distributions</strong></p>
+<p>The estimated distribution can also be non-stationary, by depending on some predictor variables or covariates.
+These predictors can be included via the arguments <code>preds_ref</code> and <code>preds_new</code>,
+which should be data frames with a separate column for each predictor, and with
+numbers of rows equal to the lengths of <code>x_ref</code> and <code>x_new</code>, respectively.
+In this case, a Generalized Additive Model for Location, Scale, and Shape (GAMLSS) is
+fit to <code>x_ref</code> using the predictors in <code>preds_ref</code>.
+The PIT values corresponding to <code>x_new</code> are then calculated by applying the
+estimated distribution with predictors <code>preds_new</code>.
+If a non-stationary distribution is to be estimated, both <code>preds_ref</code> and
+<code>preds_new</code> must be provided. By default, <code>preds_new</code> is assumed to be
+the same as <code>preds_ref</code>, to align with <code>x_new</code> being the same as <code>x_ref</code>.</p>
+<p><strong>Censored data</strong></p>
+<p>If the random variable \(X\) is not continuous, the PIT will not be uniformly distributed.
+A relevant case is when \(X\) is censored. For example, precipitation is censored below
+at zero. This results in several PIT values being equal to \(F(0)\). The <code>lower</code>
+and <code>upper</code> arguments to <code>get_pit</code> allow the user to specify the lower and upper
+bounds at which the data is censored; the default is <code>lower = -Inf</code> and <code>upper = Inf</code>,
+i.e. there is no censoring.</p>
+<p>If the PIT values are used to construct standardised indices, this censoring can lead to
+unintuitive index values.
+To deal with censored data, it has been proposed to map the PIT values of the censored
+values to a different constant \(c\); see references. For example, for precipitation, the PIT
+values would become
+$$F(X) \quad \text{if} \quad X &gt; 0,$$
+$$c \quad \text{if} \quad X = 0.$$
+The constant \(c\) can be chosen so that the PIT values satisfy some desired property.
+For example, if \(F(X)\) is uniformly distributed between 0 and 1, then it has mean equal
+to \(1/2\). Hence, \(c\) could be chosen such that the mean of the PIT values of the
+censored distribution are equal to \(1/2\).
+Alternatively, if \(F(X)\) is uniformly distributed between 0 and 1, then
+the transformed PIT value \(\Phi^{-1}(F(X))\) (where \(\Phi^{-1}\) is the quantile function
+of the standard normal distribution) follows a standard normal distribution, and therefore
+has mean equal to 0. The constant \(c\) could therefore be chosen such that the mean of the
+transformed PIT values of the censored distribution are equal to 0.</p>
+<p>The argument <code>cens</code> in <code>get_pit</code> can be used to treat censored data. <code>cens</code>
+can be one of three options: a single numeric value containing the value \(c\) at which to
+assign the PIT values of the censored realisations; the string <code>'prob'</code> if \(c\)
+is to be chosen automatically so that the mean of the PIT values is equal to \(1/2\);
+or the string <code>'normal'</code> if \(c\) is to be chosen automatically so that the mean of
+the transformed PIT values is equal to 0. If the data is censored both above and below,
+then <code>cens</code> must be a numeric vector of length two, specifying the values to assign
+the realisations that are censored both below and above.</p>
+<p>When the data is censored, <code>dist</code> corresponds to the distribution used to estimate the
+uncensored realisations, e.g. positive precipitations. The probability of being at the boundary
+points is estimated using the relative frequency of censored observations in <code>x_ref</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Rigby, R. A., &amp; Stasinopoulos, D. M. (2005):
+`Generalized additive models for location, scale and shape',
+<em>Journal of the Royal Statistical Society Series C: Applied Statistics</em> 54, 507-554.
+<a href="https://doi.org/10.1111/j.1467-9876.2005.00510.x" class="external-link">https://doi.org/10.1111/j.1467-9876.2005.00510.x</a></p>
+<p>Stagge, J. H., Tallaksen, L. M., Gudmundsson, L., Van Loon, A. F., &amp; Stahl, K. (2015):
+`Candidate distributions for climatological drought indices (SPI and SPEI)',
+<em>International Journal of Climatology</em> 35, 4027-4040.
+<a href="https://doi.org/10.1002/joc.4267" class="external-link">https://doi.org/10.1002/joc.4267</a></p>
+<p>Allen, S. &amp; N. Otero (2023):
+`Calculating standardised indices using SEI',
+<em>EarthArXiv pre-print</em>.
+<a href="https://doi.org/10.31223/X5GM4G" class="external-link">https://doi.org/10.31223/X5GM4G</a></p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="fit_dist.html">fit_dist</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -239,6 +312,7 @@ For the parametric distributions, parameters are estimated using maximum likelih
 <span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 3829.376 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="get_pit-13.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="co"># sigma.formula is an optional argument in the gamlss::gamlss function</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

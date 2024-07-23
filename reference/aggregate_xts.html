@@ -46,7 +46,7 @@ values have been aggregated over a moving window of a user-specified length.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">aggregate_xts</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  <span class="va">agg_period</span>,</span>
+<span>  agg_period <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  agg_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"days"</span>, <span class="st">"mins"</span>, <span class="st">"hours"</span>, <span class="st">"weeks"</span>, <span class="st">"months"</span>, <span class="st">"years"</span><span class="op">)</span>,</span>
 <span>  agg_fun <span class="op">=</span> <span class="st">"sum"</span>,</span>
 <span>  timescale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"days"</span>, <span class="st">"mins"</span>, <span class="st">"hours"</span>, <span class="st">"weeks"</span>, <span class="st">"months"</span>, <span class="st">"years"</span><span class="op">)</span>,</span>
@@ -77,12 +77,12 @@ aggregation period, default is <code>'sum'</code>.</p></dd>
 
 
 <dt id="arg-timescale">timescale<a class="anchor" aria-label="anchor" href="#arg-timescale"></a></dt>
-<dd><p>timescale of the data; <code>'mins'</code>, <code>'hours'</code>, <code>'days'</code>, <code>'weeks'</code>, <code>'months'</code>, <code>'years'</code>.</p></dd>
+<dd><p>timescale of the data; one of <code>'mins'</code>, <code>'hours'</code>, <code>'days'</code>, <code>'weeks'</code>, <code>'months'</code>, <code>'years'</code>.</p></dd>
 
 
 <dt id="arg-na-thres">na_thres<a class="anchor" aria-label="anchor" href="#arg-na-thres"></a></dt>
 <dd><p>threshold for the percentage of NA values allowed in the
-aggregation period; default is 10.</p></dd>
+aggregation period; default is 10%.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -93,24 +93,34 @@ aggregation period; default is 10.</p></dd>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This has been adapted from code available at
 <a href="https://github.com/WillemMaetens/standaRdized" class="external-link">https://github.com/WillemMaetens/standaRdized</a>.</p>
+<p>Given a vector \(x_{1}, x_{2}, \dots\), the function <code>aggregate_xts</code> calculates
+aggregated values \(\tilde{x}_{1}, \tilde{x}_{2}, \dots\) as
+$$\tilde{x}_{t} = f(x_{t}, x_{t-1}, \dots, x_{t - k + 1}),$$
+for each time point \(t = k, k + 1, \dots\), where \(k\) (<code>agg_period</code>) is the number
+of time units (<code>agg_scale</code>) over which to aggregate the time series (<code>x</code>),
+and \(f\) (<code>agg_fun</code>) is the function used to perform the aggregation.
+The first \(k - 1\) values of the aggregated time series are returned as <code>NA</code>.</p>
+<p>By default, <code>agg_fun = "sum"</code>, meaning the aggregation results in accumulations over the
+aggregation period:
+$$\tilde{x}_{t} = \sum_{k=1}^{K} x_{t - k + 1}.$$
+Alternative functions can also be used. For example, specifying
+<code>agg_fun = "mean"</code> returns the mean over the aggregation period,
+$$\tilde{x}_{t} = \frac{1}{K} \sum_{k=1}^{K} x_{t - k + 1},$$
+while <code>agg_fun = "max"</code> returns the maximum over the aggregation period,
+$$\tilde{x}_{t} = \text{max}(\{x_{t}, x_{t-1}, \dots, x_{t - k + 1}\}).$$</p>
 <p><code>agg_period</code> is a single numeric value specifying over how many time units the
 data <code>x</code> is to be aggregated. By default, <code>agg_period</code> is assumed to correspond
 to a number of days, but this can also be specified manually using the argument
-<code>agg_scale</code>.</p>
-<p><code>agg_fun</code> determines the function used to aggregate the time series. By default,
-<code>agg_fun = "sum"</code>, meaning the aggregation results in accumulations over the
-aggregation period. Alternative functions can also be used. For example, specifying
-<code>agg_fun = "mean"</code> would return the mean over the aggregation period.</p>
-<p><code>timescale</code> is the timescale of the input data <code>x</code>. By default, this
-is assumed to be "days".</p>
+<code>agg_scale</code>. <code>timescale</code> is the timescale of the input data <code>x</code>.
+By default, this is also assumed to be "days".</p>
 <p>Since the time series <code>x</code> aggregates data over the aggregation period, problems
 may arise when <code>x</code> contains missing values. For example, if interest is
 on daily accumulations, but 50% of the values in the aggregation period are missing,
 the accumulation over this aggregation period will not be accurate.
 This can be controlled using the argument <code>na_thres</code>.
-<code>na_thres</code> specifies the percentage of NA values in the aggregation period
-before a NA value is returned. i.e. the proportion of values that are allowed to be missing.
-The default is <code>na_thres = 10</code>.</p>
+<code>na_thres</code> specifies the percentage of <code>NA</code> values in the aggregation period
+before a <code>NA</code> value is returned. i.e. the proportion of values that are allowed
+to be missing. The default is <code>na_thres = 10</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -122,22 +132,23 @@ The default is <code>na_thres = 10</code>.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">data_supply</span>, package <span class="op">=</span> <span class="st">"SEI"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># consider hourly German energy production data in 2019</span></span></span>
 <span class="r-in"><span><span class="va">supply_de</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">data_supply</span>, <span class="va">country</span> <span class="op">==</span> <span class="st">"Germany"</span>, select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"date"</span>, <span class="st">"PWS"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">supply_de</span> <span class="op">&lt;-</span> <span class="fu">xts</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/xts/man/xts.html" class="external-link">xts</a></span><span class="op">(</span><span class="va">supply_de</span><span class="op">$</span><span class="va">PWS</span>, order.by <span class="op">=</span> <span class="va">supply_de</span><span class="op">$</span><span class="va">date</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># daily accumulations</span></span></span>
-<span class="r-in"><span><span class="va">supply_de_daily</span> <span class="op">&lt;-</span> <span class="fu">aggregate_xts</span><span class="op">(</span><span class="va">supply_de</span>, agg_period <span class="op">=</span> <span class="fl">1</span>, timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">supply_de_daily</span> <span class="op">&lt;-</span> <span class="fu">aggregate_xts</span><span class="op">(</span><span class="va">supply_de</span>, timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># weekly means</span></span></span>
-<span class="r-in"><span><span class="va">supply_de_weekly</span> <span class="op">&lt;-</span> <span class="fu">aggregate_xts</span><span class="op">(</span><span class="va">supply_de</span>, agg_period <span class="op">=</span> <span class="fl">1</span>, agg_scale <span class="op">=</span> <span class="st">"weeks"</span>,</span></span>
+<span class="r-in"><span><span class="va">supply_de_weekly</span> <span class="op">&lt;-</span> <span class="fu">aggregate_xts</span><span class="op">(</span><span class="va">supply_de</span>, agg_scale <span class="op">=</span> <span class="st">"weeks"</span>,</span></span>
 <span class="r-in"><span>                                  agg_fun <span class="op">=</span> <span class="st">"mean"</span>, timescale <span class="op">=</span> <span class="st">"hours"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">supply_de</span>, main <span class="op">=</span> <span class="st">"Hourly energy production in Germany"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">supply_de</span>, main <span class="op">=</span> <span class="st">"Hourly energy production"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="aggregate_xts-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">supply_de_daily</span>, main <span class="op">=</span> <span class="st">"Daily accumulated energy production in Germany"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">supply_de_daily</span>, main <span class="op">=</span> <span class="st">"Daily accumulated energy production"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="aggregate_xts-2.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">supply_de_weekly</span>, main <span class="op">=</span> <span class="st">"Weekly averaged energy production in Germany"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">supply_de_weekly</span>, main <span class="op">=</span> <span class="st">"Weekly averaged energy production"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="aggregate_xts-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
