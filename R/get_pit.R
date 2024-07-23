@@ -221,11 +221,16 @@ get_pit <- function(x_ref,
                     n_thres = 10,
                     ...) {
 
+  # format x_ref and x_new
   x_ref <- as.vector(x_ref)
   x_new <- as.vector(x_new)
-  pit_na <- rep(NA, length(x_new))
+
+  # check inputs
+  inputs <- as.list(environment())
+  check_getpit(inputs)
 
   # remove na's
+  pit_na <- rep(NA, length(x_new))
   x_ref <- na.omit(x_ref)
   na_ind <- is.na(x_new)
   x_new <- na.omit(x_new)
@@ -235,11 +240,17 @@ get_pit <- function(x_ref,
   ref_cind <- (x_ref <= lower) | (x_ref >= upper)
   new_cind <- (x_new <= lower) | (x_new >= upper)
 
-  if (!is.null(preds_ref)) preds_ref <- preds_ref[!ref_cind, , drop = FALSE]
-  if (!is.null(preds_new)) preds_new <- preds_new[!new_cind, , drop = FALSE]
+  # format preds_ref and preds_new
+  if (!is.null(preds_ref)) {
+    if (is.matrix(preds_ref) | is.vector(preds_ref)) preds_ref <- as.data.frame(preds_ref)
+    preds_ref <- preds_ref[!ref_cind, , drop = FALSE]
+  }
+  if (!is.null(preds_new)) {
+    if (is.matrix(preds_new) | is.vector(preds_new)) preds_new <- as.data.frame(preds_new)
+    preds_new <- preds_new[!new_cind, , drop = FALSE]
+  }
 
   # fit distribution to uncensored data
-
   fit <- fit_dist(x_ref[!ref_cind], dist, method = method, preds = preds_ref, n_thres = n_thres, ...)
 
   # get pit values
@@ -275,13 +286,8 @@ pit_cens <- function(pit, x_ref, x_new, lower, upper, cens) {
   pit[!cen_ind] <- p_l + (1 - p_l - p_u)*pit[!cen_ind]
 
   if (lower != -Inf && upper != Inf) {
-    if (is.numeric(cens)) {
-      x_l <- cens[1]
-      x_u <- cens[2]
-    } else {
-      stop("if the distribution is censored above and below, 'cens' must be a
-              numeric vector containing the two censoring points")
-    }
+    x_l <- cens[1]
+    x_u <- cens[2]
   } else {
     if (is.null(cens)) {
       x_l <- p_l
@@ -298,5 +304,98 @@ pit_cens <- function(pit, x_ref, x_new, lower, upper, cens) {
   pit[upp_ind] <- x_u
 
   return(pit)
+}
+
+
+# check the inputs of get_pit
+check_getpit <- function(inputs) {
+
+  # x_ref
+  if (!is.vector(inputs$x_ref)) {
+    stop("'x_ref' must be a numeric vector")
+  }
+
+  # x_new
+  if (!is.vector(inputs$x_new)) {
+    stop("'x_new' must be a numeric vector")
+  }
+
+  # return_fit
+  if (!is.logical(inputs$return_fit) | length(inputs$return_fit) > 1) {
+    stop("'return_fit' must either be TRUE or FALSE")
+  }
+
+  # lower
+  if (!is.numeric(inputs$lower) | length(inputs$lower) > 1) {
+    stop("'lower' must be a single numeric value")
+  }
+
+  # upper
+  if (!is.numeric(inputs$upper) | length(inputs$upper) > 1) {
+    stop("'upper' must be a single numeric value")
+  }
+
+  if (inputs$lower >= inputs$upper) {
+    stop("'lower' must be smaller than 'upper'")
+  }
+
+  # preds_ref
+  if (!is.null(inputs$preds_ref)) {
+    if (!is.data.frame(inputs$preds_ref) & !is.vector(inputs$preds_ref) & !is.matrix(inputs$preds_ref)) {
+      stop("'preds_ref' must be a data frame, vector, or matrix")
+    } else {
+      if (is.matrix(inputs$preds_ref) | is.vector(inputs$preds_ref)) {
+        inputs$preds_ref <- as.data.frame(inputs$preds_ref)
+      }
+      if (nrow(inputs$preds_ref) != length(inputs$x_ref)) {
+        stop ("'preds_ref' must have the same number of rows as the length of 'x_ref'")
+      }
+    }
+    if (is.null(inputs$preds_new)) {
+      stop("both 'preds_new' and 'preds_ref' must be specified")
+    }
+  }
+
+  # preds_new
+  if (!is.null(inputs$preds_new)) {
+    if (!is.data.frame(inputs$preds_new) & !is.vector(inputs$preds_new) & !is.matrix(inputs$preds_new)) {
+      stop("'preds_new' must be a data frame, vector, or matrix")
+    } else {
+      if (is.matrix(inputs$preds_new) | is.vector(inputs$preds_new)) {
+        inputs$preds_new <- as.data.frame(inputs$preds_new)
+      }
+      if (nrow(inputs$preds_new) != length(inputs$x_new)) {
+        stop ("'preds_new' must have the same number of rows as the length of 'x_new'")
+      }
+    }
+    if (is.null(inputs$preds_ref)) {
+      stop("both 'preds_new' and 'preds_ref' must be specified")
+    }
+    if (ncol(inputs$preds_ref) != ncol(inputs$preds_new)) {
+      stop("'preds_new' and 'preds_ref' must have the same number of columns")
+    }
+  }
+
+  # censoring
+  if (!is.null(inputs$cens)) {
+    if (inputs$lower != -Inf && inputs$upper != Inf) {
+      if (!is.numeric(inputs$cens) | length(inputs$cens) != 2) {
+        stop("when the data is bounded both below and above, 'cens' must be a
+             numeric vector of length 2, specifying the censoring points for the
+             lower and upper boundary points")
+      }
+    } else {
+      if (is.numeric(inputs$cens)){
+        if (length(inputs$cens) > 1) {
+          stop("'cens' must be either 'prob', 'normal', or a
+             single numeric value specifying the censoring point")
+        }
+      } else if (!(inputs$cens %in% c("prob", "normal"))) {
+          stop("'cens' must be either 'prob', 'normal', or a
+               single numeric value specifying the censoring point")
+      }
+    }
+  }
+
 }
 

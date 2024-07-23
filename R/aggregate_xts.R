@@ -92,6 +92,11 @@ aggregate_xts <- function(x,
                           agg_fun = 'sum',
                           timescale = c('days', 'mins', 'hours', 'weeks', 'months', 'years'),
                           na_thres = 10) {
+
+  # check inputs
+  inputs <- as.list(environment())
+  check_aggregate(inputs)
+
   agg_scale <- match.arg(agg_scale)
   timescale <- match.arg(timescale)
   x_agg <- sapply(zoo::index(x), aggregate_xts_1, x, agg_period, agg_scale, agg_fun, timescale, na_thres)
@@ -131,4 +136,34 @@ aggregate_xts_1 <- function(date,
     return(as.numeric(NA))
   }
 }
+
+
+check_aggregate <- function(inputs) {
+
+  # x
+  if (!xts::is.xts(inputs$x)) {
+    stop("'x' must be an xts object")
+  }
+
+  # agg_period
+  if (!is.numeric(inputs$agg_period)) {
+    stop("'agg_period' must be a single numeric value")
+  }
+  if (!identical(length(inputs$agg_period), 1L)) {
+    stop("'agg_period' must be a single numeric value")
+  }
+  if (inputs$agg_period > length(inputs$x)) {
+    stop("'agg_period' exceeds length of data set")
+  }
+
+  # na_thres
+  if (!is.numeric(inputs$na_thres)) {
+    stop("'na_thres' must be a single numeric value")
+  }
+  if (!identical(length(inputs$na_thres), 1L)) {
+    stop("'na_thres' must be a single numeric value")
+  }
+
+}
+
 

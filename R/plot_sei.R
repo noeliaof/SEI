@@ -60,7 +60,8 @@ NULL
 
 #' @rdname plot_sei
 #' @export
-plot_sei <- function(x, type = c("ts", "hist", "bar"), title = NULL, lab = "Std. Index", xlims = NULL, ylims = NULL, n_bins = 30){
+plot_sei <- function(x, type = c("ts", "hist", "bar"), title = NULL, lab = "Std. Index",
+                     xlims = NULL, ylims = NULL, n_bins = 30){
 
   type <- match.arg(type)
 

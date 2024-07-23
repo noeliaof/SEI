@@ -117,8 +117,8 @@
 #' is returned in this case.
 #' Since the distribution of the values in \code{x_ref} could change for different groupings,
 #' the argument \code{dist} can be a vector of strings of the same length as the number of
-#' unique values in \code{unique(gr_new)}. In this case, the first element of \code{dist}
-#' should correspond to the first element in \code{unique(gr_new)} and so on.
+#' factor levels in \code{gr_new}. In this case, the first element of \code{dist}
+#' should correspond to the first element of \code{levels(gr_new)} and so on.
 #' If \code{dist} is a single string, then the same distribution is used for each grouping.
 #'
 #'
@@ -203,7 +203,7 @@
 #'
 #' # calculate separate indices for each quarter of 2019
 #' season <- ceiling(lubridate::month(zoo::index(supply_de)) / 3)
-#' season <- c("Q1", "Q2", "Q3", "Q4")[season]
+#' season <- factor(c("Q1", "Q2", "Q3", "Q4")[season])
 #' supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
 #'                            gr_new = season, dist = "kde", return_fit = TRUE)
 #'
@@ -265,7 +265,7 @@ std_index <- function(x_new,
 
   # group data
   if (!is.null(gr_new)) {
-    grs <- unique(gr_new)
+    grs <- levels(gr_new)
     if (length(dist) == 1) dist <- rep(dist, length(grs))
     gr_out <- lapply(seq_along(grs), function(i) {
       ind <- gr_new == grs[i]
@@ -280,7 +280,7 @@ std_index <- function(x_new,
       fit <- lapply(seq_along(gr_out), function(i) gr_out[[i]]$fit)
       si <- lapply(seq_along(gr_out), function(i) gr_out[[i]]$si)
       si <- do.call(rbind, si)
-      names(params) <- names(fit) <- unique(gr_new)
+      names(params) <- names(fit) <- grs
       return(list(params = params, fit = fit, si = si))
     } else {
       si <- do.call(rbind, gr_out)
@@ -441,14 +441,6 @@ check_inputs <- function(inputs) {
     x_new and x_ref are not xts objects")
   }
 
-  # dist
-  available_dists <- c("empirical", "kde", "norm", "lnorm",
-                       "logis", "llogis", "exp", "gamma", "weibull")
-  if (!(inputs$dist %in% available_dists)) {
-    stop("the specified distribution is not available - see details for a list of
-         available distributions")
-  }
-
   # moving_window
   if (!is.null(inputs$moving_window)) {
     if (!is.numeric(inputs$moving_window)) {
@@ -469,37 +461,10 @@ check_inputs <- function(inputs) {
     }
   }
 
-  # agg_period
-  if (!is.null(inputs$agg_period)) {
-    if (!is.numeric(inputs$agg_period)) {
-      stop("agg_period must be a single numeric value")
-    }
-    if (!identical(length(inputs$agg_period), 1L)) {
-      stop("agg_period must be a single numeric value")
-    }
-    if (inputs$agg_period > length(inputs$x_new) | inputs$agg_period > length(inputs$x_ref)) {
-      stop("agg_period exceeds length of data set")
-    }
-  }
-
-  # agg_scale
-  if (!is.null(inputs$agg_scale)) {
-    if (!(inputs$agg_scale %in% c("days", "weeks", "months", "quarters", "years"))) {
-      stop("agg_scale must be one of 'days', 'weeks', 'months', 'quarters', or 'years'")
-    }
-  }
-
-  # agg_fun
-  if (!is.null(inputs$agg_fun)) {
-    if (!(inputs$agg_fun %in% c("sum", "mean", "min", "max"))) {
-      stop("agg_fun must be one of 'sum', 'mean', 'min', or 'max'")
-    }
-  }
-
   # timescale
   if (!is.null(inputs$timescale)) {
-    if (!(inputs$timescale %in% c("hours", "days", "weeks", "months", "quarters", "years"))) {
-      stop("timescale must be one of 'hours', 'days', 'weeks', 'months', 'quarters', or 'years'")
+    if (!(inputs$timescale %in% c("mins", "hours", "days", "weeks", "months", "quarters", "years"))) {
+      stop("timescale must be one of 'mins', 'hours', 'days', 'weeks', 'months', 'quarters', or 'years'")
     }
   }
 
@@ -510,17 +475,38 @@ check_inputs <- function(inputs) {
     }
   }
 
-  # rescale_fun
-  if (!is.null(inputs$rescale_fun)) {
-    if (!(inputs$rescale_fun %in% c("sum", "mean", "min", "max"))) {
-      stop("rescale_fun must be one of 'sum', 'mean', 'min', or 'max'")
-    }
-  }
-
   # index_type
   if (!(inputs$index_type %in% c("normal", "prob01", "prob11"))) {
     stop("index_type must be one of 'normal', 'prob01', or 'prob11'")
   }
 
+  # gr_new
+  if (!is.null(inputs$gr_new)) {
+    if (!is.factor(inputs$gr_new)) {
+      stop("'gr_new' must be a factor vector")
+    }
+    if (length(inputs$gr_new) != length(inputs$x_new)) {
+      stop("'gr_new' must have the same length as 'x_new'")
+    }
+    if (is.null(inputs$gr_ref)) {
+      stop("all factor levels in 'gr_new' must also be present in 'gr_ref'")
+    }
+    if (any(!(levels(inputs$gr_new) %in% levels(inputs$gr_ref)))) {
+      stop("all factor levels in 'gr_new' must also be present in 'gr_ref'")
+    }
+    if (length(inputs$dist) != 1 & length(inputs$dist) != length(levels(inputs$gr_new))) {
+      stop("the length of 'dist' must either be 1 or the length of 'levels(gr_new)'")
+    }
+  }
+
+  # gr_ref
+  if (!is.null(inputs$gr_ref)) {
+    if (!is.factor(inputs$gr_ref)) {
+      stop("'gr_ref' must be a factor vector")
+    }
+    if (length(inputs$gr_ref) != length(inputs$x_ref)) {
+      stop("'gr_ref' must have the same length as 'x_ref'")
+    }
+  }
 
 }

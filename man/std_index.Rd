@@ -203,8 +203,8 @@ there would be no data from which to estimate the distribution for this group. A
 is returned in this case.
 Since the distribution of the values in \code{x_ref} could change for different groupings,
 the argument \code{dist} can be a vector of strings of the same length as the number of
-unique values in \code{unique(gr_new)}. In this case, the first element of \code{dist}
-should correspond to the first element in \code{unique(gr_new)} and so on.
+factor levels in \code{gr_new}. In this case, the first element of \code{dist}
+should correspond to the first element of \code{levels(gr_new)} and so on.
 If \code{dist} is a single string, then the same distribution is used for each grouping.
 }
 \examples{
@@ -259,7 +259,7 @@ supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "weeks", di
 
 # calculate separate indices for each quarter of 2019
 season <- ceiling(lubridate::month(zoo::index(supply_de)) / 3)
-season <- c("Q1", "Q2", "Q3", "Q4")[season]
+season <- factor(c("Q1", "Q2", "Q3", "Q4")[season])
 supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
                            gr_new = season, dist = "kde", return_fit = TRUE)
 

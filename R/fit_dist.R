@@ -212,6 +212,12 @@ fit_dist <- function(data, dist, method = "mle", preds = NULL, n_thres = 10, ...
   inputs <- as.list(environment())
   check_distribution(inputs)
 
+  # format preds_ref and preds_new
+  if (!is.null(preds)) {
+    if (is.matrix(preds) || is.vector(preds)) preds <- as.data.frame(preds)
+  }
+
+
   # initialise data properties and goodness-of-fit statistics
   fit_props <- rep(NA, 5)
   names(fit_props) <- c("n_obs", "n_na", "pct_na", "aic", "ks_pval")
@@ -364,29 +370,46 @@ check_distribution <- function(inputs) {
 
   data <- inputs$data[!is.na(inputs$data)]
 
+  # dist
   if (!(inputs$dist %in% c("empirical", "kde", "norm", "lnorm",
                     "logis", "llogis", "exp", "gamma", "weibull"))) {
     stop("dist must be one of 'empirical', 'kde', 'norm', 'lnorm',
          'logis', 'llogis', 'exp', 'gamma', 'weibull'")
-  }
-
-  if (!(inputs$method %in% c("mle", "mme", "qme", "mge", "mse", "lmme"))) {
-    stop("method must be one of 'mle', 'mme', 'qme', 'mge', 'mse', 'lmme'")
-  }
-
-  if (inputs$dist == "empirical") {
+  } else if (inputs$dist == "empirical") {
     if (length(data) < 100) {
       warning("using the empirical distribution is only recommended when at least
               100 values are available when fitting the distribution")
     }
-  }
-
-  if (inputs$dist %in% c("lnorm", "llogis", "exp", "gamma", "weibull")) {
+  } else if (inputs$dist %in% c("lnorm", "llogis", "exp", "gamma", "weibull")) {
     if (any(data < 0)) {
       stop(paste("the", inputs$dist, "distribution has positive support, but the data contains negative values"))
     } else if (any(data == 0)) {
       stop(paste("the", inputs$dist, "distribution has positive support, but the data contains values equal to zero"))
     }
+  }
+
+  # method
+  if (!(inputs$method %in% c("mle", "mme", "qme", "mge", "mse", "lmme"))) {
+    stop("method must be one of 'mle', 'mme', 'qme', 'mge', 'mse', 'lmme'")
+  }
+
+  # preds
+  if (!is.null(inputs$preds)) {
+    if (!is.data.frame(inputs$preds) & !is.vector(inputs$preds) & !is.matrix(inputs$preds)) {
+      stop("'preds' must be a data frame, vector, or matrix")
+    } else {
+      if (is.matrix(inputs$preds) | is.vector(inputs$preds)) {
+        inputs$preds <- as.data.frame(inputs$preds)
+      }
+      if (nrow(inputs$preds) != length(inputs$data)) {
+        stop ("'preds' must have the same number of rows as the length of 'data'")
+      }
+    }
+  }
+
+  # n_thres
+  if (!is.numeric(inputs$n_thres) | length(inputs$n_thres) > 1) {
+    stop("'n_thres' must be a single numeric value")
   }
 
 }

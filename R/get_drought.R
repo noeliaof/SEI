@@ -121,6 +121,10 @@ NULL
 get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96),
                         exceed = TRUE, cluster = 0, lag = NULL){
 
+  # check inputs
+  inputs <- as.list(environment())
+  check_drought(inputs)
+
   if (xts::is.xts(x)) {
     x <- unname(x)
     df <- zoo::fortify.zoo(x)
@@ -183,3 +187,55 @@ get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96),
   return(df)
 }
 
+
+# check the inputs of get_drought
+check_drought <- function(inputs) {
+
+  # x
+  if (!is.vector(inputs$x)) {
+    if (!is.numeric(inputs$x)) {
+      stop("'x' must be a numeric vector or xts object")
+    }
+  } else if (!xts::is.xts(inputs$x)) {
+    stop("'x' must be a numeric vector or xts object")
+  }
+
+  # thresholds
+  if (!is.vector(inputs$thresholds)) {
+    if (!is.numeric(inputs$thresholds)) {
+      stop("'thresholds' must be a numeric vector")
+    }
+  }
+
+  # exceed
+  if (!is.logical(inputs$exceed) | length(inputs$exceed) > 1) {
+    stop("'exceed' must either be TRUE or FALSE")
+  }
+
+  # cluster
+  if (!is.numeric(inputs$cluster)) {
+    stop("'cluster' must be a single integer")
+  }
+  if (length(inputs$cluster) > 1) {
+    stop("'cluster' must be a single integer")
+  }
+  if (inputs$cluster %% 1 != 0) {
+    stop("'cluster' must be a single integer")
+  }
+
+  # lag
+  if (!is.null(inputs$lag)) {
+    if (!is.numeric(inputs$lag)) {
+      stop("'lag' must be a single numeric value")
+    }
+    if (length(inputs$lag) > 1) {
+      stop("'lag' must be a single numeric value")
+    }
+    if (inputs$exceed & inputs$lag > min(inputs$thresholds)) {
+        warning("'lag' is larger than the lowest value in 'thresholds'")
+    } else if (!(inputs$exceed) & inputs$lag < max(inputs$thresholds)) {
+      warning("'lag' is smaller than the largest value in 'thresholds'")
+    }
+  }
+
+}
