@@ -1,7 +1,6 @@
 #' @title Plot standardised indices
 #'
-#' @description Plot a time series containing standardised indices, or a histogram
-#' of the indices.
+#' @description Plot a time series or histogram of standardised indices.
 #'
 #' @param x vector or xts object containing the indices to be plotted.
 #' @param type type of plot (either time series "ts", histogram "hist", or barplot "bar").
@@ -42,6 +41,18 @@
 #'
 #' plot_sei(supply_de, type = "hist", title = "German renewable energy production in 2019")
 #' plot_sei(supply_de_std, type = "hist", title = "German SREPI in 2019")
+#'
+#' # type = "hist" and type = "bar both output a histogram of the index values
+#' # type = "hist" can be useful to superimpose densities on top of the histogram
+#' z <- seq(-3.5, 3.5, length.out = length(supply_de_std))
+#' plot_sei(supply_de_std, type = "hist", title = "German SREPI in 2019") +
+#'  ggplot2::geom_line(ggplot2::aes(x = z, y = dnorm(z)), col = "blue")
+#'
+#' # type = "bar" can be useful when the index values are bounded
+#' supply_de_std <- std_index(supply_de, timescale = "hours", index_type = "prob11")
+#' plot_sei(supply_de_std, type = "hist", xlims = c(-1, 1), title = 'type = "hist"')
+#' plot_sei(supply_de_std, type = "bar", xlims = c(-1, 1), title = 'type = "bar"')
+#'
 #'
 #' @name plot_sei
 #' @importFrom stats density

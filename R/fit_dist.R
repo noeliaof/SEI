@@ -7,13 +7,13 @@
 #' @param dist character string specifying the distribution to be fit to the data;
 #'  one of `'empirical'`, `'kde'`, `'norm'`, `'lnorm'`, `'logis'`, `'llogis'`,
 #'  `'exp'`, `'gamma'`, and `'weibull'`.
-#' @param preds data frame of predictor variables if a non-stationary distribution is
-#'  to be estimated.
-#' @inheritParams fitdistrplus::fitdist
+#' @param preds data frame of predictor variables on which the estimated distribution
+#'  should depend.
 #' @param n_thres minimum number of data points required to estimate the distribution;
-#'  default is 20.
-#' @param ... additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}}
-#'
+#'  default is 10.
+#' @param ... additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}} or
+#'  \code{\link[gamlss]{gamlss}}
+#' @inheritParams fitdistrplus::fitdist
 #'
 #' @details
 #' This has been adapted from code available at
@@ -22,37 +22,82 @@
 #' \code{data} is a numeric vector of data from which the distribution is to be estimated.
 #'
 #' \code{dist} is the specified distribution to be fit to \code{data}. This must be one of
-#' 'empirical', 'kde', 'norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
-#' 'empirical' returns the empirical distribution function of \code{data}, 'kde' applies
-#' (normal) kernel density estimation to \code{data}, while 'norm', 'lnorm', 'logis',
-#' 'llogis', 'exp', 'gamma', and 'weibull' correspond to the normal, log-normal, logistic,
-#' log-logistic, exponential, gamma, and Weibull distributions, respectively.
+#' \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
+#' \code{'exp'}, \code{'gamma'}, and \code{'weibull'}. These correspond to the following
+#' distributions: \code{'empirical'} returns the empirical distribution function of \code{data},
+#' \code{'kde'} applies (normal) kernel density estimation to \code{data}, while \code{'norm'},
+#' \code{'lnorm'}, \code{'logis'}, \code{'llogis'}, \code{'exp'}, \code{'gamma'}, and
+#' \code{'weibull'} correspond to the normal, log-normal, logistic, log-logistic, exponential,
+#' gamma, and Weibull distributions, respectively.
 #'
 #' By default, \code{dist = 'empirical'}, in which case the distribution is estimated
 #' empirically from \code{data}. This is only recommended if there are at least 100 values
-#' in \code{data}, and a warning message is returned otherwise.
+#' in \code{data}, and a warning message is returned otherwise. Parametric distributions
+#' are more appropriate when there is relatively little data,
+#' or good reason to expect that the data follows a particular distribution.
+#' Kernel density estimation \code{dist = 'kde'} provides a flexible compromise between
+#' using empirical methods and parametric distributions.
 #'
 #' \code{n_thres} is the minimum number of observations required to fit the distribution.
-#' The default is \code{n_thres = 20}. If the number of values in \code{data} is
+#' The default is \code{n_thres = 10}. If the number of values in \code{data} is
 #' smaller than \code{na_thres}, an error is returned. This guards against over-fitting,
 #' which can result in distributions that do not generalise well out-of-sample.
 #'
-#' \code{method} determines the method used to estimate the distribution parameters.
+#' \code{method} specifies the method used to estimate the distribution parameters.
 #' This argument is redundant if \code{dist = 'empirical'} or \code{dist = 'kde'}.
-#' Otherwise, \code{fit_dist} essentially provides a wrapper for \code{\link[fitdistrplus]{fitdist}},
-#' and further details can be found in the corresponding documentation. Additional arguments
-#' to \code{\link[fitdistrplus]{fitdist}} can also be specified via \code{...}.
-#' Where relevant, the default is to estimate parameters using maximum likelihood estimation.
-#' Parameter estimation is also possible using L-moment matching (\code{method = 'lmme'}),
-#' for all distribution choices except the log-logistic distribution.
+#' Otherwise, \code{fit_dist} essentially provides a wrapper for
+#' \code{\link[fitdistrplus]{fitdist}}, and further details can be found in the corresponding
+#' documentation. Additional arguments to \code{\link[fitdistrplus]{fitdist}}
+#' can also be specified via \code{...}.
+#' Where relevant, the default is to estimate parameters using maximum likelihood estimation,
+#' \code{method = "mle"}, though several alternative methods are also available; see
+#' \code{\link[fitdistrplus]{fitdist}}. Parameter estimation is also possible using L-moment
+#' matching (\code{method = 'lmme'}), for all distribution choices except the log-logistic
+#' distribution. In this case, \code{fit_dist} is essentially a wrapper for the \code{\link{lmom}}
+#' package.
+#'
+#' The distribution can also be non-stationary, by depending on some predictor variables or covariates.
+#' These predictors can be included via the argument \code{preds}, which should be a data frame
+#' with a separate column for each predictor, and with a number of rows equal to the length of
+#'  \code{data}. In this case, a Generalized Additive Model for
+#' Location, Scale, and Shape (GAMLSS) is fit to \code{data} using the predictors in \code{preds}.
+#' It is assumed that the mean of the distribution depends linearly on all of the predictors.
+#' Variable arguments in \code{...} can also be used to specify relationships between the
+#' scale and shape parameters of the distribution and the predictors; see examples below.
+#' In this case, \code{fit_dist} is essentially a wrapper for \code{\link[gamlss]{gamlss}},
+#' and users are referred to the corresponding documentation for further implementation details.
 #'
 #'
 #' @return
-#' A list containing the estimated distribution function, its parameters,
-#' and Kolmogorov-Smirnov goodness-of-fit statistics.
+#' A list containing the estimated distribution function (\code{F_x}), its parameters
+#' (\code{params}), and properties of the fit such as the AIC and
+#' Kolmogorov-Smirnov goodness-of-fit statistic (\code{fit}). If the estimated distribution
+#' function depends on covariates, then the \code{gamlss} model fit is returned as the
+#' parameters.
 #'
 #'
-#' @seealso \code{\link[fitdistrplus]{fitdist}} \code{\link{gamlss}}
+#' @references
+#'
+#' Rigby, R. A., & Stasinopoulos, D. M. (2005):
+#' `Generalized additive models for location, scale and shape',
+#' \emph{Journal of the Royal Statistical Society Series C: Applied Statistics} 54, 507-554.
+#' \url{https://doi.org/10.1111/j.1467-9876.2005.00510.x}
+#'
+#' Delignette-Muller, M. L., & Dutang, C. (2015):
+#' `fitdistrplus: An R package for fitting distributions',
+#' \emph{Journal of Statistical Software} 64, 1-34.
+#' \url{https://doi.org/10.18637/jss.v064.i04}
+#'
+#' Allen, S. & N. Otero (2023):
+#' `Standardised indices to monitor energy droughts',
+#' \emph{Renewable Energy} 217, 119206.
+#' \url{https://doi.org/10.1016/j.renene.2023.119206}
+#'
+#'
+#' @author Sam Allen, Noelia Otero
+#'
+#'
+#' @seealso \code{\link[fitdistrplus]{fitdist}} \code{\link{gamlss}} \code{\link{lmom}}
 #'
 #'
 #' @examples
@@ -118,20 +163,28 @@
 #' ##### non-stationary estimation using gamlss
 #'
 #' ## normal distribution
-#' data <- rnorm(N, x[1:N] + shape, exp(x/10))
+#' x <- seq(-10, 20, length.out = N)
+#' data <- rnorm(N, x + shape, exp(x/10))
 #' plot(data)
-#' preds <- data.frame(t = x[1:N])
+#' preds <- data.frame(t = x)
 #'
 #' out_st <- fit_dist(data, dist = "norm")
 #' out_nst <- fit_dist(data, dist = "norm", preds = preds)
 #' out_nst2 <- fit_dist(data, dist = "norm", preds = preds, sigma.formula = ~ .)
 #'
-#' pit_st <- out_st$F_x(data, out_st$params) # pit values without trend
-#' hist(pit_st)
-#' pit_nst <- out_nst$F_x(data, out_nst$params, preds) # pit values with trend in mean
-#' hist(pit_nst)
-#' pit_nst2 <- out_nst2$F_x(data, out_nst2$params, preds) # pit values with trend in mean and sd
-#' hist(pit_nst2)
+#' # pit values without trend
+#' pit_st <- out_st$F_x(data, out_st$params)
+#' hist(pit_st, breaks = 30, probability = TRUE, main = "No trend")
+#' abline(1, 0, col = "red", lty = "dotted")
+#' # pit values with trend in mean
+#' pit_nst <- out_nst$F_x(data, out_nst$params, preds)
+#' hist(pit_nst, breaks = 30, probability = TRUE, main = "Trend in mean")
+#' abline(1, 0, col = "red", lty = "dotted")
+#' # pit values with trend in mean and sd
+#' pit_nst2 <- out_nst2$F_x(data, out_nst2$params, preds)
+#' hist(pit_nst2, breaks = 30, probability = TRUE, main = "Trend in mean and standard deviation")
+#' abline(1, 0, col = "red", lty = "dotted")
+#'
 #'
 #' ## log normal distribution
 #' x <- seq(0.01, 10, length.out = N)
@@ -141,7 +194,8 @@
 #'
 #' out <- fit_dist(data, dist = "lnorm", preds = preds)
 #' pit <- out$F_x(data, out$params, preds)
-#' hist(pit)
+#' hist(pit, breaks = 30, probability = TRUE, main = "PIT values for non-stationary fit")
+#' abline(1, 0, col = "red", lty = "dotted")
 #'
 #'
 #' @name fit_dist
@@ -152,7 +206,7 @@ NULL
 
 #' @rdname fit_dist
 #' @export
-fit_dist <- function(data, dist, method = "mle", preds = NULL, n_thres = 20, ...) {
+fit_dist <- function(data, dist, method = "mle", preds = NULL, n_thres = 10, ...) {
 
   # check inputs
   inputs <- as.list(environment())

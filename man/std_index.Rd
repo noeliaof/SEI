@@ -9,11 +9,11 @@ std_index(
   x_ref = x_new,
   timescale = NULL,
   dist = "empirical",
+  preds_new = NULL,
+  preds_ref = preds_new,
   method = "mle",
   return_fit = FALSE,
   index_type = "normal",
-  preds_new = NULL,
-  preds_ref = preds_new,
   gr_new = NULL,
   gr_ref = gr_new,
   moving_window = NULL,
@@ -37,11 +37,17 @@ std_index(
 
 \item{x_ref}{vector or time series containing reference data to use when calculating the standardised indices.}
 
-\item{timescale}{timescale of the data; \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
+\item{timescale}{timescale of the data; one of \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{dist}{character string specifying the distribution to be fit to the data;
 one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
 \code{'exp'}, \code{'gamma'}, and \code{'weibull'}.}
+
+\item{preds_new}{data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the new observations \code{x_new}.}
+
+\item{preds_ref}{data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the reference observations \code{x_ref}.}
 
 \item{method}{A character string coding for the fitting method: 
     \code{"mle"} for 'maximum likelihood estimation', \code{"mme"} for 'moment matching estimation', 
@@ -53,12 +59,6 @@ statistics for the distribution fit.}
 
 \item{index_type}{the type of standardised index: \code{"normal"} (default), \code{"prob01"},
 or \code{"prob11"} (see details).}
-
-\item{preds_new}{data frame of predictor variables if a non-stationary distribution is
-modelled, corresponding to the new observations \code{x_new}.}
-
-\item{preds_ref}{data frame of predictor variables if a non-stationary distribution is
-to be estimated, corresponding to the reference observations \code{x_ref}.}
 
 \item{gr_new}{vector of factors for which separate distributions should be applied to \code{x_new}.}
 
@@ -84,21 +84,26 @@ one of \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, and \c
 \item{ignore_na}{logical specifying whether to ignore NAs when rescaling the time series.}
 
 \item{n_thres}{minimum number of data points required to estimate the distribution;
-default is 20.}
+default is 10.}
 
 \item{na_thres}{threshold for the percentage of NA values allowed in the
-aggregation period; default is 10.}
+aggregation period; default is 10\%.}
 
-\item{lower, upper}{numeric values specifying the lower and upper bounds at which censoring
-is to be performed.}
+\item{lower, upper}{numeric values specifying the lower and upper bounds at which the
+values in \code{x_ref} and \code{x_new} are censored.}
 
-\item{cens}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
-corresponding to common choices, or a custom numeric vector of length two.}
+\item{cens}{method used to deal with censoring of the PIT values; either a string
+(\code{'normal'} or \code{'prob'}), corresponding to common choices, or a custom numeric value.}
 
-\item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}}}
+\item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}} or
+\code{\link[gamlss]{gamlss}}}
 }
 \value{
-Time series of standardised indices.
+Time series of standardised indices. If \code{return_fit = TRUE}, then a list is returned
+that contains the time series of standardised indices, as well as information about the
+fit of the distribution to the data. If \code{gr_new} is specified, then \code{std_index}
+returns a list of time series of standardised indices, with an element corresponding to
+each factor in \code{gr_new}.
 }
 \description{
 Inputs a time series of a chosen variable (e.g. precipitation,
@@ -106,18 +111,32 @@ energy demand, residual load etc.) and returns a time series of standardised ind
 Indices can be calculated on any timescale.
 }
 \details{
+\strong{Standardised indices}
+
 Standardised indices are calculated by estimating the cumulative distribution function (CDF)
 of the variable of interest, and using this to transform the measurements to
-a standardised scale.
+a standardised scale. \code{std_index} is a wrapper for \code{\link{get_pit}} and
+\code{\link{fit_dist}} that additionally allows for aggregation, rescaling, and grouping
+of the time series. Further details can be found in the help pages of \code{\link{get_pit}}
+and \code{\link{fit_dist}}.
 
-\code{std_index()} estimates the CDF using a time series of reference data \code{x_ref},
+\code{std_index} estimates the CDF using a time series of reference data \code{x_ref},
 and applies the resulting transformation to the time series \code{x_new}. The result is
 a time series of standardised \code{x_new} values. These standardised indices quantify
 how extreme the \code{x_new} values are in reference to \code{x_ref}.
 \code{x_new} and \code{x_ref} should therefore contain values of the same variable.
-If \code{x_ref} is not specified, then \code{x_new} is also used to estimate the CDF.
+If \code{x_ref} is not specified, then it is set equal to \code{x_new}, so that the
+standardised indices are calculated in-sample.
 
-\code{x_new} and \code{x_ref} can either be provided as vectors or xts time series.
+The function returns a vector or time series (depending on the format of \code{x_new})
+containing the standardised indices corresponding to \code{x_new}. Three different
+types of indices are available, which are explained in detail in the vignette.
+The index type can be chosen using \code{index_type}, which must be one of
+\code{"normal"} (default), \code{"prob01"}, and \code{"prob11"}.
+
+\strong{Time series manipulations}
+
+\code{x_new} and \code{x_ref} can either be provided as vectors or \code{\link{xts}} time series.
 In the latter case, the time series can be aggregated across timescales or rescaled.
 This is useful, for example, if \code{x_new} contains hourly data, but interest is
 on daily accumulations or averages of the hourly data.
@@ -125,47 +144,68 @@ on daily accumulations or averages of the hourly data.
 The argument \code{rescale} converts the data to a different timescale. The original
 timescale of the data can be manually specified using the argument \code{timescale}.
 \code{timescale} is required if the time series is to be aggregated or rescaled.
-Otherwise, the function will try to automatically determine the timescale of the data.
+Otherwise, \code{std_index} will try to automatically determine the timescale of the data.
 Manually specifying the timescale of the data is generally more robust. The rescaling
-is performed using the function \code{rescale_fun}. By default, this is assumed to be
+is performed using the function \code{rescale_fun}. By default,
 \code{rescale_fun = "sum"}, so that values are added across the timescale of interest.
 This can be changed to any user-specified function.
 
 The argument \code{agg_period} aggregates the data across the timescale of interest.
+The aggregation is performed using \code{\link{aggregate_xts}}.
 This differs from \code{rescale} in that the resolution of the data remains the same.
 \code{agg_period} is a number specifying how long the data should be aggregated across.
 By default, it is assumed that \code{agg_period} is on the same timescale as \code{x_new}
 and \code{x_ref}. For example, if the data is hourly and \code{agg_period = 24}, then
 this assumes the data is to be aggregated over the past 24 hours. The scale of the
 aggregation period can also be specified manually using \code{agg_scale}. For example,
-one could also specify \code{agg_period = 1} and \code{agg_scale = "days"}, and this
+specifying \code{agg_period = 1} and \code{agg_scale = "days"}
 would also aggregate the data over the past day. \code{agg_fun} specifies how the
 data is to be aggregated, the default is \code{agg_fun = "sum"}.
 
+\strong{Distribution estimation}
+
 \code{dist} is the distribution used to estimate the CDF from \code{x_ref}.
 Currently, functionality is available to fit one of the following distributions to the data:
-Normal ('norm'), Log-normal ('lnorm'), Logistic ('logis'), Log-logistic ('llogis'),
-Exponential ('exp'), Gamma ('gamma'), and Weibull ('weibull').
+Normal (\code{"norm"}), Log-normal (\code{"lnorm"}), Logistic (\code{"logis"}),
+Log-logistic (\code{"llogis"}), Exponential (\code{"exp"}), Gamma (\code{"gamma"}),
+and Weibull (\code{"weibull"}).
 Alternatively, the CDF can be estimated empirically (\code{dist = "empirical"})
 based on the values in \code{x_ref}, or using kernel density estimation (\code{dist = "kde"}).
 
 If \code{dist} is a parametric family of distributions, then parameters of the
-distribution are estimated using maximum likelihood estimation from \code{x_ref}.
+distribution are estimated from \code{x_ref}. \code{method} specifies how the parameters
+are estimated; see \code{\link{fit_dist}} for details.
 The resulting parameters and corresponding goodness-of-fit statistics can be
 returned by specifying \code{return_fit = TRUE}.
 
 By default, the distribution is estimated over all values in \code{x_ref}. Alternatively,
-if \code{x_new} is an xts object, parameters can be estimated sequentially using a
+if \code{x_new} is an \code{\link{xts}} object, parameters can be estimated sequentially using a
 moving window of values. \code{moving_window} determines the length of the moving window.
 This is a single value, assumed to be on the same timescale as \code{x_new}.
-This can also be specified manually using \code{window_scale}. \code{window_scale}
-must also be one of "days", "weeks", "months", "quarters", and "years".
+The timsscale of the moving window can also be specified manually using \code{window_scale}.
+\code{window_scale} must also be one of \code{"days"}, \code{"weeks"}, \code{"months"},
+\code{"quarters"}, and \code{"years"}.
 
-The function returns a vector of time series (depending on the format of \code{x_new})
-containing the standardised indices corresponding to \code{x_new}. Three different
-types of indices are available, which are explained in detail in the vignette.
-The index type can be chosen using \code{index_type}, which must be one of
-"normal" (default), "prob01", and "prob11".
+The estimated distribution can also be non-stationary, by depending on some predictors
+or covariates. These predictors can be stored in data frames and input to \code{std_index}
+via the arguments \code{preds_new} and \code{preds_ref}; see \code{\link{fit_dist}} for
+details. Predictors cannot be used if the data is to be rescaled, since this would also
+require rescaling the predictors; in this case, an error is returned.
+
+\strong{Grouping}
+
+By default, one distribution is fit to all values in \code{x_ref}. Separate distributions
+can be fit to different subsets of the data by specifying \code{gr_ref} and \code{gr_new}.
+These should be factor vectors, where each factor corresponds to a different grouping or
+subset of the data.
+No factor should appear in \code{gr_new} that does not appear in \code{gr_ref}, since
+there would be no data from which to estimate the distribution for this group. An error
+is returned in this case.
+Since the distribution of the values in \code{x_ref} could change for different groupings,
+the argument \code{dist} can be a vector of strings of the same length as the number of
+unique values in \code{unique(gr_new)}. In this case, the first element of \code{dist}
+should correspond to the first element in \code{unique(gr_new)} and so on.
+If \code{dist} is a single string, then the same distribution is used for each grouping.
 }
 \examples{
 data(data_supply)
@@ -245,14 +285,22 @@ plot.ts(si_nst2)
 
 }
 \references{
-Allen, S. and N. Otero (2023):
-`Standardised indices to monitor energy droughts',
-\emph{Renewable Energy} 217, 119206
-\doi{10.1016/j.renene.2023.119206}
-
 McKee, T. B., Doesken, N. J., & Kleist, J. (1993):
 `The relationship of drought frequency and duration to time scales',
 \emph{In Proceedings of the 8th Conference on Applied Climatology} 17, 179-183.
+
+Vicente-Serrano, S. M., Beguería, S., & López-Moreno, J. I. (2010):
+`A multiscalar drought index sensitive to global warming: the standardized precipitation evapotranspiration index',
+\emph{Journal of Climate} 23, 1696-1718.
+\url{https://doi.org/10.1175/2009JCLI2909.1}
+
+Allen, S. & N. Otero (2023):
+`Standardised indices to monitor energy droughts',
+\emph{Renewable Energy} 217, 119206.
+\url{https://doi.org/10.1016/j.renene.2023.119206}
+}
+\seealso{
+\code{\link{xts}} \code{\link{aggregate_xts}} \code{\link{get_pit}} \code{\link{fit_dist}}
 }
 \author{
 Sam Allen, Noelia Otero

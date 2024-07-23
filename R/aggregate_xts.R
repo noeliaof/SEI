@@ -10,36 +10,46 @@
 #'  one of `'mins'`, `'hours'`, `'days'`, `'weeks'`, `'months'`, `'years'`.
 #' @param agg_fun string specifying the function used to aggregate the data over the
 #'  aggregation period, default is `'sum'`.
-#' @param timescale timescale of the data; `'mins'`, `'hours'`, `'days'`, `'weeks'`, `'months'`, `'years'`.
+#' @param timescale timescale of the data; one of `'mins'`, `'hours'`, `'days'`, `'weeks'`, `'months'`, `'years'`.
 #' @param na_thres threshold for the percentage of NA values allowed in the
-#'  aggregation period; default is 10.
+#'  aggregation period; default is 10%.
 #'
 #'
 #' @details
 #' This has been adapted from code available at
 #' \url{https://github.com/WillemMaetens/standaRdized}.
 #'
+#' Given a vector \eqn{x_{1}, x_{2}, \dots}, the function \code{aggregate_xts} calculates
+#' aggregated values \eqn{\tilde{x}_{1}, \tilde{x}_{2}, \dots} as
+#' \deqn{\tilde{x}_{t} = f(x_{t}, x_{t-1}, \dots, x_{t - k + 1}),}
+#' for each time point \eqn{t = k, k + 1, \dots}, where \eqn{k} (\code{agg_period}) is the number
+#' of time units (\code{agg_scale}) over which to aggregate the time series (\code{x}),
+#' and \eqn{f} (\code{agg_fun}) is the function used to perform the aggregation.
+#' The first \eqn{k - 1} values of the aggregated time series are returned as \code{NA}.
+#'
+#' By default, \code{agg_fun = "sum"}, meaning the aggregation results in accumulations over the
+#' aggregation period:
+#' \deqn{\tilde{x}_{t} = \sum_{k=1}^{K} x_{t - k + 1}.}
+#' Alternative functions can also be used. For example, specifying
+#' \code{agg_fun = "mean"} returns the mean over the aggregation period,
+#' \deqn{\tilde{x}_{t} = \frac{1}{K} \sum_{k=1}^{K} x_{t - k + 1},}
+#' while \code{agg_fun = "max"} returns the maximum over the aggregation period,
+#' \deqn{\tilde{x}_{t} = \text{max}(\{x_{t}, x_{t-1}, \dots, x_{t - k + 1}\}).}
+#'
 #' \code{agg_period} is a single numeric value specifying over how many time units the
 #' data \code{x} is to be aggregated. By default, \code{agg_period} is assumed to correspond
 #' to a number of days, but this can also be specified manually using the argument
-#' \code{agg_scale}.
-#'
-#' \code{agg_fun} determines the function used to aggregate the time series. By default,
-#' \code{agg_fun = "sum"}, meaning the aggregation results in accumulations over the
-#' aggregation period. Alternative functions can also be used. For example, specifying
-#' \code{agg_fun = "mean"} would return the mean over the aggregation period.
-#'
-#' \code{timescale} is the timescale of the input data \code{x}. By default, this
-#' is assumed to be "days".
+#' \code{agg_scale}. \code{timescale} is the timescale of the input data \code{x}.
+#' By default, this is also assumed to be "days".
 #'
 #' Since the time series \code{x} aggregates data over the aggregation period, problems
 #' may arise when \code{x} contains missing values. For example, if interest is
 #' on daily accumulations, but 50% of the values in the aggregation period are missing,
 #' the accumulation over this aggregation period will not be accurate.
 #' This can be controlled using the argument \code{na_thres}.
-#' \code{na_thres} specifies the percentage of NA values in the aggregation period
-#' before a NA value is returned. i.e. the proportion of values that are allowed to be missing.
-#' The default is \code{na_thres = 10}.
+#' \code{na_thres} specifies the percentage of \code{NA} values in the aggregation period
+#' before a \code{NA} value is returned. i.e. the proportion of values that are allowed
+#' to be missing. The default is \code{na_thres = 10}.
 #'
 #'
 #' @return
@@ -53,20 +63,21 @@
 #' \donttest{
 #'
 #' data(data_supply, package = "SEI")
+#'
 #' # consider hourly German energy production data in 2019
 #' supply_de <- subset(data_supply, country == "Germany", select = c("date", "PWS"))
 #' supply_de <- xts::xts(supply_de$PWS, order.by = supply_de$date)
 #'
 #' # daily accumulations
-#' supply_de_daily <- aggregate_xts(supply_de, agg_period = 1, timescale = "hours")
+#' supply_de_daily <- aggregate_xts(supply_de, timescale = "hours")
 #'
 #' # weekly means
-#' supply_de_weekly <- aggregate_xts(supply_de, agg_period = 1, agg_scale = "weeks",
+#' supply_de_weekly <- aggregate_xts(supply_de, agg_scale = "weeks",
 #'                                   agg_fun = "mean", timescale = "hours")
 #'
-#' plot(supply_de, main = "Hourly energy production in Germany")
-#' plot(supply_de_daily, main = "Daily accumulated energy production in Germany")
-#' plot(supply_de_weekly, main = "Weekly averaged energy production in Germany")
+#' plot(supply_de, main = "Hourly energy production")
+#' plot(supply_de_daily, main = "Daily accumulated energy production")
+#' plot(supply_de_weekly, main = "Weekly averaged energy production")
 #'
 #' }
 #'
@@ -76,7 +87,7 @@ NULL
 #' @rdname aggregate_xts
 #' @export
 aggregate_xts <- function(x,
-                          agg_period,
+                          agg_period = 1,
                           agg_scale = c('days', 'mins', 'hours', 'weeks', 'months', 'years'),
                           agg_fun = 'sum',
                           timescale = c('days', 'mins', 'hours', 'weeks', 'months', 'years'),

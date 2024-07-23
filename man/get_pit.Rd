@@ -6,16 +6,16 @@
 \usage{
 get_pit(
   x_ref,
-  x_new = NULL,
-  preds_ref = NULL,
-  preds_new = NULL,
+  x_new = x_ref,
   dist = "empirical",
+  preds_ref = NULL,
+  preds_new = preds_ref,
   method = "mle",
   return_fit = FALSE,
   lower = -Inf,
   upper = Inf,
   cens = NULL,
-  n_thres = 20,
+  n_thres = 10,
   ...
 )
 }
@@ -24,15 +24,15 @@ get_pit(
 
 \item{x_new}{numeric vector from which to calculate the PIT values.}
 
-\item{preds_ref}{data frame of predictor variables if a non-stationary distribution is
-to be estimated, corresponding to the reference observations \code{x_ref}.}
-
-\item{preds_new}{data frame of predictor variables if a non-stationary distribution is
-modelled, corresponding to the new observations \code{x_new}.}
-
 \item{dist}{character string specifying the distribution to be fit to the data;
 one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
 \code{'exp'}, \code{'gamma'}, and \code{'weibull'}.}
+
+\item{preds_ref}{data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the reference observations \code{x_ref}.}
+
+\item{preds_new}{data frame of predictor variables on which the estimated distribution
+should depend, corresponding to the new observations \code{x_new}.}
 
 \item{method}{A character string coding for the fitting method: 
     \code{"mle"} for 'maximum likelihood estimation', \code{"mme"} for 'moment matching estimation', 
@@ -42,21 +42,25 @@ one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'l
 \item{return_fit}{logical specifying whether to return parameters and goodness-of-fit
 statistics for the distribution fit.}
 
-\item{lower, upper}{numeric values specifying the lower and upper bounds at which censoring
-is to be performed.}
+\item{lower, upper}{numeric values specifying the lower and upper bounds at which the
+values in \code{x_ref} and \code{x_new} are censored.}
 
-\item{cens}{values to assign to censored values; either a string (\code{'normal'} or \code{'prob'}),
-corresponding to common choices, or a custom numeric vector of length two.}
+\item{cens}{method used to deal with censoring of the PIT values; either a string
+(\code{'normal'} or \code{'prob'}), corresponding to common choices, or a custom numeric value.}
 
 \item{n_thres}{minimum number of data points required to estimate the distribution;
-default is 20.}
+default is 10.}
 
-\item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}}}
+\item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}} or
+\code{\link[gamlss]{gamlss}}}
 }
 \value{
-A vector of PIT values if return_fit = F, or, if return_fit = T, a list containing
-the estimated CDF (\code{F_x}), the corresponding parameters (\code{params}), and
-properties of the fit (\code{fit_props}).
+A vector of PIT values if \code{return_fit = FALSE}, or, if \code{return_fit = TRUE},
+a list containing the estimated distribution function (\code{F_x}), its parameters
+(\code{params}), and properties of the fit such as the AIC and
+Kolmogorov-Smirnov goodness-of-fit statistic (\code{fit}). If the estimated distribution
+function depends on covariates, then the \code{gamlss} model fit is returned as the
+parameters.
 }
 \description{
 Function to estimate the cumulative distribution function (CDF)
@@ -64,24 +68,82 @@ from a set of observations, and return the corresponding probability integral
 transform (PIT) values.
 }
 \details{
-\code{dist} specifies the distribution used to estimate the cumulative distribution
-function of the observations. By default, \code{dist = "empirical"}, in which case
-the CDF is estimated empirically from the values \code{x_ref}. This is only
-recommended if there are at least 100 values in \code{x_ref}, and a warning
-message is returned otherwise.
+\strong{Continuous data}
 
-Parametric distributions are more appropriate when there is relatively little data,
-and good reason to expect that the data follows a particular distribution. To
-check that the chosen parametric distribution is appropriate, the argument
-\code{return_fit} can be used to return the estimated parameters of the
-distribution, as well as Kolmogorov-Smirnov goodness-of-fit test statistics.
+If \eqn{X} is a continuous random variable with cumulative distribution function (CDF)
+\eqn{F}, then the probability integral transform (PIT) \eqn{F(X)} is uniformly distributed
+between 0 and 1. Given a vector \eqn{x_{1}, \dots, x_{n}} of realisations of \eqn{X},
+\code{get_pit} produces an estimate \eqn{\hat{F}} of the CDF \eqn{F}, and returns a
+vector of PIT values corresponding to another set of realisations \eqn{z_{1}, \dots, z_{N}},
+\deqn{\hat{F}(z_{1}), \dots, \hat{F}(z_{n}).}
 
-A flexible compromise between using empirical methods and parametric distributions is to
-use kernel density estimation, \code{dist = "kde"}.
+\code{x_ref} contains the values \eqn{x_{1}, \dots, x_{n}} from which the CDF estimate
+\eqn{\hat{F}} is obtained. \code{x_new} contains the values \eqn{z_{1}, \dots, z_{n}}
+from which the PIT values \eqn{\hat{F}(z_{1}), \dots, \hat{F}(z_{n})} are calculated.
+By default, \code{x_ref} and \code{x_new} are the same, so that the PIT values are
+calculated in-sample.
 
-\code{dist} must be one of: 'empirical' (the empirical distribution given \code{data}),
-'kde' (kernel density estimation), norm', 'lnorm', 'logis', 'llogis', 'exp', 'gamma', and 'weibull'.
-For the parametric distributions, parameters are estimated using maximum likelihood estimation.
+To estimate the distribution, \code{get_pit} calls \code{\link{fit_dist}}. The arguments
+\code{dist}, \code{method} and \code{n_thres} are
+documented in detail in the corresponding help page.
+
+To check that the chosen distribution adequately fits the data, the argument
+\code{return_fit = TRUE} can be used to return the estimated parameters of the
+distribution, as well as properties of the fit such as the AIC and a p-value
+for the Kolmogorov-Smirnov goodness-of-fit test.
+
+\strong{Non-stationary distributions}
+
+The estimated distribution can also be non-stationary, by depending on some predictor variables or covariates.
+These predictors can be included via the arguments \code{preds_ref} and \code{preds_new},
+which should be data frames with a separate column for each predictor, and with
+numbers of rows equal to the lengths of \code{x_ref} and \code{x_new}, respectively.
+In this case, a Generalized Additive Model for Location, Scale, and Shape (GAMLSS) is
+fit to \code{x_ref} using the predictors in \code{preds_ref}.
+The PIT values corresponding to \code{x_new} are then calculated by applying the
+estimated distribution with predictors \code{preds_new}.
+If a non-stationary distribution is to be estimated, both \code{preds_ref} and
+\code{preds_new} must be provided. By default, \code{preds_new} is assumed to be
+the same as \code{preds_ref}, to align with \code{x_new} being the same as \code{x_ref}.
+
+\strong{Censored data}
+
+If the random variable \eqn{X} is not continuous, the PIT will not be uniformly distributed.
+A relevant case is when \eqn{X} is censored. For example, precipitation is censored below
+at zero. This results in several PIT values being equal to \eqn{F(0)}. The \code{lower}
+and \code{upper} arguments to \code{get_pit} allow the user to specify the lower and upper
+bounds at which the data is censored; the default is \code{lower = -Inf} and \code{upper = Inf},
+i.e. there is no censoring.
+
+If the PIT values are used to construct standardised indices, this censoring can lead to
+unintuitive index values.
+To deal with censored data, it has been proposed to map the PIT values of the censored
+values to a different constant \eqn{c}; see references. For example, for precipitation, the PIT
+values would become
+\deqn{F(X) \quad \text{if} \quad X > 0,}
+\deqn{c \quad \text{if} \quad X = 0.}
+The constant \eqn{c} can be chosen so that the PIT values satisfy some desired property.
+For example, if \eqn{F(X)} is uniformly distributed between 0 and 1, then it has mean equal
+to \eqn{1/2}. Hence, \eqn{c} could be chosen such that the mean of the PIT values of the
+censored distribution are equal to \eqn{1/2}.
+Alternatively, if \eqn{F(X)} is uniformly distributed between 0 and 1, then
+the transformed PIT value \eqn{\Phi^{-1}(F(X))} (where \eqn{\Phi^{-1}} is the quantile function
+of the standard normal distribution) follows a standard normal distribution, and therefore
+has mean equal to 0. The constant \eqn{c} could therefore be chosen such that the mean of the
+transformed PIT values of the censored distribution are equal to 0.
+
+The argument \code{cens} in \code{get_pit} can be used to treat censored data. \code{cens}
+can be one of three options: a single numeric value containing the value \eqn{c} at which to
+assign the PIT values of the censored realisations; the string \code{'prob'} if \eqn{c}
+is to be chosen automatically so that the mean of the PIT values is equal to \eqn{1/2};
+or the string \code{'normal'} if \eqn{c} is to be chosen automatically so that the mean of
+the transformed PIT values is equal to 0. If the data is censored both above and below,
+then \code{cens} must be a numeric vector of length two, specifying the values to assign
+the realisations that are censored both below and above.
+
+When the data is censored, \code{dist} corresponds to the distribution used to estimate the
+uncensored realisations, e.g. positive precipitations. The probability of being at the boundary
+points is estimated using the relative frequency of censored observations in \code{x_ref}.
 }
 \examples{
 N <- 1000
@@ -148,8 +210,28 @@ preds <- data.frame(t = x)
 
 pit <- get_pit(x_ref, preds_ref = preds, dist = "norm", sigma.formula = ~ .)
 hist(pit)
+# sigma.formula is an optional argument in the gamlss::gamlss function
 
 
+}
+\references{
+Rigby, R. A., & Stasinopoulos, D. M. (2005):
+`Generalized additive models for location, scale and shape',
+\emph{Journal of the Royal Statistical Society Series C: Applied Statistics} 54, 507-554.
+\url{https://doi.org/10.1111/j.1467-9876.2005.00510.x}
+
+Stagge, J. H., Tallaksen, L. M., Gudmundsson, L., Van Loon, A. F., & Stahl, K. (2015):
+`Candidate distributions for climatological drought indices (SPI and SPEI)',
+\emph{International Journal of Climatology} 35, 4027-4040.
+\url{https://doi.org/10.1002/joc.4267}
+
+Allen, S. & N. Otero (2023):
+`Calculating standardised indices using SEI',
+\emph{EarthArXiv pre-print}.
+\url{https://doi.org/10.31223/X5GM4G}
+}
+\seealso{
+\code{\link{fit_dist}}
 }
 \author{
 Sam Allen, Noelia Otero

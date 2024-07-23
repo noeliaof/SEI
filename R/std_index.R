@@ -21,18 +21,34 @@
 #' @inheritParams fit_dist
 #'
 #' @details
+#'
+#' **Standardised indices**
+#'
 #' Standardised indices are calculated by estimating the cumulative distribution function (CDF)
 #' of the variable of interest, and using this to transform the measurements to
-#' a standardised scale.
+#' a standardised scale. \code{std_index} is a wrapper for \code{\link{get_pit}} and
+#' \code{\link{fit_dist}} that additionally allows for aggregation, rescaling, and grouping
+#' of the time series. Further details can be found in the help pages of \code{\link{get_pit}}
+#' and \code{\link{fit_dist}}.
 #'
-#' \code{std_index()} estimates the CDF using a time series of reference data \code{x_ref},
+#' \code{std_index} estimates the CDF using a time series of reference data \code{x_ref},
 #' and applies the resulting transformation to the time series \code{x_new}. The result is
 #' a time series of standardised \code{x_new} values. These standardised indices quantify
 #' how extreme the \code{x_new} values are in reference to \code{x_ref}.
 #' \code{x_new} and \code{x_ref} should therefore contain values of the same variable.
-#' If \code{x_ref} is not specified, then \code{x_new} is also used to estimate the CDF.
+#' If \code{x_ref} is not specified, then it is set equal to \code{x_new}, so that the
+#' standardised indices are calculated in-sample.
 #'
-#' \code{x_new} and \code{x_ref} can either be provided as vectors or xts time series.
+#' The function returns a vector or time series (depending on the format of \code{x_new})
+#' containing the standardised indices corresponding to \code{x_new}. Three different
+#' types of indices are available, which are explained in detail in the vignette.
+#' The index type can be chosen using \code{index_type}, which must be one of
+#' \code{"normal"} (default), \code{"prob01"}, and \code{"prob11"}.
+#'
+#'
+#' **Time series manipulations**
+#'
+#' \code{x_new} and \code{x_ref} can either be provided as vectors or \code{\link{xts}} time series.
 #' In the latter case, the time series can be aggregated across timescales or rescaled.
 #' This is useful, for example, if \code{x_new} contains hourly data, but interest is
 #' on daily accumulations or averages of the hourly data.
@@ -40,63 +56,100 @@
 #' The argument \code{rescale} converts the data to a different timescale. The original
 #' timescale of the data can be manually specified using the argument \code{timescale}.
 #' \code{timescale} is required if the time series is to be aggregated or rescaled.
-#' Otherwise, the function will try to automatically determine the timescale of the data.
+#' Otherwise, \code{std_index} will try to automatically determine the timescale of the data.
 #' Manually specifying the timescale of the data is generally more robust. The rescaling
-#' is performed using the function \code{rescale_fun}. By default, this is assumed to be
+#' is performed using the function \code{rescale_fun}. By default,
 #' \code{rescale_fun = "sum"}, so that values are added across the timescale of interest.
 #' This can be changed to any user-specified function.
 #'
 #' The argument \code{agg_period} aggregates the data across the timescale of interest.
+#' The aggregation is performed using \code{\link{aggregate_xts}}.
 #' This differs from \code{rescale} in that the resolution of the data remains the same.
 #' \code{agg_period} is a number specifying how long the data should be aggregated across.
 #' By default, it is assumed that \code{agg_period} is on the same timescale as \code{x_new}
 #' and \code{x_ref}. For example, if the data is hourly and \code{agg_period = 24}, then
 #' this assumes the data is to be aggregated over the past 24 hours. The scale of the
 #' aggregation period can also be specified manually using \code{agg_scale}. For example,
-#' one could also specify \code{agg_period = 1} and \code{agg_scale = "days"}, and this
+#' specifying \code{agg_period = 1} and \code{agg_scale = "days"}
 #' would also aggregate the data over the past day. \code{agg_fun} specifies how the
 #' data is to be aggregated, the default is \code{agg_fun = "sum"}.
 #'
+#'
+#' **Distribution estimation**
+#'
 #' \code{dist} is the distribution used to estimate the CDF from \code{x_ref}.
 #' Currently, functionality is available to fit one of the following distributions to the data:
-#' Normal ('norm'), Log-normal ('lnorm'), Logistic ('logis'), Log-logistic ('llogis'),
-#' Exponential ('exp'), Gamma ('gamma'), and Weibull ('weibull').
+#' Normal (\code{"norm"}), Log-normal (\code{"lnorm"}), Logistic (\code{"logis"}),
+#' Log-logistic (\code{"llogis"}), Exponential (\code{"exp"}), Gamma (\code{"gamma"}),
+#' and Weibull (\code{"weibull"}).
 #' Alternatively, the CDF can be estimated empirically (\code{dist = "empirical"})
 #' based on the values in \code{x_ref}, or using kernel density estimation (\code{dist = "kde"}).
 #'
 #' If \code{dist} is a parametric family of distributions, then parameters of the
-#' distribution are estimated using maximum likelihood estimation from \code{x_ref}.
+#' distribution are estimated from \code{x_ref}. \code{method} specifies how the parameters
+#' are estimated; see \code{\link{fit_dist}} for details.
 #' The resulting parameters and corresponding goodness-of-fit statistics can be
 #' returned by specifying \code{return_fit = TRUE}.
 #'
 #' By default, the distribution is estimated over all values in \code{x_ref}. Alternatively,
-#' if \code{x_new} is an xts object, parameters can be estimated sequentially using a
+#' if \code{x_new} is an \code{\link{xts}} object, parameters can be estimated sequentially using a
 #' moving window of values. \code{moving_window} determines the length of the moving window.
 #' This is a single value, assumed to be on the same timescale as \code{x_new}.
-#' This can also be specified manually using \code{window_scale}. \code{window_scale}
-#' must also be one of "days", "weeks", "months", "quarters", and "years".
+#' The timsscale of the moving window can also be specified manually using \code{window_scale}.
+#' \code{window_scale} must also be one of \code{"days"}, \code{"weeks"}, \code{"months"},
+#' \code{"quarters"}, and \code{"years"}.
 #'
-#' The function returns a vector of time series (depending on the format of \code{x_new})
-#' containing the standardised indices corresponding to \code{x_new}. Three different
-#' types of indices are available, which are explained in detail in the vignette.
-#' The index type can be chosen using \code{index_type}, which must be one of
-#' "normal" (default), "prob01", and "prob11".
+#' The estimated distribution can also be non-stationary, by depending on some predictors
+#' or covariates. These predictors can be stored in data frames and input to \code{std_index}
+#' via the arguments \code{preds_new} and \code{preds_ref}; see \code{\link{fit_dist}} for
+#' details. Predictors cannot be used if the data is to be rescaled, since this would also
+#' require rescaling the predictors; in this case, an error is returned.
+#'
+#'
+#' **Grouping**
+#'
+#' By default, one distribution is fit to all values in \code{x_ref}. Separate distributions
+#' can be fit to different subsets of the data by specifying \code{gr_ref} and \code{gr_new}.
+#' These should be factor vectors, where each factor corresponds to a different grouping or
+#' subset of the data.
+#' No factor should appear in \code{gr_new} that does not appear in \code{gr_ref}, since
+#' there would be no data from which to estimate the distribution for this group. An error
+#' is returned in this case.
+#' Since the distribution of the values in \code{x_ref} could change for different groupings,
+#' the argument \code{dist} can be a vector of strings of the same length as the number of
+#' unique values in \code{unique(gr_new)}. In this case, the first element of \code{dist}
+#' should correspond to the first element in \code{unique(gr_new)} and so on.
+#' If \code{dist} is a single string, then the same distribution is used for each grouping.
+#'
 #'
 #'
 #' @return
-#' Time series of standardised indices.
+#' Time series of standardised indices. If \code{return_fit = TRUE}, then a list is returned
+#' that contains the time series of standardised indices, as well as information about the
+#' fit of the distribution to the data. If \code{gr_new} is specified, then \code{std_index}
+#' returns a list of time series of standardised indices, with an element corresponding to
+#' each factor in \code{gr_new}.
+#'
 #'
 #' @references
-#' Allen, S. and N. Otero (2023):
-#' `Standardised indices to monitor energy droughts',
-#' \emph{Renewable Energy} 217, 119206
-#' \doi{10.1016/j.renene.2023.119206}
-#'
 #' McKee, T. B., Doesken, N. J., & Kleist, J. (1993):
 #' `The relationship of drought frequency and duration to time scales',
 #' \emph{In Proceedings of the 8th Conference on Applied Climatology} 17, 179-183.
 #'
+#' Vicente-Serrano, S. M., Beguería, S., & López-Moreno, J. I. (2010):
+#' `A multiscalar drought index sensitive to global warming: the standardized precipitation evapotranspiration index',
+#' \emph{Journal of Climate} 23, 1696-1718.
+#' \url{https://doi.org/10.1175/2009JCLI2909.1}
+#'
+#' Allen, S. & N. Otero (2023):
+#' `Standardised indices to monitor energy droughts',
+#' \emph{Renewable Energy} 217, 119206.
+#' \url{https://doi.org/10.1016/j.renene.2023.119206}
+#'
+#'
 #' @author Sam Allen, Noelia Otero
+#'
+#' @seealso \code{\link{xts}} \code{\link{aggregate_xts}} \code{\link{get_pit}} \code{\link{fit_dist}}
 #'
 #' @examples
 #' data(data_supply)
@@ -184,11 +237,11 @@ std_index <- function(x_new,
                       x_ref = x_new,
                       timescale = NULL,
                       dist = "empirical",
+                      preds_new = NULL,
+                      preds_ref = preds_new,
                       method = "mle",
                       return_fit = FALSE,
                       index_type = "normal",
-                      preds_new = NULL,
-                      preds_ref = preds_new,
                       gr_new = NULL,
                       gr_ref = gr_new,
                       moving_window = NULL,
@@ -212,13 +265,15 @@ std_index <- function(x_new,
 
   # group data
   if (!is.null(gr_new)) {
-    gr_out <- lapply(unique(gr_new), function(i) {
-      ind <- gr_new == i
-      ind_ref <- gr_ref == i
-      std_index(x_new[ind], x_ref[ind], timescale = timescale, dist = dist, return_fit = return_fit,
+    grs <- unique(gr_new)
+    if (length(dist) == 1) dist <- rep(dist, length(grs))
+    gr_out <- lapply(seq_along(grs), function(i) {
+      ind <- gr_new == grs[i]
+      ind_ref <- gr_ref == grs[i]
+      std_index(x_new[ind], x_ref[ind], timescale = timescale, dist = dist[i], return_fit = return_fit,
                 index_type = index_type, agg_period = agg_period, agg_scale = agg_scale,
                 agg_fun = agg_fun, rescale = rescale, ignore_na = ignore_na, na_thres = na_thres,
-                lower = lower, upper = upper, cens = cens)
+                lower = lower, upper = upper, cens = cens, ...)
     })
     if (return_fit) {
       params <- lapply(seq_along(gr_out), function(i) gr_out[[i]]$params)

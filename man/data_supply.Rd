@@ -24,7 +24,7 @@ in 27 European countries in 2019.
 The dataframe \code{data_supply} contains 236520 (24 x 365 x 27) rows, containing the wind
 and solar energy production for each hour in 2019 for each of the 27 countries.
 
-This corresponds to a subset of the data used in Bloomfield and Brayshaw. (2021),
+This corresponds to a subset of the data used in Bloomfield and Brayshaw (2021),
 which can be accessed at https://researchdata.reading.ac.uk/321/.
 Users are referred to this paper for further details.
 }
