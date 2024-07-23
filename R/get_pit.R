@@ -16,7 +16,7 @@
 #' @param lower,upper numeric values specifying the lower and upper bounds at which the
 #'  values in \code{x_ref} and \code{x_new} are censored.
 #' @param cens method used to deal with censoring of the PIT values; either a string
-#'  (`'normal'` or `'prob'`), corresponding to common choices, or a custom numeric value.
+#'  (`'none'`, `'normal'` or `'prob'`), corresponding to common choices, or a custom numeric value.
 #' @inheritParams fit_dist
 #'
 #'
@@ -89,8 +89,9 @@
 #' transformed PIT values of the censored distribution are equal to 0.
 #'
 #' The argument \code{cens} in \code{get_pit} can be used to treat censored data. \code{cens}
-#' can be one of three options: a single numeric value containing the value \eqn{c} at which to
-#' assign the PIT values of the censored realisations; the string \code{'prob'} if \eqn{c}
+#' can be one of four options: a single numeric value containing the value \eqn{c} at which to
+#' assign the PIT values of the censored realisations; the string \code{'none'} if no censoring
+#' is to be performed; the string \code{'prob'} if \eqn{c}
 #' is to be chosen automatically so that the mean of the PIT values is equal to \eqn{1/2};
 #' or the string \code{'normal'} if \eqn{c} is to be chosen automatically so that the mean of
 #' the transformed PIT values is equal to 0. If the data is censored both above and below,
@@ -217,7 +218,7 @@ get_pit <- function(x_ref,
                     return_fit = FALSE,
                     lower = -Inf,
                     upper = Inf,
-                    cens = NULL,
+                    cens = 'none',
                     n_thres = 10,
                     ...) {
 
@@ -289,7 +290,7 @@ pit_cens <- function(pit, x_ref, x_new, lower, upper, cens) {
     x_l <- cens[1]
     x_u <- cens[2]
   } else {
-    if (is.null(cens)) {
+    if (cens == "none") {
       x_l <- p_l
       x_u <- p_u
     } else if (cens == "normal") {
@@ -377,23 +378,21 @@ check_getpit <- function(inputs) {
   }
 
   # censoring
-  if (!is.null(inputs$cens)) {
-    if (inputs$lower != -Inf && inputs$upper != Inf) {
-      if (!is.numeric(inputs$cens) | length(inputs$cens) != 2) {
-        stop("when the data is bounded both below and above, 'cens' must be a
-             numeric vector of length 2, specifying the censoring points for the
-             lower and upper boundary points")
+  if (inputs$lower != -Inf && inputs$upper != Inf) {
+    if (!is.numeric(inputs$cens) | length(inputs$cens) != 2) {
+      stop("when the data is bounded both below and above, 'cens' must be a
+           numeric vector of length 2, specifying the censoring points for the
+           lower and upper boundary points")
+    }
+  } else {
+    if (is.numeric(inputs$cens)){
+      if (length(inputs$cens) > 1) {
+        stop("'cens' must be either 'none', 'prob', 'normal', or a
+           single numeric value specifying the censoring point")
       }
-    } else {
-      if (is.numeric(inputs$cens)){
-        if (length(inputs$cens) > 1) {
-          stop("'cens' must be either 'prob', 'normal', or a
+    } else if (!(inputs$cens %in% c("none", "prob", "normal"))) {
+        stop("'cens' must be either 'none', 'prob', 'normal', or a
              single numeric value specifying the censoring point")
-        }
-      } else if (!(inputs$cens %in% c("prob", "normal"))) {
-          stop("'cens' must be either 'prob', 'normal', or a
-               single numeric value specifying the censoring point")
-      }
     }
   }
 

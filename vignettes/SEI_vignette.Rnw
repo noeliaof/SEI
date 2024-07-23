@@ -595,6 +595,64 @@ Moreover, while the package extends existing packages by providing flexible dens
 
 This package was created under funding by the Oeschger Centre for Climate Change Research and the Swiss Federal Office of Meteorology and Climatology (MeteoSwiss).
 
+
+\section*{Appendix: Censored data}
+
+The definition of standardised indices relies on the well-known result that if $X$ is a continuous random variable with cumulative distribution function $F$, then the probability integral transform $F(X)$ is uniformly distributed between zero and one. If the random variable $X$ is not continuous, then the PIT will generally not be uniformly distributed. This becomes an issue when calculating standardised indices. Of particular interest is the case when the variable $X$ is censored; that is, the distribution of $X$ has a point mass at the boundary (or boundaries) of its support, but is continuous otherwise. Precipitation, for example, is censored below at zero.
+
+While standardised indices for censored variables can be defined as in Section \ref{section:theory}, \cite{StaggeEtAl2015} remark that the resulting indices may be misleading. For example, if $X$ denotes daily precipitation accumulations and no precipitation occurs on 90\% of days in the time series, then $F(0) = 0.9$. The (normal) standardised index value corresponding to a precipitation of zero would therefore be $\Phi^{-1}(0.9) = 1.28$, the threshold often used to define excessively large values of a variable, despite zero precipitation clearly not being extreme; similarly, if the smallest precipitation value attains a standardised index of 1.28, then the system will never enter a drought state according to the drought definitions typically employed in practice, regardless of what precipitation occurs.
+
+%We can easily generate uniformly distributed PIT values for censored variables using appropriate randomisation, but this would result in different instances of zero precipitation corresponding to different standardised index values, for example, which is likely not the ideal solution in practice.
+To circumvent this, \cite{StaggeEtAl2015} propose to replace the PIT values corresponding to zero precipitation events with an alternative constant, chosen such that the resulting standardised indices ``maintain statistical interpretability''. In particular, they propose to choose the constant so that the mean of the standardised indices is the same as it would be if $X$ were continuous (zero, in the case of normal indices).
+
+We can formalise this as follows. Suppose we are interested in a random variable $X$ that is censored below at some value $a$, precipitation accumulations being a particular example with $a = 0$. While standardised indices are typically defined using $F(X)$, we want to introduce a real-valued constant $c$ and define an adapted variable, $\tilde{F}(X)$, such that
+\[
+\tilde{F}(X) = \begin{cases}
+F(X), &\quad X > a, \\
+c, &\quad X = a.
+\end{cases}
+\]
+Note that for $X > 0$, $F(X)$ can also be written as $F(X) = F(a) + (1 - F(a)) F(X \mid X > a)$, which is equivalent to the expression given in \citet[Equation 4]{StaggeEtAl2015}.
+
+For probability standardised indices (\code{index_type = "prob01"}), the constant should be chosen such that $\mathsf{E}[\tilde{F}(X)] = 1/2$, since the expectation $\mathsf{E}$ of a standard uniform random variable is equal to one half. We have
+\[
+\mathsf{E}[\tilde{F(X)}] = \mathsf{E}[F(X) \mid X > a]\mathsf{P}(X > a) + c\mathsf{P}(X = a).
+\]
+Since $F(X) \mid X > a$ is uniformly distributed between $\mathsf{P}(X = a)$ and 1, the first expectation is equal to $(\mathsf{P}(X = a) + 1)/2$. Rearranging gives that $c = \mathsf{P}(X = a)/2$ yields $\mathsf{E}[\tilde{F(X)}] = 1/2$. Hence, probability indices at the censored values should be replaced with $c = \mathsf{P}(X = a)/2$.
+
+This is also the case for bounded standardised indices (\code{index_type = "prob11"}). In this case, we want to choose $c$ such that $\mathsf{E}[2\tilde{F(X)} - 1] = 0$, which is exactly the same requirement as for the probability indices. Using analogous arguments, if $X$ is censored above at some value $b$ (rather than below at some value $a$), then the probability and bounded indices at the censored values should be replaced with $c = 1 - \mathsf{P}(X = b)/2$.
+
+The constant proposed by \citet[Equation 3]{StaggeEtAl2015} is a sample estimate of $\mathsf{P}(X = a)/2$. However, since the Gaussian inverse function $\Phi^{-1}$ is a non-linear function, generally $\mathsf{E}[\Phi^{-1}(Z)] \neq \Phi^{-1}(\mathsf{E}[Z])$, for any arbitrary random variable $Z$. Hence, normal standardised indices will generally not have expectation zero when the constant $c$ is chosen as above; this is also highlighted by Figure 1b in \cite{StaggeEtAl2015}, where the mean of the normal standardised indices with their proposed censoring methodology is generally not zero.
+
+Instead, we propose an alternative constant when normal standardised indices are used, which results in a mean index value equal to zero. We now want to find the constant $c$ such that
+\[
+\mathsf{E}[\Phi^{-1}(\tilde{F}(X))] = \mathsf{E}[\Phi^{-1}(F(X)) \mid X > a]\mathsf{P}(X > a) + \Phi^{-1}(c) \mathsf{P}(X = a) = 0.
+\]
+Since $F$ and $\Phi^{-1}$ are increasing functions, we have that
+\[
+\mathsf{E}[\Phi^{-1}(F(X)) \mid X > a]$ = \mathsf{E}[\Phi^{-1}(F(X)) \mid \Phi^{-1}(F(X)) > \Phi^{-1}(F(a))],
+\]
+which is just the expectation of a normal distribution truncated below at $l = \Phi^{-1}(F(a)) = \Phi^{-1}(\mathsf{P}(X = a))$. This is therefore equal to
+\[
+\frac{\phi(l)}{1 - \Phi(l)},
+\]
+where $\phi$ is the probability density function of the standard normal distribution. Similarly, $\mathsf{P}(X > a) = \mathsf{P}(\Phi^{-1}(F(X)) > l) = 1 - \Phi(l)$. Rearranging the above equality then yields
+\[
+c = \Phi \left[ \frac{-\phi(l)}{\mathsf{P}(X = a)} \right],
+\]
+and the normal indices at the censored values should therefore be replaced with $\Phi^{-1}(c) = -\phi(l) / \mathsf{P}(X = a)$. If $X$ is instead bounded above at $b$, then the constant $c$ becomes
+\[
+c = \Phi \left[ \frac{\phi(u)}{\mathsf{P}(X = b)} \right],
+\]
+where $u = \Phi^{-1}(1 - \mathsf{P}(X = b))$.
+
+In practice, we observe a sample of realisations of the variable $X$. The terms $\mathsf{P}(X = a)$ and $\mathsf{P}(X = b)$ can be estimated from a sample using the relative number of realisations that are censored, and these can then be used to determine the constant $c$. Note that since these terms have been calculated on a population level, the sample mean of the standardised indices will generally not be exactly zero (or 1/2 for probability indices), but they should be very close to zero in large enough samples.
+
+Variables could also be censored both below at $a$ and above at $b$. For example, the fraction of cloud cover over a domain is bounded between $a = 0$ and $b = 1$, with positive probability of taking on either of the boundary values. In this case, we must choose how to assign values at both boundary points. This adds an extra degree of freedom, since there are infinite combinations that would lead to the standardised indices having mean zero (or one half for probability indices). A second criterion could be introduced, such as the variance of the indices being equal to one (or 1/12). However, such calculations go beyond the scope of this paper, and we therefore leave this for future work.
+
+To implement censoring within the \pkg{SEI} package, the arguments \code{lower} and \code{upper} to the functions \code{std_index} and \code{get_pit} allow the user to indicate that the data is censored below at $a$ (\code{lower}) and/or above at $b$ (\code{upper}). The argument \code{cens} then specifies the method used to deal with censoring. This can be one of four options: if \code{cens = 'none'}, then no censoring is performed, i.e. $\tilde{F} = F$; if \code{cens = 'prob'}, then the approach above is used that results in the probability indices have mean equal to 1/2, which is essentially the same as the original approach proposed by \cite{StaggeEtAl2015}; if \code{cens = 'normal'}, then the approach above is used that results in the normal indices have mean equal to zero; alternatively, \code{cens} can be a single numeric value, allowing the user to manually specify the constant $c$. As discussed above, we recommend using \code{cens = 'prob'} when working with probability or bounded standardised indices, and \code{cens = 'normal'} when normal standardised indices are used. If the variable is bounded both below and above (i.e. \code{lower} and \code{upper} are both finite), then \code{cens} must be a numeric vector of length two, specifying the constants at which to assign values at the lower and upper boundary points, respectively.
+
+
 %% Bibliography
 \bibliography{bibliography}
 
