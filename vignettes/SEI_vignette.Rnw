@@ -51,7 +51,7 @@ library(gridExtra)
 
 %% -- Article metainformation (author, title, ...) -----------------------------
 
-\author{Sam Allen\\University of Bern\\Oeschger Centre for \\Climate Change Research
+\author{Sam Allen\\ETH Z{\"u}rich
 \And Noelia Otero\\University of Bern\\Oeschger Centre for \\Climate Change Research}
 \Plainauthor{Sam Allen, Noelia Otero}
 
@@ -94,9 +94,8 @@ library(gridExtra)
 
 \section{Introduction}\label{section:intro}
 
-It is common to monitor the value of a variable over time: climate scientists monitor several weather and climate variables in the hope of identifying trends in the atmosphere; energy suppliers monitor energy demand and production, with particular focus recently on production from renewable sources; financial traders monitor financial indices to assess the behaviour of stock markets, and so on. Doing so allows practitioners to not only identify long term patterns in the variables of interest, but also to analyse abnormal situations with potentially adverse socio-economic consequences.
-
-However, it can be difficult to compare time series of variables defined on different scales. For example, different spatial regions have different climates, meaning a rainfall event that is impactful at one location may not be at another. Similarly, energy demand will depend on the local climate, as well as on installed energy capacities. To account for this, it is convenient to transform variables onto the same, standardised scale. The resulting standardised variables are often referred to as \emph{standardised indices}.
+Monitoring the values of a variable over time allows practitioners to not only identify long term patterns in the variables of interest, but also to analyse abnormal situations with potentially adverse socio-economic consequences. However, it can be difficult to compare time series of variables defined on different scales. For example, different spatial regions have different climates, meaning a rainfall event that is impactful at one location may not be at another. Similarly, energy demand will depend on the local climate, as well as on installed energy capacities. To account for this, it is convenient to transform variables onto the same,
+standardised scale. The resulting standardised variables are often referred to as \emph{standardised indices}.
 
 Well-known examples of standardised indices include the Standardised Precipitation Index \citep[SPI;][]{McKeeEtAl1993} and Standardised Precipitation Evapotranspiration Index \citep[SPEI;][]{VicenteEtAl2010}, which are ubiquitously used to monitor hydrometeorological droughts \citep{BegueriaEtAl2014}. The framework used to construct the SPI and SPEI is simple and interpretable, framing the observed values in terms of their similarity to past values. As such, while other methods of standardisation exist, this framework has also been used to construct many other weather and climate indices.
 
@@ -106,7 +105,7 @@ There are several benefits to these standardised indices. The indices are easy t
 
 As a result, several software packages have been developed to apply standardised indices in practice. The \pkg{SCI} package \citep{SCI} in the programming language \proglang{R} \citep{R} provides the functionality to calculate several standardised climate indices. The \pkg{SPEI} package \citep{SPEI-R}, also in \proglang{R}, contains more comprehensive functionality for the SPI and SPEI, and the \pkg{standard-precip} package \citep{standard-precip} has transferred this functionality to the programming language \proglang{Python} \citep{python}. The \pkg{spei} package \citep{spei-python} in \proglang{Python} additionally allows computation of the SPI and SPEI, as well as the Standardised Runoff and Groundwater Indices, while the \pkg{climate-indices} package in \proglang{Python} also provides functionality to compute the SPI, SPEI, and other drought indices. The developmental package \pkg{standaRdized} \citep{standaRdized} can also be used for this purpose, while the \pkg{SPIGA} package \citep{SPIGA} in \proglang{R} allows the SPI to be calculated using genetic algorithms.
 
-However, existing software packages are limited in their flexibility, with functionality typically restricted to particular standardised indices (generally the SPI and SPEI), and particular assumptions about the reference data or parametric distributions used to calculate the indices (see next section for details). In this vignette, we introduce the \pkg{SEI} \proglang{R} package, which seeks to assimilate the advantages of these various packages to provide a flexible and comprehensive software package with which to calculate standardised indices. In particular, the package is not designed solely for climate indices, and is therefore applicable in much broader generality. The package can handle variables defined on any time scale and with any underlying distribution, permits user-specified reference data when calculating the indices, and additionally provides plot capabilities to visualise the resulting standardised indices.
+However, existing software packages are limited in their flexibility, with functionality typically restricted to particular standardised indices (generally the SPI and SPEI), and particular assumptions about the reference data or parametric distributions used to calculate the indices (see next section for details). In this vignette, we introduce the \pkg{SEI} \proglang{R} package, which seeks to assimilate the advantages of these various packages to provide a flexible and comprehensive software package with which to calculate standardised indices. In particular, the package is not designed solely for climate indices, and is therefore applicable in much broader generality. The package can handle variables defined on any time scale and with any (possibly non-stationary) underlying distribution, permits user-specified reference data when calculating the indices, and additionally provides plot capabilities to visualise the resulting standardised indices.
 
 The remainder of this vignette is organised as follows. Section \ref{section:theory} provides some theoretical background on standardised indices and describes the general formula to construct them. Section \ref{section:distribution} discusses diagnostic checks that confirm the standardisation was appropriate. Section \ref{section:functionality} demonstrates how the \pkg{SEI} package can be used to calculate standardised indices in practice. Two applications are then presented in Section \ref{section:application}, whereby the \pkg{SEI} package is used to calculate standardised energy indices based on time series of renewable energy production, as well as standardised wind speed indices. Section \ref{section:conclusion} concludes the vignette and discusses possible extensions to the package.
 
@@ -119,7 +118,7 @@ The general approach is to choose a univariate variable $X$ that measures the qu
 
 The distribution of $X$ is typically estimated from an archive of realisations, $x_{1}, \dots, x_{n}$. These could represent precipitation accumulations in different months, for example, or energy demand on different days. It is common to make parametric assumptions about the distribution, as in the examples above, though non- and semi-parametric density estimation methods could also be employed. The choice of distribution is discussed in detail in the following section. In any case, the distributional assumptions must be verified when the index is calculated.
 
-Let $F$ denote the distribution function of $X$, and let $\hat{F}$ denote an estimate of $F$ obtained from $x_{1}, \dots, x_{n}$. If $F$ is continuous, then the \emph{probability integral transform} (PIT) $F(X)$ will be standard uniformly distributed. Hence, this transformation provides a convenient approach with which to standardise an (new) observation $X^{*}$.
+Let $F$ denote the distribution function of $X$, and let $\hat{F}$ denote an estimate of $F$ obtained from $x_{1}, \dots, x_{n}$. If $F$ is continuous, then the \emph{probability integral transform} (PIT) $F(X)$ will be standard uniformly distributed. Hence, this transformation provides a convenient approach with which to standardise a (possibly new) random observation $X^{*}$ (with realisation denoted $x^{*}$): the PIT value $\hat{F}(x^{*})$ denotes the relative position of the observation $x^{*}$ within the distribution $\hat{F}$. If $x^{*}$ is large relative to $\hat{F}$, then the PIT value will be close to one; if $x^{*}$ is small relative to $\hat{F}$, then the PIT value will be close to zero.
 
 This \emph{PIT variable} $\hat{F}(X^{*})$ is bounded between 0 and 1, with values intrinsically linked to probabilities. This therefore itself provides a standardised index of sorts. This PIT variable can also be rescaled using $2\hat{F}(X^{*}) - 1$ to get an index that is centred at zero and bounded between -1 and 1, though it is more common to use the Gaussian quantile function $\Phi^{-1}$ to transform $\hat{F}(X^{*})$. In this case, if $X^{*}$ is identically distributed to $X$, and $\hat{F}$ is a good approximation of $F$, then the standardised index will follow a standard normal distribution.
 
@@ -130,30 +129,32 @@ That is, for any variable of interest, the probability integral transform can be
   \item \makebox[4cm]{\emph{Bounded indices}: \hfill} $2\hat{F}(X^{*}) - 1$
 \end{itemize}
 
-All three types of indices can be calculated from observations of the variable $X$ and an estimate of its distribution $F$. In practice, it is most common to use normal indices, though one could argue that probability and bounded indices have a more direct probabilistic interpretation. For example, if we observe the 90$^{th}$ percentile of $X$, then (assuming $F$ is correctly estimated) the corresponding normal index will be 1.28, the 90$^{th}$ percentile of the standard normal distribution, whereas the probability index will be 0.9, and the bounded index will be 0.8. Similarly, for the 10$^{th}$ percentile of $X$, the normal index will be -1.28, the probability index will be 0.1, and the bounded index will be -0.8. For the median of $X$, the normal and bounded indices will be zero, whereas the probability index will be 0.5.
+All three types of indices can be calculated from observations of the variable $X$ and an estimate of its distribution $F$. Since they are defined as increasing functions of PIT values, these standardised indices all quantify the relative position of an observation $x^{*}$ within the previously observed sample $x_{1}, \dots, x_{n}$, making them easy to interpret.
+
+In practice, it is most common to use normal indices, though one could argue that probability and bounded indices have a more direct probabilistic interpretation. For example, if we observe the 90$^{th}$ percentile of $X$, then (assuming $F$ is correctly estimated) the corresponding normal index will be 1.28, the 90$^{th}$ percentile of the standard normal distribution, whereas the probability index will be 0.9, and the bounded index will be 0.8. Similarly, for the 10$^{th}$ percentile of $X$, the normal index will be -1.28, the probability index will be 0.1, and the bounded index will be -0.8. For the median of $X$, the normal and bounded indices will be zero, whereas the probability index will be 0.5.
 
 The general framework can therefore be summarised as follows.
 \begin{enumerate}
   \item Estimate $F$ from the observations $x_{1}, \dots, x_{n}$.
   \item Check that the estimate $\hat{F}$ correctly fits the data.
-  \item Apply $\hat{F}$ to an observation $X^{*}$ (or several observations).
-  \item Transform $\hat{F}(X^{*})$ so that the index is on the desired scale.
+  \item Apply $\hat{F}$ to an observation $x^{*}$ (or several observations).
+  \item Transform $\hat{F}(x^{*})$ so that the index is on the desired scale.
 \end{enumerate}
 
 The probabilistic interpretation of these standardised indices has made them a useful tool when analysing shortages and excesses of the variable $X$. This was first proposed by \cite{McKeeEtAl1993} in the context of hydrometeorological droughts, and \cite{AllenOtero2023} demonstrate that the same framework can be employed to define droughts in energy systems. In this case, droughts are defined when the standardised index exceeds or falls below a relevant threshold. Different classes of droughts can be defined using different thresholds, with a more severe drought corresponding to a more extreme threshold.
 
-Following \cite{McKeeEtAl1993}, it is most common to employ three categories, typically labelled ``Moderate'', ``Severe'', and ``Extreme'' droughts. These often correspond to the thresholds 1, 1.5, and 2 of the normal standardised indices, respectively, though the thresholds 1.28, 1.64, and 1.96 could also be used, which correspond to quantiles of the standard normal distribution. This assumes that a drought is defined as an exceedance of a threshold, though the negative of these values could analogously be used when interest is on values that fall below a threshold. Table \ref{tab:drought_def} gives corresponding threshold values for the other two types of indices.
+Following \cite{McKeeEtAl1993}, it is most common to employ three categories, typically labelled ``Moderate'', ``Severe'', and ``Extreme'' droughts. These often correspond to the thresholds 1, 1.5, and 2 of the normal standardised indices, respectively, though the thresholds 1.28, 1.64, and 1.96 are also often used, which correspond to quantiles of the standard normal distribution. This assumes that a drought is defined as an exceedance of a threshold, though the negative of these values could analogously be used when interest is on values that fall below a threshold. Table \ref{tab:drought_def} gives corresponding threshold values for the other two types of indices.
 
 \renewcommand*{\arraystretch}{1.5}
 \begin{table}
     \centering
     \begin{tabular}{ l | c c c | c c c }
-         & \multicolumn{3}{c |}{Exceed} & \multicolumn{3}{c}{Fall below} \\
-        Index Type & Moderate & Severe & Extreme & Moderate & Severe & Extreme \\
+         & \multicolumn{3}{c |}{Fall below} & \multicolumn{3}{c}{Exceed} \\
+        Index Type & Extreme & Severe & Moderate & Moderate & Severe & Extreme \\
         \hline
-        Normal & 1.28 & 1.64 & 1.96 & -1.28 & -1.64 & -1.96 \\
-        Probability & 0.9 & 0.95 & 0.975 & 0.1 & 0.05 & 0.025 \\
-        Bounded & 0.8 & 0.9 & 0.95 & -0.8 & -0.9 & -0.95 \\
+        Normal & -1.96 & -1.64 & -1.28 & 1.28 & 1.64 & 1.96 \\
+        Probability & 0.025 & 0.05 & 0.1 & 0.9 & 0.95 & 0.975 \\
+        Bounded & -0.95 & -0.9 & -0.8 & 0.8 & 0.9 & 0.95 \\
     \end{tabular}
     \caption{Possible thresholds used to define droughts when using each of the three types of standardised indices.}
     \label{tab:drought_def}
@@ -163,6 +164,8 @@ The \pkg{SEI} package allows the computation of all three types of indices, and 
 
 
 \section{The choice of distribution}\label{section:distribution}
+
+\subsection{Stationary distribution estimation}
 
 The construction of standardised indices relies on an estimate of the distribution function $F$. This has led to much debate about what distributional assumptions are most appropriate. Consider the SPI, for example.  \cite{McKeeEtAl1993} initially introduced the SPI using the gamma distribution to model $F$. However, \cite{Guttman1999} argued that the Pearson III distribution is more appropriate, due to the additional flexibility afforded by an extra parameter, while results in \cite{StaggeEtAl2015} suggest the Weibull distribution fits the monthly precipitation accumulations in their study better than alternative parametric choices. \cite{RussoEtAl2013} also consider using non-stationary distributions that include parameters that depend on time, while \cite{LiEtAl2015} incorporate additional covariates based on other climate variables. In reality, there is generally no true parametric distribution underlying the data, and the optimal assumptions will change depending on the data under consideration.
 
@@ -198,18 +201,32 @@ where $K$ is a kernel function, and $h > 0$ is a smoothing parameter called the 
     \label{tab:dists}
 \end{table}
 
-Table \ref{tab:dists} lists the distributions available in the \pkg{SEI} package for estimating $F$. The choice of distribution should align with the variable of interest. For example, if interest is on precipitation, then we should not choose a distribution that assigns positive probability density to negative values, such as the normal distribution. Conversely, if interest is on temperature (in Celsius), then we should not choose a distribution that has support $[0, \infty)$, such as the exponential distribution. Table \ref{tab:dists} additionally contains the support of the available distributions; the support of the empirical distribution is determined by the archive of observations $x_{1}, \dots, x_{n}$. Wherever relevant, $\hat{F}$ is estimated using maximum likelihood estimation.
+Table \ref{tab:dists} lists the distributions available in the \pkg{SEI} package for estimating $F$. The choice of distribution should align with the variable of interest. For example, if interest is on precipitation, then we should not choose a distribution that assigns positive probability density to negative values, such as the normal distribution. Conversely, if interest is on temperature (in Celsius), then we should not choose a distribution that has support $[0, \infty)$, such as the exponential distribution. Table \ref{tab:dists} additionally contains the support of the available distributions; the support of the empirical distribution is determined by the archive of observations $x_{1}, \dots, x_{n}$.
 
-Regardless of the method used to estimate $F$, it is necessary to check that the estimated distribution fits the data. Several goodness-of-fit tests exist for this purpose. The \pkg{SEI} package implements the Kolmogorov-Smirnov test \citep{Massey1951}, which is based on the test statistic
-\begin{equation}\label{eq:kolsmi}
-  \sup_{x \in \R} | \hat{F}_{n}(x) - \hat{F}(x) |,
-\end{equation}
-that is, the maximum difference between the estimated distribution function $\hat{F}$ and the empirical distribution function $\hat{F}_{n}$. If this statistic is close to zero, then it suggests that the hypothesised distribution fits the data well. Clearly, if the empirical distribution is used to estimate $F$, then this test statistic is zero.
 
-The fit of the distribution could also be visualised graphically by plotting the PIT values $\hat{F}(x_{1}), \dots, \hat{F}(x_{n})$ or the corresponding standardised indices. If the model fits the data well, then these PIT values should resemble a sample from a standard uniform distribution; a histogram of these values should therefore be flat, up to sampling variation. Similarly, the normal standardised indices should resemble a sample from a standard normal distribution. An example of how this can be checked using the \pkg{SEI} package is presented in Section \ref{section:application}.
+\subsection{Non-stationary distribution estimation}
+
+In many practical applications, the variable of interest may be non-stationary. For example, several weather variables have exhibited strong temporal trends in recent decades as a result of changes in the climate. If these trends are ignored when estimating the distribution $F$, then the resulting index values may be misleading: if the variable is increasing in time, then larger index values will generally occur for later observations, meaning extreme events, as defined using the standardised indices, will be clustered in time.
+
+This could be circumvented by estimating $F$ using an adaptive subset of the observations $x_{1}, \dots, x_{n}$ that accounts for these trends, rather than using all available data. For example, $\hat{F}$ could be constructed from a moving window that only considers (or assigns higher weight to) the most recent observations, so that the standardised indices, as well as the corresponding drought and extreme events, are defined in terms of the recent climate. This would require estimating a separate distribution for each new observation $x^{*}$, but provides an example of how the data used to construct standardised indices affects their interpretation.
+
+Alternatively, the trends could be accounted for by estimating $F$ as a function of time, so that time is included as a predictor in the distribution \citep{RussoEtAl2013}. The distribution could similarly be made to depend on other predictor variables \citep{LiEtAl2015}. For example, precipitation accumulations are strongly influenced by changes in the temperature. By incorporating temperature as a predictor within the distribution of precipitation, the PIT values would quantify how extreme a precipitation observation is, given the corresponding temperature. The problem of estimating the distribution of the observations $x_{1}, \dots, x_{n}$ then becomes estimating the conditional distribution of the observations given corresponding realisations of a set of predictor variables.
+
+There are many ways to estimate this conditional distribution \citep[see e.g.][]{KneibEtAl2023}, but one flexible and general approach is the Generalized Additive Models for Location, Scale and Shape (GAMLSS) framework \citep{RigbyEtAl2005}. Several recent studies have proposed to construct standardised indices from non-stationary distributions estimated using GAMLSS \citep[e.g.][]{WangEtAl2015,RashidBeecham2019,ShaoEtAl2022}. The general approach is to choose a parametric distribution and then assume that its location, scale and shape parameters depend additively (but possibly non-linearly) on the set of predictor variables. GAMLSS is a well-known framework for which many resources are available, to which readers are referred for further details. The \pkg{SEI} package allows non-stationary distributions to be implemented to construct standardised indices by calling functions from the \pkg{gamlss} R package \citep{StasinopoulosEtAl2008,StasinopoulosEtAl2017}.
+
+Incorporating predictors into standardised indices implicitly assumes that the impacts associated with the variable of interest are somehow mitigated by the predictors. For example, a society's capability to deal with hydrometeorological droughts typically becomes better as these events become more common, so that an unusually low precipitation event today leads to a lower impact than it would have done 50 years ago, say; instead, a yet more extreme precipitation event is required to generate the same impact. Including time, or other relevant predictors, within the distribution $F$ allows this information to be incorporated into the standardised indices. Conversely, if we cannot assume that the predictors help to mitigate the impacts associated with the variable being monitored, then there is little reason to include it as a predictor when constructing standardised indices.
+
+\subsection{Checking distribution fit}
+
+
+Regardless of the method used to estimate $F$, it is necessary to check that the estimated distribution fits the data. Several goodness-of-fit tests exist for this purpose. The \pkg{SEI} package implements the Kolmogorov-Smirnov test \citep{Massey1951} applied to the PIT values $\hat{F}(x_{1}), \dots, \hat{F}(x_{n})$. If the distribution fits the data, these PIT values should resemble a sample from a standard uniform distribution. The Kolmogorov-Smirnov test statistic then calculates the maximum difference between the empirical distribution function of the PIT values and the distribution function of the standard uniform distribution. If this statistic is close to zero, then it suggests that the hypothesised distribution fits the data well.
+
+he fit of the distribution could also be visualised graphically by plotting the distribution of the PIT values and checking whether they resemble a sample from a standard uniform distribution; a histogram of these values should therefore be flat, up to sampling variation, for example. Similarly, the corresponding normal standardised indices should resemble a sample from a standard normal distribution. An example of how this can be checked using the \pkg{SEI} package is presented in Section \ref{section:application}.
 
 
 \section{Package functionality}\label{section:functionality}
+
+The \pkg{SEI} package is designed to facilitate the computation of standardised indices. The package is available on CRAN (\url{CRAN.R-project.org/package=SEI}) and a developmental version is available on GitHub (\url{github.com/noeliaof/SEI}). In this section, we demonstrate the functionality of the \pkg{SEI} package when implementing standardised indices in practice.
 
 \subsection{Standardised indices}
 
@@ -219,9 +236,15 @@ The \pkg{SEI} package is designed to facilitate the computation of standardised 
 std_index(
   x_new,
   x_ref = x_new,
-  timescale = NULL,
   dist = "empirical",
+  preds_new = NULL,
+  preds_ref = preds_new,
+  method = "mle",
   return_fit = FALSE,
+  index_type = "normal",
+  gr_new = NULL,
+  gr_ref = gr_new,
+  timescale = NULL,
   moving_window = NULL,
   window_scale = NULL,
   agg_period = NULL,
@@ -229,12 +252,17 @@ std_index(
   agg_fun = "sum",
   rescale = NULL,
   rescale_fun = "sum",
-  index_type = "normal",
-  ignore_na = FALSE
+  ignore_na = FALSE,
+  n_thres = 10,
+  na_thres = 10,
+  lower = -Inf,
+  upper = Inf,
+  cens = index_type,
+  ...
 )
 \end{Code}
 
-The input \code{x_new} must be either a vector or an \pkg{xts} time series object. The argument \code{x_ref} is similarly a vector or time series, containing the archive $x_{1}, \dots, x_{n}$ of past observations that are used to estimate the distribution $F$. This distribution is then applied to each value in \code{x_new}, which therefore correspond to values of $X^{*}$ in the previous section. The default is that \code{x_ref = x_new}, in which case the standardised indices are calculated \emph{in-sample}.
+The input \code{x_new} must be either a vector or an \pkg{xts} time series object. The argument \code{x_ref} is similarly a vector or time series, containing the archive $x_{1}, \dots, x_{n}$ of past observations that are used to estimate the distribution $F$. This distribution is then applied to each value in \code{x_new}, which therefore correspond to realisations of $X^{*}$ in the previous section. The default is that \code{x_ref = x_new}, in which case the standardised indices are calculated \emph{in-sample}.
 
 As a very simple example, consider a vector of observations drawn from a gamma distribution. These can be converted to (normal) standardised indices as follows.
 
@@ -255,17 +283,72 @@ grid.arrange(plot_raw, plot_std, nrow = 1)
 \label{fig:hist_ex}
 \end{figure}
 
+The argument \code{index_type} in \code{std_index()} specifies which type of standardised index should be constructed from the estimated distribution. This must be one of \code{"normal"} (the default), \code{"prob01"}, or \code{"prob11"}, corresponding respectively to the definitions of normal, probability, and bounded standardised indices defined in the previous section.
+
 The \code{dist} argument in \code{std_index()} specifies how the distribution $F$ will be estimated from \code{x_ref}. The default is to use the empirical distribution of \code{x_ref} (Equation \ref{eq:ecdf}). To accurately estimate $F$, the empirical distribution requires a sufficiently large archive, and a warning is therefore returned if the length of \code{x_ref} is smaller than 100. An error message is returned if the distribution support does not align with the data; for example, if a distribution with support $[0, \infty)$ is chosen while the data contains negative values.
 
-Information about the distribution fit, including estimated parameters and goodness-of-fit statistics, can be returned by setting \code{return_fit = TRUE}; the default is \code{return_fit = FALSE}. If \code{return_fit = TRUE}, the output of \code{std_index()} is a list containing the time series of standardised indices (\code{si}), the estimated distribution parameters (\code{params}), and a named vector containing properties of the model fit (\code{fit_props}); this includes the number of observations used to estimate the distribution, the number and percentage of \code{NA} values in the data, the Akaike Information Criterion (AIC) value, and the p-value of the Kolmogorov-Smirnov test that the distribution correctly fits the data (Equation \ref{eq:kolsmi}).
+Information about the distribution fit, including estimated parameters and goodness-of-fit statistics, can be returned by setting \code{return_fit = TRUE}; the default is \code{return_fit = FALSE}. If \code{return_fit = TRUE}, the output of \code{std_index()} is a list containing the time series of standardised indices (\code{si}), the estimated distribution parameters (\code{params}), and a named vector containing properties of the model fit (\code{fit}); this includes the number of observations used to estimate the distribution, the number and percentage of \code{NA} values in the data, the Akaike Information Criterion (AIC) value, and the p-value of the Kolmogorov-Smirnov test that the distribution correctly fits the data.
 
-The distribution fitting is performed using \code{fit_dist()}, which is essentially a wrapper for \code{fitdist()} in the \pkg{fitdistrplus} package, along with extensions that are relevant for the construction of standardised indices. The \code{fit_dist()} function is also exported by \pkg{SEI}, and further details can be found on the associated help page.
+The distribution fitting is performed using \code{fit_dist()}, which is essentially a wrapper for \code{fitdist()} in the \pkg{fitdistrplus} package, along with extensions that are relevant for the construction of standardised indices. The \code{fit_dist()} function is also exported by \pkg{SEI}, and further details can be found on the associated help page. Parameters of the distributions (if any) are estimated by default using maximum likelihood estimation, though many other estimation techniques, including method of moments and method of L-moments, can be employed by changing the \code{method} argument. Other arguments to \code{fitdist()} can be specified as variable arguments \code{...}.
 
-The argument \code{index_type} in \code{std_index()} specifies which type of standardised index should be used. This must be one of \code{"normal"} (the default), \code{"probability"}, or \code{"bounded"}, corresponding to the three definitions in the previous section.
+\subsection{Non-stationary distributions}
+
+The default is to estimate a non-stationary distribution from the data in \code{x_ref}. However, non-stationary distributions can be estimated via the GAMLSS framework by inputting a data frame of predictor variables in \code{preds_ref}. This data frame should have the same number of rows as the length of \code{x_ref}, with each column representing a separate predictor variable. Similarly, \code{preds_new} should be a data frame containing the same predictor variables as \code{preds_ref} (with the same column names), but with rows corresponding to the entries of \code{x_new}. The \code{std_index()} function then estimates the non-stationary distribution by calling \code{gamlss()} from the \pkg{gamlss} package. The model assumes that the location parameter of the distribution depends linearly on all predictors in \code{preds_ref}. Relationships between the predictors and other distribution parameters, as well as other optional arguments to \code{gamlss()}, can again be applied using \code{...}.
+
+For example, consider observations drawn from a normal distribution whose mean and standard deviation both increase over time.
+
+<<nst_std_index_example>>=
+N <- 1000
+t <- seq(10, 20, length.out = N)
+x <- rnorm(N, mean = t, sd = exp(t/10))
+@
+
+The underlying distribution of these values can be estimated both with and without including a trend in the location and scale parameters of the distribution. Note that \code{sigma.formula} is an optional argument to \code{gamlss()} that allows the scale parameter of the distribution to depend on predictors.
+
+<<nst_std_index_example2>>=
+preds <- data.frame(t = t)
+# standardised indices without trend
+si_st <- std_index(x, dist = "norm")
+# standardised indices with trend in mean
+si_nst <- std_index(x, dist = "norm", preds_new = preds)
+# standardised indices with trend in mean and sd
+si_nst2 <- std_index(x, dist = "norm", preds_new = preds, sigma.formula = ~ t)
+@
+
+Figure \ref{fig:nst_ex} displays the time series of standardised indices corresponding to these values under three different assumptions: there is no trend, there is a linear trend in the mean but not the standard deviation of the distribution, and there is a trend in both the mean and standard deviation. When the trend is not included, higher index values unsurprisingly occur at higher time points, and the variation of the indices also increases in time. If a trend is included in the mean of the distribution, then the standardised indices do not increase in time, but still become more variable. If a trend is included in both the mean and the standard deviation, then the index values become stationary.
+
+\begin{figure}
+<<nst_std_index_ex_plot, echo=FALSE, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
+plt_raw <- plot_sei(x, lab = "Values", title = "Raw time series")
+plt_st <- plot_sei(si_st, ylims = c(-4, 4), title = "Without trend")
+plt_nst <- plot_sei(si_nst, ylims = c(-4, 4), title = "Trend in mean")
+plt_nst2 <- plot_sei(si_nst2, ylims = c(-4, 4), title = "Trend in mean and sd")
+grid.arrange(plt_st, plt_nst, plt_nst2, nrow = 1)
+@
+\caption{Standardised indices corresponding to a time series of values drawn from a non-stationary normal distribution. Results are shown when the estimated normal distribution does and does not include a trend.}
+\label{fig:nst_ex}
+\end{figure}
+
+
+\subsection{Grouping}
+
+Rather than estimating one distribution across all observations, whether dependent on predictors or not, the variable of interest may have a distribution that changes in different subsets of the data. These subsets could correspond to different seasons, for example. Standardised indices corresponding to different distributions can be derived from \code{std_index()} via the \code{gr_new} and \code{gr_ref} arguments. These should be factor vectors of the same length as \code{x_new} and \code{x_ref} respectively, with each factor corresponding to a different subset of the data from which a distribution should be estimated. The values in \code{x_ref} are stratified according to \code{gr_ref}, and a separate distribution is estimated from each subset; the values in \code{x_new} are then stratified according to \code{gr_new}, and the distribution corresponding to each factor level is applied to the subset of values in \code{x_new} that correspond to the same level. The factor levels in \code{x_new} and \code{x_ref} should therefore be the same. In particular, \code{x_new} should not contain any levels that are not also present in \code{x_ref}, since in this case there would be no data in \code{x_ref} from which to estimate the relevant distribution. This returns an error.
+
+Non- and semi-parametric distributions can flexibly adapt to situations where the shape of the distribution changes within the different subsets of the data. However, if a large number of factor levels are present in \code{x_ref} and \code{x_new}, then the amount of data to estimate the distributions can become small. To counteract this, the \code{dist} argument in \code{std_index()} can be a vector of the same length as the number of levels in \code{gr_ref}. The first element of \code{dist} denotes the distribution to be fit to the data corresponding to the first factor of \code{gr_ref}, and so on. Currently, for non-stationary distributions, the predictors do not depend on the grouping, and thus the same relationship between the variable of interest and the predictors must be assumed for each subset.
+
+
+\subsection{Censoring}
+
+The theory underlying standardised indices in Section \ref{section:theory} relies on the variable of interest being continuous, and the distributions available in \pkg{SEI} are therefore also all continuous. However, standardised indices may also be informative when the variable of interest is not continuous. A particular example is when the variable is censored; that is, it is bounded either above or below (or both), with positive probability of being exactly equal to the boundary points. Precipitation, for example, is censored below at zero.
+
+Depending on how they are used, the definition of standardised indices may need to be adjusted to account for the censoring. This has been considered, for example, by \cite{StaggeEtAl2015}. How to deal with censored variables is discussed in detail in the appendix. Censored data can be handled in \pkg{SEI} using the \code{lower}, \code{upper}, and \code{cens} arguments in \code{std_index()}: \code{lower} and \code{upper} specify the lower and upper bounds of the data, respectively, while \code{cens} determines the method used to address the censoring. The available methods are outlined in the appendix.
+
+
+\subsection{Time series manipulations}
 
 The remaining arguments are only applicable when \code{x_new} and \code{x_ref} are time series, rather than vectors, since they all involve manipulations based on the date of the data. For example, the argument \code{moving_window} can be used to calculate standardised indices using a moving window. In this case, \code{x_ref} is updated for each observation in \code{x_new} so that it contains the previous \code{moving_window} (an integer) observations in the time series; the indices are therefore determined relative to recently observed values. The argument \code{window_scale} specifies the timescale that \code{moving_window} refers to. For example, setting \code{moving_window = 10} and \code{window_scale = "days"} would calculate standardised indices using a moving window of length 10 days.
 
-If \code{moving_window} is specified but \code{window_scale = NULL}, then it is assumed that the units of \code{moving_window} correspond to the timescale of \code{x_new}. If the time difference between consecutive observations is consistent throughout the time series, then this can be determined automatically within \code{std_index()}. Alternatively, and more robustly, it can be specified by the user using the \code{timescale} argument. This (and \code{window_scale}) must be one of \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, or \code{"years"}.
+If \code{moving_window} is specified but \code{window_scale = NULL}, then it is assumed that the units of \code{moving_window} correspond to the timescale of \code{x_new}. If the time difference between consecutive observations is consistent throughout the time series, then this can be determined automatically within \code{std_index()}. Alternatively, and more robustly, it can be specified by the user using the \code{timescale} argument. This (and \code{window_scale}) must be one of \code{"mins"}, \code{"hours"}, \code{"days"}, \code{"weeks"}, \code{"months"}, \code{"quarters"}, or \code{"years"}.
 
 If the original time series contains, say, hourly data, but the time series of standardised indices is desired on a different timescale, then the \code{rescale} argument can be used to rescale the data. This must also be one of the timescales listed above. By default, \code{std_index()} assumes the sum of the values should be returned when rescaling. For example, if interest is on precipitation accumulations, then converting hourly data to daily data will return the daily aggregations. However, alternative rescaling could also be performed using the \code{rescale_fun} argument, which is a function specifying what operation to perform over the aggregated data. If \code{rescale_fun = "mean"} or \code{rescale_fun = "max"}, for example, then the daily (or weekly, monthly, etc) mean or maximum would be provided, respectively, in place of the hourly data.
 
@@ -278,25 +361,25 @@ To perform the rescaling, \code{std_index()} calls one of the \pkg{xts} function
 \begin{Code}
 aggregate_xts(
   x,
-  len,
-  scale = c("days", "hours", "weeks", "quarters", "years"),
-  fun = "sum",
-  timescale = c("days", "hours", "weeks", "quarters", "years"),
+  agg_period = 1,
+  agg_scale = c("days", "mins", "hours", "weeks", "months", "years"),
+  agg_fun = "sum",
+  timescale = c("days", "mins", "hours", "weeks", "months", "years"),
   na_thres = 10
 )
 \end{Code}
 
-The interpretation of the arguments is equivalent to in the discussion above: \code{x} represents the \pkg{xts} time series to be aggregated, \code{len} and \code{scale} are the length and time scale of the aggregation period, \code{fun} is the function used in the aggregation, and \code{timescale} is the time scale of \code{x}. The final argument \code{na_thres} represents the maximum proportion of values that can be missing (i.e. \code{NA}) in the aggregation period, before the aggregation itself returns \code{NA}. For example, if 23 hours of precipitation accumulations are missing on one day so that only one hourly accumulation is available, this sole observation is not representative of the daily accumulation. By default, \code{NA} is returned if more than 10\% of the values in the aggregation period are missing.
+The interpretation of the arguments is equivalent to in the discussion above: \code{x} represents the \pkg{xts} time series to be aggregated, \code{agg_period} and \code{agg_scale} are the length and time scale of the aggregation period, \code{agg_fun} is the function used in the aggregation, and \code{timescale} is the time scale of \code{x}. The final argument \code{na_thres} represents the maximum proportion of values that can be missing (i.e. \code{NA}) in the aggregation period, before the aggregation itself returns \code{NA}. For example, if 23 hours of precipitation accumulations are missing on one day so that only one hourly accumulation is available, this sole observation is not representative of the daily accumulation. By default, \code{NA} is returned if more than 10\% of the values in the aggregation period are missing.
 
 
-\subsection{Plotting indices}
+\subsection{Plotting standardised indices}
 
 To visualise the indices, \pkg{SEI} includes the \code{plot_sei()} function.
 
 \begin{Code}
 plot_sei(
   x,
-  type = c("ts", "hist"),
+  type = c("ts", "hist", "bar"),
   title = NULL,
   lab = "Std. Index",
   xlims = NULL,
@@ -305,7 +388,7 @@ plot_sei(
 )
 \end{Code}
 
-The argument \code{x} is either a vector or an \pkg{xts} time series object that contains the index values to be displayed. This function can either be used to plot a time series of the values (\code{type = "ts"}), or a histogram (\code{type = "hist"}). A time series can only be plotted if the input \code{x} is a time series and not a vector. If \code{type = "hist"}, the function is essentially a wrapper for \code{geom_histogram()} in \pkg{ggplot2}. Here, \code{n_bins} can be used to specify the number of bins in the histogram.
+The argument \code{x} is either a vector or an \pkg{xts} time series object that contains the index values to be displayed. This function can either be used to plot a time series of the values (\code{type = "ts"}), a histogram (\code{type = "hist"}), or a bar plot (\code{type = "bar"}). If \code{type = "hist"}, the function is essentially a wrapper for \code{geom_histogram()} in \pkg{ggplot2}. The histogram and bar plot both display the distribution of the values in \code{x}. The histogram is particularly useful when superimposing a density onto the histogram, while the bar plot is also made available since it can be more robust when the data in \code{x} is bounded. Here, \code{n_bins} can be used to specify the number of bins in the plot.
 
 Additional aspects of the plot can be specified using \code{title}, \code{lab}, \code{xlims} and \code{ylims}. For the time series plot, \code{lab} refers to the label of the y-axis, whereas it corresponds to the x-axis label of the histogram.
 
@@ -315,13 +398,27 @@ Additional aspects of the plot can be specified using \code{title}, \code{lab}, 
 Having obtained a time series of standardised indices, one might wish to perform an analysis of shortages, or droughts, in the variable of interest. As discussed, this can be achieved using standardised indices with the definitions of droughts in Table \ref{tab:drought_def}. To facilitate such analyses, the \code{get_drought()} function takes a time series or vector \code{x} as input, and outputs a dataframe containing information regarding drought occurrences and characteristsics.
 
 \begin{Code}
-get_drought(x, thresholds = c(1.28, 1.64, 1.96), exceed = TRUE, lag = FALSE)
+get_drought(
+  x,
+  thresholds = c(1.28, 1.64, 1.96),
+  exceed = TRUE,
+  cluster = 0,
+  lag = NULL
+)
 \end{Code}
 
 
 The argument \code{thresholds} is a vector containing the thresholds used to define the droughts; by default, these correspond to the 90$^{th}$, 95$^{th}$, and 97.5$^{th}$ percentiles of a standard normal distribution. It is also assumed by default that a drought is defined when the standardised indices exceed these thresholds. This can be specified using the \code{exceed} argument. If a drought should instead correspond to an instance where the indices fall below the given thresholds, \code{exceed} should be \code{FALSE}.
 
-When defining meteorological droughts, it is often common to introduce a lag such that the drought does not end when the standardised index no longer exceeds the drought threshold, but rather when the index changes sign \citep[e.g.][]{McKeeEtAl1993}. This accounts for cases where there are small fluctuations in the index around the drought threshold, classing this as one persistent drought rather than several shorter droughts. This can also be implemented here by setting the \code{lag} argument to \code{TRUE}.
+When defining meteorological droughts, it is often common to introduce a lag such that the drought does not end when the standardised index no longer exceeds the drought threshold, but rather when the index falls below a lower threshold (such as zero for the SPI) \citep[e.g.][]{McKeeEtAl1993}. This accounts for cases where there are small fluctuations in the index around the drought threshold, classing this as one persistent drought rather than several shorter droughts. This can be implemented in \pkg{SEI} by specifying the \code{lag} argument, which is a numeric value denoting the weaker threshold to use when lagging the indices.
+
+Alternatively, these fluctuations could be avoided by clustering together drought events separated by a small number of days \citep[e.g.][]{OteroEtAl2022}. The number of days between which drought events should be clustered can be specified via the \code{cluster} argument in \code{get_drought()}. The default is to not cluster droughts.
+
+As an example, consider the previous time series of standardised indices corresponding to a random sample from a gamma distribution.
+
+<<get_drought_example>>=
+head(get_drought(x_std))
+@
 
 The output is a dataframe containing the original vector or time series, as well as four additional columns: the intensity (\code{ins}), which corresponds to the category of drought, a higher value referring to a more severe drought category; the occurrence (\code{occ}), which corresponds to the intensity being higher than zero; the duration (\code{dur}), which provides the number of consecutive time steps that are in a drought state; and the drought magnitude (\code{mag}), which is the sum of all indices within the drought event \citep[see][for details]{McKeeEtAl1993}. If only one threshold is used to define a drought, rather than the three used in Table \ref{tab:drought_def}, then the intensity is equivalent to the occurrence, and is therefore not returned.
 
@@ -369,7 +466,7 @@ grid.arrange(plot_h, plot_d, plot_w, nrow = 1)
 
 
 
-The raw renewable energy production values can be transformed to a standardised index using \code{std_index()}. Following, \cite{AllenOtero2023}, we refer to this as the standardised renewable energy production index (SREPI). Time series of hourly, daily, and weekly standardised indices are presented in Figure \ref{fig:ts_si}.
+The raw renewable energy production values can be transformed to a standardised index using \code{std_index()}. Following, \cite{AllenOtero2023}, we refer to this as the standardised renewable energy production index (SREPI). Time series of hourly, daily, and weekly SREPI are presented in Figure \ref{fig:ts_si}.
 
 <<calculate_index>>=
 srepi_h <- std_index(de_supply_h)
@@ -416,11 +513,11 @@ grid.arrange(plot_raw, plot_ind, nrow = 1)
 \begin{figure}
 <<plot_dist_unif, dev='pdf', fig.width=9, fig.height=3, fig.align="center", out.width = "\\linewidth">>=
 srepi_d_prob <- std_index(de_supply_d, index_type = "prob01")
-plot_prob <- plot_sei(srepi_d_prob, type = "hist", lab = "SREPI",
-                      ylims = c(0, 2), title = "Probability")
+plot_prob <- plot_sei(srepi_d_prob, type = "bar", lab = "SREPI",
+                      ylims = c(0, 0.1), title = "Probability")
 srepi_d_bnd <- std_index(de_supply_d, index_type = "prob11")
-plot_bnd <- plot_sei(srepi_d_bnd, type = "hist", lab = "SREPI",
-                     ylims = c(0, 1), title = "Bounded")
+plot_bnd <- plot_sei(srepi_d_bnd, type = "bar", lab = "SREPI",
+                     ylims = c(0, 0.1), title = "Bounded")
 grid.arrange(plot_prob, plot_bnd, nrow = 1)
 @
 \caption{Histogram of 2019 daily renewable energy production and SREPI values in Germany, where the indices are probability and bounded indices.}
@@ -584,12 +681,12 @@ Having constructed these wind speed indices, it would be straightforward to cond
 
 This vignette documents the \pkg{SEI} package in \proglang{R}, which provides comprehensive functionality to calculate time series of standardised indices. Standardised indices are projections of variables onto an interpretable and probabilistically meaningful scale, and they have become popular tools when monitoring variables of interest over time, particularly in the context of drought analysis. While there is no unique way to define standardised indices, several widely-adopted indices are constructed using the same, simple procedure. We outline this general framework for constructing standardised indices, and reiterate that this approach can be applied to any variable of interest, not just those previously considered in the literature.
 
-The \pkg{SEI} package converts a time series of observations to a time series of standardised indices. The package allows the time series to be aggregated and rescaled to different time scales, provides plot capabilities to visualise the resulting indices, and offers a range of distributions with which to calculate the indices, including flexible non- and semi-parametric methods. The package additionally allows users to define and analyse shortages, or droughts, of the variable under consideration. Two examples are presented in Section \ref{section:application} whereby the package is employed to calculate standardised indices to monitor shortages in renewable energy production, and to calculate standardised wind speed indices.
+The \pkg{SEI} package converts a time series of observations to a time series of standardised indices. The package allows the time series to be aggregated and rescaled to different time scales, provides plot capabilities to visualise the resulting indices, and offers a range of distributions with which to calculate the indices, including flexible non-parametric and non-stationary methods. The package additionally allows users to define and analyse shortages, or droughts, of the variable under consideration. Two examples are presented in Section \ref{section:application} whereby the package is employed to calculate standardised indices to monitor shortages in renewable energy production, and to calculate standardised wind speed indices.
 
-The package has been designed to facilitate applications of standardised indices in practice. While standardised indices have received considerable attention within the field of climate science, such indices would also be relevant in several other domains. The \pkg{SEI} package is applicable in broad generality, though the package could also be extended so that it is suitable for more elaborate analyses. For example, several extensions of standardised indices have been proposed in the literature, and these could be integrated into the package: the package currently only considers indices corresponding to univariate variables, though multivariate extensions have also been studied in the literature \citep[e.g.][]{ErhardtCzado2018,HaoEtAl2019}; non-stationary standardised indices have also been proposed that allow the indices to depend on covariates \citep{RussoEtAl2013,LiEtAl2015}; functionality could also be added to automatically implement methods that remove seasonality and temporal dependence in the data \citep{ErhardtCzado2018}. %The data could be divided into several time series corresponding to each month or season, and the standardisation performed separately, before recombining the resulting time series; currently, this must be performed manually by the user.
+The package has been designed to facilitate applications of standardised indices in practice. While standardised indices have received considerable attention within the field of climate science, such indices would also be relevant in several other domains. The \pkg{SEI} package is applicable in broad generality, though the package could also be extended in light of more recent extensions of standardised indices that have been proposed in the literature. For example, the package currently only considers indices corresponding to univariate variables, though multivariate extensions have also been studied in the literature \citep[e.g.][]{ErhardtCzado2018,HaoEtAl2019}. Similarly, functionality could also be added to automatically implement methods that remove seasonality and temporal dependence in the data \citep{ErhardtCzado2018}.
 
 
-Moreover, while the package extends existing packages by providing flexible density estimation methods, alternative such methods could also be made available, particularly methods that are appropriate when estimating the distribution of bounded variables. Functionality could also be added to handle spatial data, and, finally, the functionality of the package could be transferred to software packages in other programming languages, facilitating the implementation of standardised indices in monitoring systems that have not been designed in \proglang{R}.
+Moreover, while the package extends existing packages by providing flexible density estimation methods, alternative such methods could also be made available, particularly methods that are appropriate when estimating the distribution of bounded variables. Non-stationary distribution estimation is currently only available for parametric distributions via the GAMLSS framework, and further extensions could therefore also incorporate non-parametric distributional regression methods such as isotonic distributional regression \citep{HenziEtAl2021}. Finally, the functionality of the package could be transferred to software packages in other programming languages, facilitating the implementation of standardised indices in monitoring systems that have not been designed in \proglang{R}.
 
 \section*{Acknowledgements}
 
@@ -598,11 +695,11 @@ This package was created under funding by the Oeschger Centre for Climate Change
 
 \section*{Appendix: Censored data}
 
+
 The definition of standardised indices relies on the well-known result that if $X$ is a continuous random variable with cumulative distribution function $F$, then the probability integral transform $F(X)$ is uniformly distributed between zero and one. If the random variable $X$ is not continuous, then the PIT will generally not be uniformly distributed. This becomes an issue when calculating standardised indices. Of particular interest is the case when the variable $X$ is censored; that is, the distribution of $X$ has a point mass at the boundary (or boundaries) of its support, but is continuous otherwise. Precipitation, for example, is censored below at zero.
 
 While standardised indices for censored variables can be defined as in Section \ref{section:theory}, \cite{StaggeEtAl2015} remark that the resulting indices may be misleading. For example, if $X$ denotes daily precipitation accumulations and no precipitation occurs on 90\% of days in the time series, then $F(0) = 0.9$. The (normal) standardised index value corresponding to a precipitation of zero would therefore be $\Phi^{-1}(0.9) = 1.28$, the threshold often used to define excessively large values of a variable, despite zero precipitation clearly not being extreme; similarly, if the smallest precipitation value attains a standardised index of 1.28, then the system will never enter a drought state according to the drought definitions typically employed in practice, regardless of what precipitation occurs.
 
-%We can easily generate uniformly distributed PIT values for censored variables using appropriate randomisation, but this would result in different instances of zero precipitation corresponding to different standardised index values, for example, which is likely not the ideal solution in practice.
 To circumvent this, \cite{StaggeEtAl2015} propose to replace the PIT values corresponding to zero precipitation events with an alternative constant, chosen such that the resulting standardised indices ``maintain statistical interpretability''. In particular, they propose to choose the constant so that the mean of the standardised indices is the same as it would be if $X$ were continuous (zero, in the case of normal indices).
 
 We can formalise this as follows. Suppose we are interested in a random variable $X$ that is censored below at some value $a$, precipitation accumulations being a particular example with $a = 0$. While standardised indices are typically defined using $F(X)$, we want to introduce a real-valued constant $c$ and define an adapted variable, $\tilde{F}(X)$, such that
@@ -612,17 +709,17 @@ F(X), &\quad X > a, \\
 c, &\quad X = a.
 \end{cases}
 \]
-Note that for $X > 0$, $F(X)$ can also be written as $F(X) = F(a) + (1 - F(a)) F(X \mid X > a)$, which is equivalent to the expression given in \citet[Equation 4]{StaggeEtAl2015}.
+Note that for $X > a$, $F(X)$ can also be written as $F(X) = F(a) + (1 - F(a)) F(X \mid X > a)$, which is equivalent to the expression given in \citet[Equation4]{StaggeEtAl2015}.
 
 For probability standardised indices (\code{index_type = "prob01"}), the constant should be chosen such that $\mathsf{E}[\tilde{F}(X)] = 1/2$, since the expectation $\mathsf{E}$ of a standard uniform random variable is equal to one half. We have
 \[
-\mathsf{E}[\tilde{F(X)}] = \mathsf{E}[F(X) \mid X > a]\mathsf{P}(X > a) + c\mathsf{P}(X = a).
+\mathsf{E}[\tilde{F}(X)] = \mathsf{E}[F(X) \mid X > a]\mathsf{P}(X > a) + c\mathsf{P}(X = a).
 \]
-Since $F(X) \mid X > a$ is uniformly distributed between $\mathsf{P}(X = a)$ and 1, the first expectation is equal to $(\mathsf{P}(X = a) + 1)/2$. Rearranging gives that $c = \mathsf{P}(X = a)/2$ yields $\mathsf{E}[\tilde{F(X)}] = 1/2$. Hence, probability indices at the censored values should be replaced with $c = \mathsf{P}(X = a)/2$.
+Since $F(X) \mid X > a$ is uniformly distributed between $\mathsf{P}(X = a)$ and 1, the first expectation is equal to $(\mathsf{P}(X = a) + 1)/2$. Rearranging gives that $\mathsf{E}[\tilde{F(X)}] = 1/2$ when $c = \mathsf{P}(X = a)/2$. Hence, probability indices at the censored values should be replaced with $c = \mathsf{P}(X = a)/2$.
 
 This is also the case for bounded standardised indices (\code{index_type = "prob11"}). In this case, we want to choose $c$ such that $\mathsf{E}[2\tilde{F(X)} - 1] = 0$, which is exactly the same requirement as for the probability indices. Using analogous arguments, if $X$ is censored above at some value $b$ (rather than below at some value $a$), then the probability and bounded indices at the censored values should be replaced with $c = 1 - \mathsf{P}(X = b)/2$.
 
-The constant proposed by \citet[Equation 3]{StaggeEtAl2015} is a sample estimate of $\mathsf{P}(X = a)/2$. However, since the Gaussian inverse function $\Phi^{-1}$ is a non-linear function, generally $\mathsf{E}[\Phi^{-1}(Z)] \neq \Phi^{-1}(\mathsf{E}[Z])$, for any arbitrary random variable $Z$. Hence, normal standardised indices will generally not have expectation zero when the constant $c$ is chosen as above; this is also highlighted by Figure 1b in \cite{StaggeEtAl2015}, where the mean of the normal standardised indices with their proposed censoring methodology is generally not zero.
+The constant proposed by \citet[Equation 3]{StaggeEtAl2015} is a sample estimate of $\mathsf{P}(X = a)/2$. However, since the Gaussian inverse function $\Phi^{-1}$ is a non-linear function, for an arbitrary random variable $Y$ generally $\mathsf{E}[\Phi^{-1}(Y)] \neq \Phi^{-1}(\mathsf{E}[Y])$. Hence, normal standardised indices will generally not have expectation zero when the constant $c$ is chosen as above; this is also highlighted by Figure 1b in `\cite{StaggeEtAl2015}, where the mean of the normal standardised indices with their proposed censoring methodology is generally not zero.
 
 Instead, we propose an alternative constant when normal standardised indices are used, which results in a mean index value equal to zero. We now want to find the constant $c$ such that
 \[
@@ -630,7 +727,7 @@ Instead, we propose an alternative constant when normal standardised indices are
 \]
 Since $F$ and $\Phi^{-1}$ are increasing functions, we have that
 \[
-\mathsf{E}[\Phi^{-1}(F(X)) \mid X > a]$ = \mathsf{E}[\Phi^{-1}(F(X)) \mid \Phi^{-1}(F(X)) > \Phi^{-1}(F(a))],
+\mathsf{E}[\Phi^{-1}(F(X)) \mid X > a] = \mathsf{E}[\Phi^{-1}(F(X)) \mid \Phi^{-1}(F(X)) > \Phi^{-1}(F(a))],
 \]
 which is just the expectation of a normal distribution truncated below at $l = \Phi^{-1}(F(a)) = \Phi^{-1}(\mathsf{P}(X = a))$. This is therefore equal to
 \[
@@ -646,15 +743,12 @@ c = \Phi \left[ \frac{\phi(u)}{\mathsf{P}(X = b)} \right],
 \]
 where $u = \Phi^{-1}(1 - \mathsf{P}(X = b))$.
 
-In practice, we observe a sample of realisations of the variable $X$. The terms $\mathsf{P}(X = a)$ and $\mathsf{P}(X = b)$ can be estimated from a sample using the relative number of realisations that are censored, and these can then be used to determine the constant $c$. Note that since these terms have been calculated on a population level, the sample mean of the standardised indices will generally not be exactly zero (or 1/2 for probability indices), but they should be very close to zero in large enough samples.
+In practice, we observe a sample of realisations of the variable $X$. The terms $\mathsf{P}(X = a)$ and $\mathsf{P}(X = b)$ can be estimated from a sample using the relative number of realisations that are censored, and these can then be used to determine the constant $c$. Note that since these terms have been calculated on a population level, the sample mean of the standardised indices will generally not be exactly zero (or 1/2 for probability indices), but it will be close to zero in large enough samples.
 
-Variables could also be censored both below at $a$ and above at $b$. For example, the fraction of cloud cover over a domain is bounded between $a = 0$ and $b = 1$, with positive probability of taking on either of the boundary values. In this case, we must choose how to assign values at both boundary points. This adds an extra degree of freedom, since there are infinite combinations that would lead to the standardised indices having mean zero (or one half for probability indices). A second criterion could be introduced, such as the variance of the indices being equal to one (or 1/12). However, such calculations go beyond the scope of this paper, and we therefore leave this for future work.
+Variables could also be censored both below at $a$ and above at $b$. For example, the fraction of cloud cover over a domain is bounded between $a = 0$ and $b = 1$, with positive probability of taking on either of the boundary values. In this case, we must choose how to assign values at both boundary points. This adds an extra degree of freedom, since there are infinite combinations of two points that would lead to the standardised indices having mean zero (or mean one half for probability indices). A second criterion could be introduced, such as the variance of the indices being equal to one (or 1/12). However, such calculations go beyond the scope of this paper, and we therefore leave this for future work.
 
-To implement censoring within the \pkg{SEI} package, the arguments \code{lower} and \code{upper} to the functions \code{std_index} and \code{get_pit} allow the user to indicate that the data is censored below at $a$ (\code{lower}) and/or above at $b$ (\code{upper}). The argument \code{cens} then specifies the method used to deal with censoring. This can be one of four options: if \code{cens = 'none'}, then no censoring is performed, i.e. $\tilde{F} = F$; if \code{cens = 'prob'}, then the approach above is used that results in the probability indices have mean equal to 1/2, which is essentially the same as the original approach proposed by \cite{StaggeEtAl2015}; if \code{cens = 'normal'}, then the approach above is used that results in the normal indices have mean equal to zero; alternatively, \code{cens} can be a single numeric value, allowing the user to manually specify the constant $c$. As discussed above, we recommend using \code{cens = 'prob'} when working with probability or bounded standardised indices, and \code{cens = 'normal'} when normal standardised indices are used. If the variable is bounded both below and above (i.e. \code{lower} and \code{upper} are both finite), then \code{cens} must be a numeric vector of length two, specifying the constants at which to assign values at the lower and upper boundary points, respectively.
+To implement censoring within the \pkg{SEI} package, the arguments \code{lower} and \code{upper} to the functions \code{std_index()} and \code{get_pit()} allow the user to indicate that the data is censored below at $a$ (\code{lower}) and/or above at $b$ (\code{upper}). The argument \code{cens} then specifies the method used to deal with censoring. This can be one of four options: if \code{cens = "none"}, then no censoring is performed, i.e. $\tilde{F} = F$; if \code{cens = "prob"}, then the approach above is used that results in the probability indices having mean equal to 1/2, which is essentially the same as the original approach proposed by \cite{StaggeEtAl2015}; if \code{cens = "normal"}, then the approach above is used that results in the normal indices having mean equal to zero; alternatively, \code{cens} can be a single numeric value, allowing the user to manually specify the constant $c$. As discussed above, we recommend using \code{cens = "prob"} when working with probability or bounded standardised indices, and \code{cens = "normal"} when normal standardised indices are used. If the variable is bounded both below and above (i.e. \code{lower} and \code{upper} are both finite), then \code{cens} must be a numeric vector of length two, specifying the constants at which to assign values at the lower and upper boundary points, respectively.
 
-
-%% Bibliography
 \bibliography{bibliography}
 
 \end{document}
-

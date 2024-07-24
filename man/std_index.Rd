@@ -7,7 +7,6 @@
 std_index(
   x_new,
   x_ref = x_new,
-  timescale = NULL,
   dist = "empirical",
   preds_new = NULL,
   preds_ref = preds_new,
@@ -16,6 +15,7 @@ std_index(
   index_type = "normal",
   gr_new = NULL,
   gr_ref = gr_new,
+  timescale = NULL,
   moving_window = NULL,
   window_scale = NULL,
   agg_period = NULL,
@@ -24,7 +24,7 @@ std_index(
   rescale = NULL,
   rescale_fun = "sum",
   ignore_na = FALSE,
-  n_thres = 20,
+  n_thres = 10,
   na_thres = 10,
   lower = -Inf,
   upper = Inf,
@@ -36,8 +36,6 @@ std_index(
 \item{x_new}{vector or time series to be converted to standardised indices.}
 
 \item{x_ref}{vector or time series containing reference data to use when calculating the standardised indices.}
-
-\item{timescale}{timescale of the data; one of \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{dist}{character string specifying the distribution to be fit to the data;
 one of \code{'empirical'}, \code{'kde'}, \code{'norm'}, \code{'lnorm'}, \code{'logis'}, \code{'llogis'},
@@ -63,6 +61,8 @@ or \code{"prob11"} (see details).}
 \item{gr_new}{vector of factors for which separate distributions should be applied to \code{x_new}.}
 
 \item{gr_ref}{vector of factors for which separate distributions should be fit to \code{x_ref}.}
+
+\item{timescale}{timescale of the data; one of \code{'mins'}, \code{'hours'}, \code{'days'}, \code{'weeks'}, \code{'months'}, \code{'years'}.}
 
 \item{moving_window}{length of moving window on which to calculate the indices.}
 
@@ -93,7 +93,7 @@ aggregation period; default is 10\%.}
 values in \code{x_ref} and \code{x_new} are censored.}
 
 \item{cens}{method used to deal with censoring of the PIT values; either a string
-(\code{'normal'} or \code{'prob'}), corresponding to common choices, or a custom numeric value.}
+(\code{'none'}, \code{'normal'} or \code{'prob'}), corresponding to common choices, or a custom numeric value.}
 
 \item{...}{additional arguments to be passed to \code{\link[fitdistrplus]{fitdist}} or
 \code{\link[gamlss]{gamlss}}}
@@ -269,18 +269,18 @@ supply_de_std <- std_index(supply_de, timescale = "hours", rescale = "days",
 N <- 1000
 x <- seq(-10, 20, length.out = N)
 data <- rnorm(N, x, exp(x/10)) # non-stationary mean and standard deviation
-plot(data)
+plot.ts(data)
 preds <- data.frame(t = x)
 
 # standardised indices without trend
 si_st <- std_index(data, dist = "norm")
-plot.ts(si_st)
+plot_sei(si_st)
 # standardised indices with trend in mean
 si_nst <- std_index(data, dist = "norm", preds_new = preds)
-plot.ts(si_nst)
+plot_sei(si_nst)
 # standardised indices with trend in mean and sd
 si_nst2 <- std_index(data, dist = "norm", preds_new = preds, sigma.formula = ~ .)
-plot.ts(si_nst2)
+plot_sei(si_nst2)
 
 
 }

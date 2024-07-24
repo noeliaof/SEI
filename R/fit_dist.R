@@ -321,7 +321,7 @@ fit_dist_lmme <- function(data, dist) {
 fit_dist_gamlss <- function(data, preds, dist, ...) {
   data_df <- data.frame(obs = data, preds)
   if (dist == "norm") {
-    fit <- gamlss::gamlss(obs ~ ., data = data_df, ...)
+    fit <- gamlss::gamlss(obs ~ ., data = data_df, trace = FALSE, ...)
     F_x <- function(x, params, z) {
       mu <- predict(params, new.data = z, what = "mu", type = "response")
       sig <- predict(params, new.data = z, what = "sigma", type = "response")

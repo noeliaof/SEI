@@ -14,7 +14,7 @@ get_pit(
   return_fit = FALSE,
   lower = -Inf,
   upper = Inf,
-  cens = NULL,
+  cens = "none",
   n_thres = 10,
   ...
 )
@@ -46,7 +46,7 @@ statistics for the distribution fit.}
 values in \code{x_ref} and \code{x_new} are censored.}
 
 \item{cens}{method used to deal with censoring of the PIT values; either a string
-(\code{'normal'} or \code{'prob'}), corresponding to common choices, or a custom numeric value.}
+(\code{'none'}, \code{'normal'} or \code{'prob'}), corresponding to common choices, or a custom numeric value.}
 
 \item{n_thres}{minimum number of data points required to estimate the distribution;
 default is 10.}
@@ -133,8 +133,9 @@ has mean equal to 0. The constant \eqn{c} could therefore be chosen such that th
 transformed PIT values of the censored distribution are equal to 0.
 
 The argument \code{cens} in \code{get_pit} can be used to treat censored data. \code{cens}
-can be one of three options: a single numeric value containing the value \eqn{c} at which to
-assign the PIT values of the censored realisations; the string \code{'prob'} if \eqn{c}
+can be one of four options: a single numeric value containing the value \eqn{c} at which to
+assign the PIT values of the censored realisations; the string \code{'none'} if no censoring
+is to be performed; the string \code{'prob'} if \eqn{c}
 is to be chosen automatically so that the mean of the PIT values is equal to \eqn{1/2};
 or the string \code{'normal'} if \eqn{c} is to be chosen automatically so that the mean of
 the transformed PIT values is equal to 0. If the data is censored both above and below,

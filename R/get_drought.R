@@ -192,7 +192,7 @@ get_drought <- function(x, thresholds = c(1.28, 1.64, 1.96),
 check_drought <- function(inputs) {
 
   # x
-  if (!is.vector(inputs$x)) {
+  if (is.vector(inputs$x)) {
     if (!is.numeric(inputs$x)) {
       stop("'x' must be a numeric vector or xts object")
     }

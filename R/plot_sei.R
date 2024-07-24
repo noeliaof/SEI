@@ -66,16 +66,25 @@ plot_sei <- function(x, type = c("ts", "hist", "bar"), title = NULL, lab = "Std.
   type <- match.arg(type)
 
   if (type == "ts") {
-    df <- zoo::fortify.zoo(x)
-    colnames(df) <- c("date", "x")
-    p <- ggplot2::ggplot(df, ggplot2::aes(x = date, y = x)) +
+    if (xts::is.xts(x)) {
+      df <- zoo::fortify.zoo(x)
+      colnames(df) <- c("date", "x")
+      p <- ggplot2::ggplot(df, ggplot2::aes(x = date, y = x)) +
+        ggplot2::scale_x_datetime(name = "Date", expand = c(0, 0))
+    } else {
+      df <- data.frame(x = x, t = zoo::index(x))
+      p <- ggplot2::ggplot(df, ggplot2::aes(x = t, y = x)) +
+        ggplot2::scale_x_continuous(name = "Time step", expand = c(0, 0))
+    }
+
+    p <- p +
       ggplot2::geom_ribbon(ggplot2::aes(ymin = pmin(x, 0), ymax = 0), fill = "blue", alpha = 0.5) +
       ggplot2::geom_ribbon(ggplot2::aes(ymin = 0, ymax = pmax(x, 0)), fill = "red", alpha = 0.5) +
-      ggplot2::scale_x_datetime(name = "Date", expand = c(0, 0)) +
       ggplot2::scale_y_continuous(name = lab, limits = ylims, expand = c(0, 0)) +
       ggplot2::geom_hline(ggplot2::aes(yintercept = 0), color = "grey", linetype = "dotted") +
       ggplot2::theme_bw() +
       ggplot2::ggtitle(title)
+
   } else if (type == "hist") {
     if (xts::is.xts(x)) {
       df <- zoo::fortify.zoo(x)
@@ -105,7 +114,10 @@ plot_sei <- function(x, type = c("ts", "hist", "bar"), title = NULL, lab = "Std.
       ggplot2::scale_x_continuous(name = lab, limits = xlims) +
       ggplot2::scale_y_continuous(name = "Density", limits = ylims, expand = ggplot2::expansion(c(0, 0.05))) +
       ggplot2::theme_bw() +
-      ggplot2::theme(legend.title = ggplot2::element_blank(), panel.grid = ggplot2::element_blank()) +
+      ggplot2::theme(legend.title = ggplot2::element_blank(),
+                     panel.grid = ggplot2::element_blank(),
+                     axis.text.y = ggplot2::element_blank(),
+                     axis.ticks.y = ggplot2::element_blank()) +
       ggplot2::ggtitle(title)
   }
 
