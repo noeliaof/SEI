@@ -83,6 +83,7 @@ plot_sei <- function(x, type = c("ts", "hist", "bar"), title = NULL, lab = "Std.
       ggplot2::scale_y_continuous(name = lab, limits = ylims, expand = c(0, 0)) +
       ggplot2::geom_hline(ggplot2::aes(yintercept = 0), color = "grey", linetype = "dotted") +
       ggplot2::theme_bw() +
+      ggplot2::theme(plot.margin = ggplot2::margin(c(5.5, 10.5, 5.5, 5.5))) +
       ggplot2::ggtitle(title)
 
   } else if (type == "hist") {
@@ -99,7 +100,8 @@ plot_sei <- function(x, type = c("ts", "hist", "bar"), title = NULL, lab = "Std.
       ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
                      panel.grid.minor = ggplot2::element_blank(),
                      axis.text.y = ggplot2::element_blank(),
-                     axis.ticks.y = ggplot2::element_blank()) +
+                     axis.ticks.y = ggplot2::element_blank(),
+                     plot.margin = ggplot2::margin(c(5.5, 10.5, 5.5, 5.5))) +
       ggplot2::ggtitle(title)
   } else if (type == "bar") {
 
