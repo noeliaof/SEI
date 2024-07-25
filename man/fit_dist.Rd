@@ -193,17 +193,17 @@ abline(1, 0, col = "red", lty = "dotted")
 Rigby, R. A., & Stasinopoulos, D. M. (2005):
 `Generalized additive models for location, scale and shape',
 \emph{Journal of the Royal Statistical Society Series C: Applied Statistics} 54, 507-554.
-\url{https://doi.org/10.1111/j.1467-9876.2005.00510.x}
+\doi{https://doi.org/10.1111/j.1467-9876.2005.00510.x}
 
 Delignette-Muller, M. L., & Dutang, C. (2015):
 `fitdistrplus: An R package for fitting distributions',
 \emph{Journal of Statistical Software} 64, 1-34.
-\url{https://doi.org/10.18637/jss.v064.i04}
+\doi{https://doi.org/10.18637/jss.v064.i04}
 
 Allen, S. & N. Otero (2023):
 `Standardised indices to monitor energy droughts',
 \emph{Renewable Energy} 217, 119206.
-\url{https://doi.org/10.1016/j.renene.2023.119206}
+\doi{https://doi.org/10.1016/j.renene.2023.119206}
 }
 \seealso{
 \code{\link[fitdistrplus]{fitdist}} \code{\link{gamlss}} \code{\link{lmom}}

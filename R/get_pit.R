@@ -117,17 +117,17 @@
 #' Rigby, R. A., & Stasinopoulos, D. M. (2005):
 #' `Generalized additive models for location, scale and shape',
 #' \emph{Journal of the Royal Statistical Society Series C: Applied Statistics} 54, 507-554.
-#' \url{https://doi.org/10.1111/j.1467-9876.2005.00510.x}
+#' \doi{10.1111/j.1467-9876.2005.00510.x}
 #'
 #' Stagge, J. H., Tallaksen, L. M., Gudmundsson, L., Van Loon, A. F., & Stahl, K. (2015):
 #' `Candidate distributions for climatological drought indices (SPI and SPEI)',
 #' \emph{International Journal of Climatology} 35, 4027-4040.
-#' \url{https://doi.org/10.1002/joc.4267}
+#' \doi{10.1002/joc.4267}
 #'
 #' Allen, S. & N. Otero (2023):
 #' `Calculating standardised indices using SEI',
 #' \emph{EarthArXiv pre-print}.
-#' \url{https://doi.org/10.31223/X5GM4G}
+#' \doi{10.31223/X5GM4G}
 #'
 #'
 #' @author Sam Allen, Noelia Otero

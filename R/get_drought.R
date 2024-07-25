@@ -78,12 +78,12 @@
 #' Vicente-Serrano, S. M., Beguería, S., & López-Moreno, J. I. (2010):
 #' `A multiscalar drought index sensitive to global warming: the standardized precipitation evapotranspiration index',
 #' \emph{Journal of Climate} 23, 1696-1718.
-#' \url{https://doi.org/10.1175/2009JCLI2909.1}
+#' \doi{https://doi.org/10.1175/2009JCLI2909.1}
 #'
 #' Allen, S. & N. Otero (2023):
 #' `Standardised indices to monitor energy droughts',
 #' \emph{Renewable Energy} 217, 119206.
-#' \url{https://doi.org/10.1016/j.renene.2023.119206}
+#' \doi{https://doi.org/10.1016/j.renene.2023.119206}
 #'
 #'
 #' @author Sam Allen, Noelia Otero
