@@ -4,7 +4,7 @@ Version: 0.2.0
 Authors@R: 
   c(person(given = "Sam", family = "Allen", email = "sam.allen@stat.math.ethz.ch", role = c('aut','cre')),
   person(given = "Noelia", family = "Otero", email = "noeli1680@gmail.com", role=c('aut')))
-Description: Convert a time series of observations to a time series of standardised indices that can be used to monitor variables on a common and probabilistically interpretable scale. The indices can be aggregated and rescaled to different time scales, visualised using plot capabilities, and calculated using a range of distributions. This includes flexible non- and semi-parametric methods, as suggested by Allen and Otero (2023) <doi:10.1016/j.renene.2023.119206>.
+Description: Convert a time series of observations to a time series of standardised indices that can be used to monitor variables on a common and probabilistically interpretable scale. The indices can be aggregated and rescaled to different time scales, visualised using plot capabilities, and calculated using a range of distributions. This includes flexible non-parametric and non-stationary methods.
 URL: https://github.com/noeliaof/SEI, https://noeliaof.github.io/SEI/
 License: GPL (>= 2)
 Encoding: UTF-8
