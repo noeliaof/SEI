@@ -136,7 +136,7 @@ The index type can be chosen using \code{index_type}, which must be one of
 
 \strong{Time series manipulations}
 
-\code{x_new} and \code{x_ref} can either be provided as vectors or \link{xts} time series.
+\code{x_new} and \code{x_ref} can either be provided as vectors or \code{\link[xts]{xts}} time series.
 In the latter case, the time series can be aggregated across timescales or rescaled.
 This is useful, for example, if \code{x_new} contains hourly data, but interest is
 on daily accumulations or averages of the hourly data.
@@ -179,7 +179,7 @@ The resulting parameters and corresponding goodness-of-fit statistics can be
 returned by specifying \code{return_fit = TRUE}.
 
 By default, the distribution is estimated over all values in \code{x_ref}. Alternatively,
-if \code{x_new} is an \link{xts} object, parameters can be estimated sequentially using a
+if \code{x_new} is an \code{\link[xts]{xts}} object, parameters can be estimated sequentially using a
 moving window of values. \code{moving_window} determines the length of the moving window.
 This is a single value, assumed to be on the same timescale as \code{x_new}.
 The timsscale of the moving window can also be specified manually using \code{window_scale}.
@@ -300,7 +300,7 @@ Allen, S. & N. Otero (2023):
 \doi{10.1016/j.renene.2023.119206}
 }
 \seealso{
-\link{xts} \code{\link{aggregate_xts}} \code{\link{get_pit}} \code{\link{fit_dist}}
+\code{\link[xts]{xts}} \code{\link{aggregate_xts}} \code{\link{get_pit}} \code{\link{fit_dist}}
 }
 \author{
 Sam Allen, Noelia Otero

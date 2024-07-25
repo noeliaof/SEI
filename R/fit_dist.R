@@ -53,8 +53,8 @@
 #' \code{method = "mle"}, though several alternative methods are also available; see
 #' \code{\link[fitdistrplus]{fitdist}}. Parameter estimation is also possible using L-moment
 #' matching (\code{method = 'lmme'}), for all distribution choices except the log-logistic
-#' distribution. In this case, \code{fit_dist} is essentially a wrapper for the [lmom]
-#' package.
+#' distribution. In this case, \code{fit_dist} is essentially a wrapper for the
+#' \code{\link[lmom]{lmom}} package.
 #'
 #' The distribution can also be non-stationary, by depending on some predictor variables or covariates.
 #' These predictors can be included via the argument \code{preds}, which should be a data frame
@@ -97,7 +97,7 @@
 #' @author Sam Allen, Noelia Otero
 #'
 #'
-#' @seealso \code{\link[fitdistrplus]{fitdist}} [gamlss] [lmom]
+#' @seealso \code{\link[fitdistrplus]{fitdist}} \code{\link[gamlss]{gamlss}} \code{\link[lmom]{lmom}}
 #'
 #'
 #' @examples

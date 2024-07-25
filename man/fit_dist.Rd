@@ -76,8 +76,8 @@ Where relevant, the default is to estimate parameters using maximum likelihood e
 \code{method = "mle"}, though several alternative methods are also available; see
 \code{\link[fitdistrplus]{fitdist}}. Parameter estimation is also possible using L-moment
 matching (\code{method = 'lmme'}), for all distribution choices except the log-logistic
-distribution. In this case, \code{fit_dist} is essentially a wrapper for the \link{lmom}
-package.
+distribution. In this case, \code{fit_dist} is essentially a wrapper for the
+\code{\link[lmom]{lmom}} package.
 
 The distribution can also be non-stationary, by depending on some predictor variables or covariates.
 These predictors can be included via the argument \code{preds}, which should be a data frame
@@ -206,7 +206,7 @@ Allen, S. & N. Otero (2023):
 \doi{https://doi.org/10.1016/j.renene.2023.119206}
 }
 \seealso{
-\code{\link[fitdistrplus]{fitdist}} \link{gamlss} \link{lmom}
+\code{\link[fitdistrplus]{fitdist}} \code{\link[gamlss]{gamlss}} \code{\link[lmom]{lmom}}
 }
 \author{
 Sam Allen, Noelia Otero
