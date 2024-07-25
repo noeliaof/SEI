@@ -223,7 +223,7 @@ types of indices are available, which are explained in detail in the vignette.
 The index type can be chosen using <code>index_type</code>, which must be one of
 <code>"normal"</code> (default), <code>"prob01"</code>, and <code>"prob11"</code>.</p>
 <p><strong>Time series manipulations</strong></p>
-<p><code>x_new</code> and <code>x_ref</code> can either be provided as vectors or xts time series.
+<p><code>x_new</code> and <code>x_ref</code> can either be provided as vectors or <code><a href="https://rdrr.io/pkg/xts/man/xts.html" class="external-link">xts</a></code> time series.
 In the latter case, the time series can be aggregated across timescales or rescaled.
 This is useful, for example, if <code>x_new</code> contains hourly data, but interest is
 on daily accumulations or averages of the hourly data.</p>
@@ -260,7 +260,7 @@ are estimated; see <code><a href="fit_dist.html">fit_dist</a></code> for details
 The resulting parameters and corresponding goodness-of-fit statistics can be
 returned by specifying <code>return_fit = TRUE</code>.</p>
 <p>By default, the distribution is estimated over all values in <code>x_ref</code>. Alternatively,
-if <code>x_new</code> is an xts object, parameters can be estimated sequentially using a
+if <code>x_new</code> is an <code><a href="https://rdrr.io/pkg/xts/man/xts.html" class="external-link">xts</a></code> object, parameters can be estimated sequentially using a
 moving window of values. <code>moving_window</code> determines the length of the moving window.
 This is a single value, assumed to be on the same timescale as <code>x_new</code>.
 The timsscale of the moving window can also be specified manually using <code>window_scale</code>.
@@ -301,7 +301,7 @@ If <code>dist</code> is a single string, then the same distribution is used for 
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p>xts <code><a href="aggregate_xts.html">aggregate_xts</a></code> <code><a href="get_pit.html">get_pit</a></code> <code><a href="fit_dist.html">fit_dist</a></code></p></div>
+    <div class="dont-index"><p><code><a href="https://rdrr.io/pkg/xts/man/xts.html" class="external-link">xts</a></code> <code><a href="aggregate_xts.html">aggregate_xts</a></code> <code><a href="get_pit.html">get_pit</a></code> <code><a href="fit_dist.html">fit_dist</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
