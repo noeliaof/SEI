@@ -9,7 +9,7 @@ Returns the estimated distribution and relevant goodness-of-fit statistics."></h
 
     <a class="navbar-brand me-2" href="../index.html">SEI</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,7 +125,7 @@ Where relevant, the default is to estimate parameters using maximum likelihood e
 <code>method = "mle"</code>, though several alternative methods are also available; see
 <code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code>. Parameter estimation is also possible using L-moment
 matching (<code>method = 'lmme'</code>), for all distribution choices except the log-logistic
-distribution. In this case, <code>fit_dist</code> is essentially a wrapper for the <code>lmom</code>
+distribution. In this case, <code>fit_dist</code> is essentially a wrapper for the lmom
 package.</p>
 <p>The distribution can also be non-stationary, by depending on some predictor variables or covariates.
 These predictors can be included via the argument <code>preds</code>, which should be a data frame
@@ -143,19 +143,19 @@ and users are referred to the corresponding documentation for further implementa
     <p>Rigby, R. A., &amp; Stasinopoulos, D. M. (2005):
 `Generalized additive models for location, scale and shape',
 <em>Journal of the Royal Statistical Society Series C: Applied Statistics</em> 54, 507-554.
-<a href="https://doi.org/10.1111/j.1467-9876.2005.00510.x" class="external-link">https://doi.org/10.1111/j.1467-9876.2005.00510.x</a></p>
+<a href="https://doi.org/10.1111/j.1467-9876.2005.00510.x" class="external-link">doi:10.1111/j.1467-9876.2005.00510.x</a></p>
 <p>Delignette-Muller, M. L., &amp; Dutang, C. (2015):
 `fitdistrplus: An R package for fitting distributions',
 <em>Journal of Statistical Software</em> 64, 1-34.
-<a href="https://doi.org/10.18637/jss.v064.i04" class="external-link">https://doi.org/10.18637/jss.v064.i04</a></p>
+<a href="https://doi.org/10.18637/jss.v064.i04" class="external-link">doi:10.18637/jss.v064.i04</a></p>
 <p>Allen, S. &amp; N. Otero (2023):
 `Standardised indices to monitor energy droughts',
 <em>Renewable Energy</em> 217, 119206.
-<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">https://doi.org/10.1016/j.renene.2023.119206</a></p>
+<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">doi:10.1016/j.renene.2023.119206</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> <code>gamlss</code> <code>lmom</code></p></div>
+    <div class="dont-index"><p><code><a href="https://lbbe-software.github.io/fitdistrplus/reference/fitdist.html" class="external-link">fitdist</a></code> gamlss lmom</p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -241,12 +241,7 @@ and users are referred to the corresponding documentation for further implementa
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">out_st</span> <span class="op">&lt;-</span> <span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">out_nst</span> <span class="op">&lt;-</span> <span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, preds <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 5035.731 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 5035.731 </span>
 <span class="r-in"><span><span class="va">out_nst2</span> <span class="op">&lt;-</span> <span class="fu">fit_dist</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, preds <span class="op">=</span> <span class="va">preds</span>, sigma.formula <span class="op">=</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 3787.776 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 3779.806 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 3779.806 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># pit values without trend</span></span></span>
 <span class="r-in"><span><span class="va">pit_st</span> <span class="op">&lt;-</span> <span class="va">out_st</span><span class="op">$</span><span class="fu">F_x</span><span class="op">(</span><span class="va">data</span>, <span class="va">out_st</span><span class="op">$</span><span class="va">params</span><span class="op">)</span></span></span>

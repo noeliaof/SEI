@@ -11,7 +11,7 @@ transform (PIT) values."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">SEI</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +57,7 @@ transform (PIT) values.</p>
 <span>  return_fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lower <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>,</span>
 <span>  upper <span class="op">=</span> <span class="cn">Inf</span>,</span>
-<span>  cens <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cens <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  n_thres <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -110,7 +110,7 @@ values in <code>x_ref</code> and <code>x_new</code> are censored.</p></dd>
 
 <dt id="arg-cens">cens<a class="anchor" aria-label="anchor" href="#arg-cens"></a></dt>
 <dd><p>method used to deal with censoring of the PIT values; either a string
-(<code>'normal'</code> or <code>'prob'</code>), corresponding to common choices, or a custom numeric value.</p></dd>
+(<code>'none'</code>, <code>'normal'</code> or <code>'prob'</code>), corresponding to common choices, or a custom numeric value.</p></dd>
 
 
 <dt id="arg-n-thres">n_thres<a class="anchor" aria-label="anchor" href="#arg-n-thres"></a></dt>
@@ -189,8 +189,9 @@ of the standard normal distribution) follows a standard normal distribution, and
 has mean equal to 0. The constant \(c\) could therefore be chosen such that the mean of the
 transformed PIT values of the censored distribution are equal to 0.</p>
 <p>The argument <code>cens</code> in <code>get_pit</code> can be used to treat censored data. <code>cens</code>
-can be one of three options: a single numeric value containing the value \(c\) at which to
-assign the PIT values of the censored realisations; the string <code>'prob'</code> if \(c\)
+can be one of four options: a single numeric value containing the value \(c\) at which to
+assign the PIT values of the censored realisations; the string <code>'none'</code> if no censoring
+is to be performed; the string <code>'prob'</code> if \(c\)
 is to be chosen automatically so that the mean of the PIT values is equal to \(1/2\);
 or the string <code>'normal'</code> if \(c\) is to be chosen automatically so that the mean of
 the transformed PIT values is equal to 0. If the data is censored both above and below,
@@ -205,15 +206,15 @@ points is estimated using the relative frequency of censored observations in <co
     <p>Rigby, R. A., &amp; Stasinopoulos, D. M. (2005):
 `Generalized additive models for location, scale and shape',
 <em>Journal of the Royal Statistical Society Series C: Applied Statistics</em> 54, 507-554.
-<a href="https://doi.org/10.1111/j.1467-9876.2005.00510.x" class="external-link">https://doi.org/10.1111/j.1467-9876.2005.00510.x</a></p>
+<a href="https://doi.org/10.1111/j.1467-9876.2005.00510.x" class="external-link">doi:10.1111/j.1467-9876.2005.00510.x</a></p>
 <p>Stagge, J. H., Tallaksen, L. M., Gudmundsson, L., Van Loon, A. F., &amp; Stahl, K. (2015):
 `Candidate distributions for climatological drought indices (SPI and SPEI)',
 <em>International Journal of Climatology</em> 35, 4027-4040.
-<a href="https://doi.org/10.1002/joc.4267" class="external-link">https://doi.org/10.1002/joc.4267</a></p>
+<a href="https://doi.org/10.1002/joc.4267" class="external-link">doi:10.1002/joc.4267</a></p>
 <p>Allen, S. &amp; N. Otero (2023):
 `Calculating standardised indices using SEI',
 <em>EarthArXiv pre-print</em>.
-<a href="https://doi.org/10.31223/X5GM4G" class="external-link">https://doi.org/10.31223/X5GM4G</a></p>
+<a href="https://doi.org/10.31223/X5GM4G" class="external-link">doi:10.31223/X5GM4G</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -295,8 +296,6 @@ points is estimated using the relative frequency of censored observations in <co
 <span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, preds_ref <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 4204.338 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 4204.338 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="get_pit-11.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
@@ -307,9 +306,6 @@ points is estimated using the relative frequency of censored observations in <co
 <span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">pit</span> <span class="op">&lt;-</span> <span class="fu">get_pit</span><span class="op">(</span><span class="va">x_ref</span>, preds_ref <span class="op">=</span> <span class="va">preds</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, sigma.formula <span class="op">=</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 3833.889 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 3829.376 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 3829.376 </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">pit</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="get_pit-13.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># sigma.formula is an optional argument in the gamlss::gamlss function</span></span></span>

@@ -11,7 +11,7 @@ Indices can be calculated on any timescale."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">SEI</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,6 @@ Indices can be calculated on any timescale.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">std_index</span><span class="op">(</span></span>
 <span>  <span class="va">x_new</span>,</span>
 <span>  x_ref <span class="op">=</span> <span class="va">x_new</span>,</span>
-<span>  timescale <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"empirical"</span>,</span>
 <span>  preds_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  preds_ref <span class="op">=</span> <span class="va">preds_new</span>,</span>
@@ -59,6 +58,7 @@ Indices can be calculated on any timescale.</p>
 <span>  index_type <span class="op">=</span> <span class="st">"normal"</span>,</span>
 <span>  gr_new <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  gr_ref <span class="op">=</span> <span class="va">gr_new</span>,</span>
+<span>  timescale <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  moving_window <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  window_scale <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  agg_period <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -67,7 +67,7 @@ Indices can be calculated on any timescale.</p>
 <span>  rescale <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rescale_fun <span class="op">=</span> <span class="st">"sum"</span>,</span>
 <span>  ignore_na <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  n_thres <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  n_thres <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  na_thres <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  lower <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>,</span>
 <span>  upper <span class="op">=</span> <span class="cn">Inf</span>,</span>
@@ -86,10 +86,6 @@ Indices can be calculated on any timescale.</p>
 
 <dt id="arg-x-ref">x_ref<a class="anchor" aria-label="anchor" href="#arg-x-ref"></a></dt>
 <dd><p>vector or time series containing reference data to use when calculating the standardised indices.</p></dd>
-
-
-<dt id="arg-timescale">timescale<a class="anchor" aria-label="anchor" href="#arg-timescale"></a></dt>
-<dd><p>timescale of the data; one of <code>'mins'</code>, <code>'hours'</code>, <code>'days'</code>, <code>'weeks'</code>, <code>'months'</code>, <code>'years'</code>.</p></dd>
 
 
 <dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
@@ -131,6 +127,10 @@ or <code>"prob11"</code> (see details).</p></dd>
 
 <dt id="arg-gr-ref">gr_ref<a class="anchor" aria-label="anchor" href="#arg-gr-ref"></a></dt>
 <dd><p>vector of factors for which separate distributions should be fit to <code>x_ref</code>.</p></dd>
+
+
+<dt id="arg-timescale">timescale<a class="anchor" aria-label="anchor" href="#arg-timescale"></a></dt>
+<dd><p>timescale of the data; one of <code>'mins'</code>, <code>'hours'</code>, <code>'days'</code>, <code>'weeks'</code>, <code>'months'</code>, <code>'years'</code>.</p></dd>
 
 
 <dt id="arg-moving-window">moving_window<a class="anchor" aria-label="anchor" href="#arg-moving-window"></a></dt>
@@ -185,7 +185,7 @@ values in <code>x_ref</code> and <code>x_new</code> are censored.</p></dd>
 
 <dt id="arg-cens">cens<a class="anchor" aria-label="anchor" href="#arg-cens"></a></dt>
 <dd><p>method used to deal with censoring of the PIT values; either a string
-(<code>'normal'</code> or <code>'prob'</code>), corresponding to common choices, or a custom numeric value.</p></dd>
+(<code>'none'</code>, <code>'normal'</code> or <code>'prob'</code>), corresponding to common choices, or a custom numeric value.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -223,7 +223,7 @@ types of indices are available, which are explained in detail in the vignette.
 The index type can be chosen using <code>index_type</code>, which must be one of
 <code>"normal"</code> (default), <code>"prob01"</code>, and <code>"prob11"</code>.</p>
 <p><strong>Time series manipulations</strong></p>
-<p><code>x_new</code> and <code>x_ref</code> can either be provided as vectors or <code>xts</code> time series.
+<p><code>x_new</code> and <code>x_ref</code> can either be provided as vectors or xts time series.
 In the latter case, the time series can be aggregated across timescales or rescaled.
 This is useful, for example, if <code>x_new</code> contains hourly data, but interest is
 on daily accumulations or averages of the hourly data.</p>
@@ -260,7 +260,7 @@ are estimated; see <code><a href="fit_dist.html">fit_dist</a></code> for details
 The resulting parameters and corresponding goodness-of-fit statistics can be
 returned by specifying <code>return_fit = TRUE</code>.</p>
 <p>By default, the distribution is estimated over all values in <code>x_ref</code>. Alternatively,
-if <code>x_new</code> is an <code>xts</code> object, parameters can be estimated sequentially using a
+if <code>x_new</code> is an xts object, parameters can be estimated sequentially using a
 moving window of values. <code>moving_window</code> determines the length of the moving window.
 This is a single value, assumed to be on the same timescale as <code>x_new</code>.
 The timsscale of the moving window can also be specified manually using <code>window_scale</code>.
@@ -293,15 +293,15 @@ If <code>dist</code> is a single string, then the same distribution is used for 
 <p>Vicente-Serrano, S. M., Beguería, S., &amp; López-Moreno, J. I. (2010):
 `A multiscalar drought index sensitive to global warming: the standardized precipitation evapotranspiration index',
 <em>Journal of Climate</em> 23, 1696-1718.
-<a href="https://doi.org/10.1175/2009JCLI2909.1" class="external-link">https://doi.org/10.1175/2009JCLI2909.1</a></p>
+<a href="https://doi.org/10.1175/2009JCLI2909.1" class="external-link">doi:10.1175/2009JCLI2909.1</a></p>
 <p>Allen, S. &amp; N. Otero (2023):
 `Standardised indices to monitor energy droughts',
 <em>Renewable Energy</em> 217, 119206.
-<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">https://doi.org/10.1016/j.renene.2023.119206</a></p>
+<a href="https://doi.org/10.1016/j.renene.2023.119206" class="external-link">doi:10.1016/j.renene.2023.119206</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code>xts</code> <code><a href="aggregate_xts.html">aggregate_xts</a></code> <code><a href="get_pit.html">get_pit</a></code> <code><a href="fit_dist.html">fit_dist</a></code></p></div>
+    <div class="dont-index"><p>xts <code><a href="aggregate_xts.html">aggregate_xts</a></code> <code><a href="get_pit.html">get_pit</a></code> <code><a href="fit_dist.html">fit_dist</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -377,26 +377,21 @@ If <code>dist</code> is a single string, then the same distribution is used for 
 <span class="r-in"><span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">10</span>, <span class="fl">20</span>, length.out <span class="op">=</span> <span class="va">N</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">/</span><span class="fl">10</span><span class="op">)</span><span class="op">)</span> <span class="co"># non-stationary mean and standard deviation</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/plot.ts.html" class="external-link">plot.ts</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="std_index-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># standardised indices without trend</span></span></span>
 <span class="r-in"><span><span class="va">si_st</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/plot.ts.html" class="external-link">plot.ts</a></span><span class="op">(</span><span class="va">si_st</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_sei.html">plot_sei</a></span><span class="op">(</span><span class="va">si_st</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="std_index-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># standardised indices with trend in mean</span></span></span>
 <span class="r-in"><span><span class="va">si_nst</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, preds_new <span class="op">=</span> <span class="va">preds</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 5073.898 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 5073.898 </span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/plot.ts.html" class="external-link">plot.ts</a></span><span class="op">(</span><span class="va">si_nst</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_sei.html">plot_sei</a></span><span class="op">(</span><span class="va">si_nst</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="std_index-7.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># standardised indices with trend in mean and sd</span></span></span>
 <span class="r-in"><span><span class="va">si_nst2</span> <span class="op">&lt;-</span> <span class="fu">std_index</span><span class="op">(</span><span class="va">data</span>, dist <span class="op">=</span> <span class="st">"norm"</span>, preds_new <span class="op">=</span> <span class="va">preds</span>, sigma.formula <span class="op">=</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 1: Global Deviance = 3885.226 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 2: Global Deviance = 3883.514 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> GAMLSS-RS iteration 3: Global Deviance = 3883.514 </span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/plot.ts.html" class="external-link">plot.ts</a></span><span class="op">(</span><span class="va">si_nst2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="plot_sei.html">plot_sei</a></span><span class="op">(</span><span class="va">si_nst2</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="std_index-8.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span></span></span>
