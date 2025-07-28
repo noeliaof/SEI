@@ -8,8 +8,8 @@
 <title>SEI • SEI</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="SEI">
 <meta name="description" content="Convert a time series of observations to a time series of standardised indices that can be used to monitor variables on a common and probabilistically interpretable scale. The indices can be aggregated and rescaled to different time scales, visualised using plot capabilities, and calculated using a range of distributions. This includes flexible non-parametric and non-stationary methods.">
 <meta property="og:description" content="Convert a time series of observations to a time series of standardised indices that can be used to monitor variables on a common and probabilistically interpretable scale. The indices can be aggregated and rescaled to different time scales, visualised using plot capabilities, and calculated using a range of distributions. This includes flexible non-parametric and non-stationary methods.">
@@ -55,7 +55,7 @@
 </h1></div>
 <p>SEI is an R package to calculate standardised indices. Standardised indices are frequently used to convert measurements to a common scale with a meaningful probabilistic interpretation. Well-known examples include the Standardised Precipitation Index (SPI) and Standardised Precipitation Evapotranspiration Index (SPEI), which are used to monitor hydrological droughts, and the Standardised Residual Load Index (SRLI), and the Standardised Renewable Energy Production Index (SREPI), which have been proposed to monitor energy droughts.</p>
 <p>This package facilitates the implementation of standardised indices in practice. It’s main features include: - A range of distributions from which to calculate standardised indices (including flexible non- and semi-parametric methods), - Non-stationary parametric distribution estimation via the GAMLSS framework, - Estimation of distribution parameters using several methods, including maximum likelihood, method of moments, and method of L-moments, - Diagnostic checks to ensure the distributional assumptions are valid for the input data, - The ability to compute indices on any timescale, and from a rolling window of values, - Three relevant notions of standardised indices, - Functions to visualise the calculated standardised indices.</p>
-<p>The functionality and usage of the SEI package is discussed in detail in the corresponding <a href="https://eartharxiv.org/repository/view/6290/" class="external-link">vignette</a>. The vignette also lists several possible extensions that could be implemented. Additional comments, suggestions, and input are more than welcome - please feel free to create an issue or get in touch with the authors.</p>
+<p>The functionality and usage of the SEI package is discussed in detail in the corresponding <a href="https://journal.r-project.org/articles/RJ-2024-038/" class="external-link">vignette</a>, which has been published in the R Journal. The vignette also lists several possible extensions that could be implemented. Additional comments, suggestions, and input are more than welcome - please feel free to create an issue or get in touch with the authors.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -74,17 +74,23 @@
 <p>Standardised indices provide a means to convert measurements to a common and interpretable scale. This is useful for many reasons. For example: 1) The common scale renders the indices easy to interpret. 2) This standardised scale has an underlying probabilistic interpretation, making the indices ideal for risk management and decision-making. 3) Since the standardisation can be performed separately under different conditions (e.g. in different seasons or locations), the indices can be defined in a relative sense, facilitating a comparison between measurements in these different conditions.</p>
 <p>The general approach to compute the indices is to estimate the cumulative distribution function <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math> underlying the measurements, use this to derive probability integral transform (PIT) values, and then to transform these PIT values using the Gaussian quantile function. If <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math> has been estimated accurately, the resulting values will resemble a sample from a standard normal distribution. A negative value represents a measurement that is lower than average, while a positive value represents an above-average measurement. A very high or low index constitutes an extreme value, and we can deduce how extreme the value is by comparing it to quantiles of the standard normal distribution.</p>
 <p>The main challenge when calculating standardised indices is estimating the cumulative distribution function <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>F</mi><annotation encoding="application/x-tex">F</annotation></semantics></math> of the measurements. This can be achieved by assuming some parametric distribution: the SPI, for example, typically assumes precipitation follows a gamma distribution. Alternatively, we can use kernel density estimation or the empirical distribution function to get a more flexible estimate. Non-stationary distributions that depend on predictor variables can also be employed if the standardised indices should account for trends in the data, for example. In any case, it is important to check that the estimated distribution is valid.</p>
-<p>The SEI package offers a wide range of distributions, and additionally provides diagnostic tools to check that the chosen distribution adequately fits the input data. Further details regarding the theory underlying standardised indices, and the functionality of the SEI package, are provided in the package <a href="https://eartharxiv.org/repository/view/6290/" class="external-link">vignette</a>.</p>
+<p>The SEI package offers a wide range of distributions, and additionally provides diagnostic tools to check that the chosen distribution adequately fits the input data. Further details regarding the theory underlying standardised indices, and the functionality of the SEI package, are provided in the <a href="https://journal.r-project.org/articles/RJ-2024-038/" class="external-link">package vignette</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>To cite the SEI package, please use the following BibTeX entry:</p>
-<pre><code>@article{SEI,
-  title={Calculating Standardised Indices Using SEI},
-  author={Allen, Sam and Otero, Noelia},
-  year={2023},
-  publisher={EarthArXiv}
+<pre><code>@article{RJ-2024-038,
+  author = {Allen, Sam and Otero, Noelia},
+  title = {Calculating Standardised Indices Using SEI},
+  journal = {The R Journal},
+  year = {2025},
+  note = {https://doi.org/10.32614/RJ-2024-038},
+  doi = {10.32614/RJ-2024-038},
+  volume = {16},
+  issue = {4},
+  issn = {2073-4859},
+  pages = {102-122}
 }</code></pre>
 </div>
 </div>
@@ -115,8 +121,8 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Sam Allen <br><small class="roles"> Author, maintainer </small>  </li>
-<li>Noelia Otero <br><small class="roles"> Author </small>  </li>
+<li>Sam Allen <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Noelia Otero <br><small class="roles"> Author </small>   </li>
 </ul>
 </div>
 
@@ -136,7 +142,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>

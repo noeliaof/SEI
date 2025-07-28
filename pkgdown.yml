@@ -1,8 +1,8 @@
 pandoc: 3.1.11
-pkgdown: 2.1.0
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles: {}
-last_built: 2024-07-25T14:29Z
+last_built: 2025-07-28T07:28Z
 urls:
   reference: https://noeliaof.github.io/SEI/reference
   article: https://noeliaof.github.io/SEI/articles
