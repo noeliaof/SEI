@@ -13,7 +13,7 @@ This package facilitates the implementation of standardised indices in practice.
   - Three relevant notions of standardised indices,
   - Functions to visualise the calculated standardised indices.
 
-The functionality and usage of the SEI package is discussed in detail in the corresponding [vignette](https://eartharxiv.org/repository/view/6290/). The vignette also lists several possible extensions that could be implemented. Additional comments, suggestions, and input are more than welcome - please feel free to create an issue or get in touch with the authors.
+The functionality and usage of the SEI package is discussed in detail in the corresponding [vignette](https://journal.r-project.org/articles/RJ-2024-038/), which has been published in the R Journal. The vignette also lists several possible extensions that could be implemented. Additional comments, suggestions, and input are more than welcome - please feel free to create an issue or get in touch with the authors.
 
 
 ## Installation
@@ -42,7 +42,7 @@ The general approach to compute the indices is to estimate the cumulative distri
 
 The main challenge when calculating standardised indices is estimating the cumulative distribution function $F$ of the measurements. This can be achieved by assuming some parametric distribution: the SPI, for example, typically assumes precipitation follows a gamma distribution. Alternatively, we can use kernel density estimation or the empirical distribution function to get a more flexible estimate. Non-stationary distributions that depend on predictor variables can also be employed if the standardised indices should account for trends in the data, for example. In any case, it is important to check that the estimated distribution is valid. 
 
-The SEI package offers a wide range of distributions, and additionally provides diagnostic tools to check that the chosen distribution adequately fits the input data. Further details regarding the theory underlying standardised indices, and the functionality of the SEI package, are provided in the package [vignette](https://eartharxiv.org/repository/view/6290/).
+The SEI package offers a wide range of distributions, and additionally provides diagnostic tools to check that the chosen distribution adequately fits the input data. Further details regarding the theory underlying standardised indices, and the functionality of the SEI package, are provided in the [package vignette](https://journal.r-project.org/articles/RJ-2024-038/).
 
 
 ## Citation
@@ -50,10 +50,16 @@ The SEI package offers a wide range of distributions, and additionally provides 
 To cite the SEI package, please use the following BibTeX entry:
 
 ```
-@article{SEI,
-  title={Calculating Standardised Indices Using SEI},
-  author={Allen, Sam and Otero, Noelia},
-  year={2023},
-  publisher={EarthArXiv}
+@article{RJ-2024-038,
+  author = {Allen, Sam and Otero, Noelia},
+  title = {Calculating Standardised Indices Using SEI},
+  journal = {The R Journal},
+  year = {2025},
+  note = {https://doi.org/10.32614/RJ-2024-038},
+  doi = {10.32614/RJ-2024-038},
+  volume = {16},
+  issue = {4},
+  issn = {2073-4859},
+  pages = {102-122}
 }
 ```
