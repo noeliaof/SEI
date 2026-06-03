@@ -270,7 +270,7 @@ std_index <- function(x_new,
     gr_out <- lapply(seq_along(grs), function(i) {
       ind <- gr_new == grs[i]
       ind_ref <- gr_ref == grs[i]
-      std_index(x_new[ind], x_ref[ind], timescale = timescale, dist = dist[i], return_fit = return_fit,
+      std_index(x_new[ind], x_ref[ind_ref], timescale = timescale, dist = dist[i], return_fit = return_fit,
                 index_type = index_type, agg_period = agg_period, agg_scale = agg_scale,
                 agg_fun = agg_fun, rescale = rescale, ignore_na = ignore_na, na_thres = na_thres,
                 lower = lower, upper = upper, cens = cens, ...)
