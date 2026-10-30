@@ -468,6 +468,11 @@ check_inputs <- function(inputs) {
     }
   }
 
+  # agg_scale and agg_period
+  if (!(sum(sapply(list(inputs$agg_scale, inputs$agg_period), is.null)) %in% c(0,2))) {
+      stop("Provide both 'agg_scale' and 'agg_period' to aggregate")
+  }
+
   # rescale
   if (!is.null(inputs$rescale)) {
     if (!(inputs$rescale %in% c("days", "weeks", "months", "quarters", "years"))) {
